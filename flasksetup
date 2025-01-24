@@ -1,0 +1,22 @@
+# Activate script
+cd  C:\Users\kmjoh\Documents\VSCode\reacttest\backend
+.venv/Scripts/activate
+
+# Set the environment variables
+$env:FLASK_ENV="development"
+$env:FLASK_APP="C:\Users\kmjoh\Documents\VSCode\reacttest\backend\server.py"
+
+# Verify the environment variables
+echo $env:FLASK_ENV
+echo $env:FLASK_APP
+
+# Start the Flask application
+flask run
+
+
+# bash:
+cd  C:/Users/kmjoh/Documents/VSCode/reacttest/backend
+.venv/Scripts/activate
+export FLASK_ENV="development"
+export FLASK_APP="C:/Users/kmjoh/Documents/VSCode\reacttest/backend/server.py"
+flask run --debug
