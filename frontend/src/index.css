@@ -1,0 +1,664 @@
+/* Define color variables */
+:root {
+  --primary-color: #00601d;
+  --secondary-color: #cc2e2e;
+  --dark-background: rgb(20, 16, 44);
+  --light-background: #f5f8fa;
+  --text-color: #e3e3e3;
+  --placeholder-color: #575757;
+  --bright-white: #ffffff;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  height: 100%;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+  color: #333;
+  background-color: var(--light-background); /* Light background */
+}
+
+.site-header {
+  text-align: center; /* Center-align the text */
+  padding: 20px 0px; /* Padding for spacing */
+  border-radius: 8px; /* Rounded corners */
+  max-width: 800px; /* Limit the width for readability */
+  margin: 10px auto; /* Center the element horizontally with margin */
+}
+
+.site-header p {
+  font-size: 1.1rem; /* Adjust font size for readability */
+  color: #171717; /* Darker color for contrast */
+  line-height: 1.4; /* Increased line height for readability */
+  margin: 0; /* Remove default margin */
+}
+
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.navbar {
+  display: flex;
+  gap: 0px 120px;
+  padding: 20px;
+  background-color: var(--dark-background);
+  justify-content: center;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.nav-link {
+  position: relative;
+  color: var(--text-color);
+  text-decoration: none;
+  font-size: 1.2rem;
+  font-family: "Segoe UI";
+}
+
+.active-link {
+  position: relative;
+  color: var(--text-color);
+  text-decoration: none;
+  font-size: 1.2rem;
+  font-family: "Segoe UI";
+}
+
+.active-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -4px; /* Adjusts the position lower */
+  width: 100%;
+  height: 3px; /* Adjusts the thickness */
+  background-color: var(--primary-color); /* Matches the text color */
+}
+
+.large-textarea {
+  width: 95%;
+  height: 70px; /* Set desired height */
+  overflow-wrap: break-word; /* Ensures long words break onto the next line */
+  word-wrap: break-word; /* Supports older browsers */
+  white-space: normal; /* Prevents the text from continuing on one line */
+  background-color: var(--dark-background);
+  font-family: "Segoe UI";
+  color: var(--text-color);
+  border: none;
+  border: none;
+  outline: none;
+  resize: none;
+}
+
+/* Hero Section styling */
+.hero-section {
+  position: relative;
+  background-color: var(--dark-background);
+  color: var(--text-color);
+  padding: 0px;
+  justify-content: center;
+  width: 100%;
+  overflow-y: auto;
+  font-family: "Segoe UI";
+  margin: 0 auto; /* Center the hero-section within the page */
+}
+
+.flex-container {
+  display: flex;
+  gap: 0px 10px; /* Space between the two inputs */
+  flex-wrap: wrap; /* Allows wrapping on smaller screens */
+  justify-content: center;
+  background-color: var(--dark-background);
+  align-items: center;
+  width: 100%;
+  max-width: 1500px;
+  margin: 0 auto; /* Center the flex container within the hero-section */
+}
+
+.flex-container input::placeholder {
+  color: var(--text-color); /* White color for placeholder text */
+  opacity: 1; /* Ensures full visibility of placeholder text */
+  font-family: "Segoe UI";
+}
+
+.flex-container-completebooking {
+  display: flex;
+  gap: 0px 10px; /* Space between the two inputs */
+  flex-wrap: wrap; /* Allows wrapping on smaller screens */
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin: 0 auto; 
+  background-color: var(--dark-background);
+  color: var(--text-color);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0px;
+}
+
+
+.flex-container-right {
+  display: flex;
+  gap: 0px 20px; /* Space between the two inputs */
+  flex-wrap: wrap; /* Allows wrapping on smaller screens */
+  justify-content: right;
+  align-items: center;
+  background-color: var(--dark-background);
+  width: 95%;
+  max-width: 1500px;
+  margin: 0 auto; 
+}
+
+.input-container , .input-container-hero {
+  background-color: var(--dark-background); /* White background for the box */
+  color: var(--text-color);
+  padding: 0px ; /* Padding inside the container */
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 4px; /* Space below the box */
+  align-items: center;
+  font-family: "Segoe UI";
+}
+
+.input-container-bottom {
+  background-color: var(--light-background); /* White background for the box */
+  color: var(--text-color);
+  padding: 0px ; /* Padding inside the container */
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 4px; /* Space below the box */
+  align-items: center;
+  font-family: "Segoe UI";
+}
+
+.input-container input::placeholder {
+  color: var(--placeholder-color); /* White color for placeholder text */
+  opacity: 1; /* Ensures full visibility of placeholder text */
+  font-family: "Segoe UI";
+}
+
+.input-container-hero input::placeholder {
+  color: var(--text-color); /* White color for placeholder text */
+  opacity: 1; /* Ensures full visibility of placeholder text */
+  font-family: "Segoe UI";
+}
+
+.input-container-green {
+  background-color: var(--dark-background); /* White background for the box */
+  color: var(--primary-color);
+  border-radius: 8px; /* Rounded edges */
+  padding: 0px ; /* Padding inside the container */
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 4px; /* Space below the box */
+  align-items: center;
+  font-family: "Segoe UI";
+}
+
+.input-container-light {
+  background-color: var(--light-background); /* White background for the box */
+  color: black;
+  border-radius: 8px; /* Rounded edges */
+  padding: 10px ; /* Padding inside the container */
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0px; /* Space below the box */
+  align-items: center;
+  font-family: "Segoe UI";
+}
+
+.input-container label {
+  font-weight: bold;
+  color: var(--text-color);
+  font-size: 0.7rem;
+  margin-bottom: 4px; /* Space between label and input */
+  justify-content: center;
+}
+
+.input-container input {
+  width: 100%; /* Full width inside the container */
+  padding: 10px;
+  font-size: 1rem;
+  color: var(--text-color);
+  background-color: var(--dark-background);
+  box-sizing: border-box;
+  border: none;
+  box-shadow: none;
+  outline: none;
+  text-align: center;
+}
+
+.input-container-hero input {
+  width: 100%; /* Full width inside the container */
+  padding: 10px;
+  font-size: 1rem;
+  color: var(--text-color);
+  background-color: var(--dark-background);
+  box-sizing: border-box;
+  border: none;
+  box-shadow: none;
+  outline: none;
+  text-align: center;
+}
+
+.input-container select {
+  background-color: var(--dark-background);
+  color: var(--text-color); /* Match text color */
+  border: none;
+  outline: none;
+  box-shadow: none;
+}
+
+.input-container-light label {
+  font-weight: bold;
+  color: black;
+  font-size: 0.7rem;
+  margin-bottom: px; /* Space between label and input */
+  justify-content: center;
+}
+
+.input-container-light input, select {
+  width: 100%; /* Full width inside the container */
+  padding: 10px;
+  font-size: 1rem;
+  color: black;
+  background-color: var(--light-background);
+  box-sizing: border-box;
+  border: none;
+  box-shadow: none;
+  outline: none;
+  text-align: center;
+}
+
+
+input[type="text"]::-webkit-calendar-picker-indicator,
+input[type="email"]::-webkit-calendar-picker-indicator,
+input[type="number"]::-webkit-calendar-picker-indicator, 
+input[type="search"]::-webkit-calendar-picker-indicator {
+    display: none !important;
+}
+
+.book-button {
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  box-sizing: border-box;
+  border: none;
+  box-shadow: none;
+  outline: none;
+  padding: 10px 30px;
+  font-size: 1rem;
+  margin-bottom: 10px; /* Space between label and input */
+  font-family: "Segoe UI";
+}
+
+.cancel-button {
+  background-color: var(--placeholder-color);
+  color: var(--text-color);
+  box-sizing: border-box;
+  border: none;
+  box-shadow: none;
+  outline: none;
+  padding: 10px 30px;
+  font-size: 1rem;
+  margin-bottom: 10px; /* Space between label and input */
+  font-family: "Segoe UI";
+  border-radius: 0; 
+}
+
+.calendar-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; /* Ensure it appears above other content */
+}
+
+.calendar-modal {
+  position: relative;
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 90%;
+  outline: none; /* Remove default outline */
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3); /* Optional shadow for effect */
+}
+
+.calendar-button {
+  background-color: var(--dark-background);
+  color: var(--text-color);
+  box-sizing: border-box;
+  border: none;
+  font-size: 1.5rem;
+  box-shadow: none !important;
+  outline: none;
+}
+
+
+.trip-info p {
+  margin: 0; 
+  line-height: 1.2; 
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+/* Content section that grows with the page */
+.content {
+  flex: 1; /* This makes the content area expand to take up remaining space */
+}
+
+/* For the links to Home and Login at the page bottom */
+.footer-links {
+  position: relative;
+  padding: 10px;
+  text-align: center;
+}
+
+.styled-checkbox {
+  display: inline-block;
+  position: relative;
+  padding-left: 30px; /* Space for the checkbox */
+  font-size: 1.5rem;
+  color: #333;
+  cursor: pointer;
+  user-select: none;
+  font-family: "Segoe UI";
+}
+
+.styled-checkbox:before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  border: 1px solid #333;
+  border-radius: 4px; /* Rounded checkbox */
+  background-color: #fff;
+  box-sizing: border-box;
+  display: flex; /* Enable flexbox for centering */
+  justify-content: center;
+  align-items: center;
+}
+
+.styled-checkbox:after {
+  content: "✔"; /* Unicode for checkmark */
+  position: absolute;
+  top: 50%;
+  transform: translate(-175%, -50%); /* Center the checkmark */
+  font-size: 1.2rem; /* Adjust size */
+  color: var(--primary-color); /* Color of the checkmark */
+  display: none; /* Hidden by default */
+}
+
+input[type="checkbox"]:checked + .styled-checkbox:after {
+  display: block;
+}
+
+table {
+  width: 100%;
+  border: none;
+  border-collapse: collapse; /* Removes the spacing between cells */
+}
+
+td {
+  padding: 4px 8px; /* Reduces the space within each cell */
+  border: none; /* Makes the cell borders invisible */
+}
+
+tr {
+  margin: 0; /* Removes extra space between rows */
+  padding: 0;
+  border: none;
+}
+
+.left-column {
+  width: 30%; /* Set the width of the left column */
+}
+
+.right-column {
+  width: 70%; /* Set the width of the right column */
+}
+
+.background-image-van {
+  position: relative;
+  width: 100%;
+  padding-top: 40.25%; /* Aspect ratio: 16:9 (height/width * 100) */
+  background-image: url('../public/IMG_2597-2048x1536.png'); /* Note the leading slash */
+  background-size: cover; /* Ensures the image covers the entire container */
+  background-position: center 60%; /* Center the image */
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+
+/* To place content in the center, use absolute positioning */
+.background-image-van h1 {
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  color: var(--bright-white);
+  font-size: 4vw;
+  font-family: 'Segoe UI';
+}
+
+/* To place content in the center, use absolute positioning */
+.background-image-van h2 {
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  color: var(--bright-white);
+  font-size: 2vw;
+  font-family: 'Segoe UI';
+  max-width: 35%;
+}
+
+.bottom-section {
+  background-color: #f3f3f3;
+  color: var(--dark-background);
+  width: 90%;
+  max-width: 1000px; /* Ensures the width doesn’t exceed 90% */
+  margin: 0 auto; /* Centers the element horizontally */
+  display: flex;
+  flex-direction: column; /* Stack children vertically */
+  justify-content: center; /* Horizontally centers content within the section */
+  padding: 20px; /* Optional padding for inner spacing */
+}
+
+.bottom-section h2 {
+  align-items: center;
+}
+
+/* Responsive design */
+@media (max-width: 1000px) {
+  .navbar {
+    gap: 0px 65px;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+  .overlay {
+    padding: 1rem;
+  }
+
+  .booking-form button {
+    font-size: 0.9rem;
+  }
+
+  .booking-page-container {
+    padding-top: 150px; /* Increase padding when the screen is small */
+  }
+
+  .booking-header h1 {
+    font-size: 1.5rem; /* Smaller font size for the header */
+  }
+
+  .booking-header h3 {
+    font-size: 1rem; /* Smaller font size for the subheading */
+  }
+
+  .booking-form-container {
+    max-width: 90%;
+  }
+
+  .background-image-van h2 {
+    font-size: 12px;
+  }
+
+  .navbar {
+    gap: 0px 40px;
+  }
+}
+
+/* Media query for even smaller screens (mobile devices) */
+@media (max-width: 480px) {
+  .booking-page-container {
+    padding-top: 180px; /* Further increase padding for small screens */
+  }
+
+  .booking-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .booking-header h3 {
+    font-size: 0.9rem;
+  }
+
+  .booking-form-container {
+    padding: 20px;
+  }
+
+  .background-image-van h1 {
+    font-size: 16px;
+  }
+
+  .background-image-van h2 {
+    font-size: 12px;
+  }
+
+  .navbar {
+    gap: 0px 20px;
+  }
+}
+
+.Modal-for-popup {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+  background: var(--light-background);
+  color: var(--dark-background);
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  max-width: 500px;
+  width: 90%;
+  z-index: 1000;
+}
+
+.Overlay-for-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  z-index: 999;
+}
+
+.loader {
+  width: 50px;
+  height: 50px;
+  border: 5px solid var(--primary-color);
+  border-top: 5px solid var(--bright-white); /* Blue color for the top border */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: auto; /* Center the loader */
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Targets the dropdown list of the flag */
+.custom-phone-input .country-list {
+  background-color: var(--dark-background) !important; /* Ensures custom background */
+  color: var(--text-color); /* Ensures text color */
+  border-radius: 8px; /* Matches rounded style */
+}
+
+.custom-phone-input .flag {
+  width: 30px; /* Adjusts the width of the flag */
+  height: 20px; /* Adjusts the height of the flag */
+}
+
+.custom-phone-input .flag-dropdown .selected-flag {
+  padding-right: 10px; /* Adjusts padding around the flag icon if needed */
+}
+
+/* Overlay styling */
+/* .overlay {
+  position: relative;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  background-color: rgba(255, 255, 255, 0.9); 
+  padding: 30px;
+  justify-content: center;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15); 
+  width: 100%;
+  overflow-y: auto;
+} */

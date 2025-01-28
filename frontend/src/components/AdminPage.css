@@ -1,0 +1,181 @@
+.admin-page {
+  padding: 20px;
+}
+
+.navigation-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+button {
+  padding: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  flex: 1 1 calc(50% - 10px); /* 50% width with gap between buttons */
+}
+
+.admin-page-table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* Enable smooth scrolling */
+}
+
+.admin-page-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-page-table th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+  word-wrap: break-word;
+}
+
+.admin-page-table th {
+  background-color: #f4f4f4;
+}
+
+.modal-table-container {
+  overflow-x: auto;
+}
+
+.modal-table {
+  width: 100%;
+  border: none;
+  border-collapse: collapse; /* Removes the spacing between cells */
+}
+
+.modal-table td {
+  padding: 4px 8px; /* Reduces the space within each cell */
+  border: none; /* Makes the cell borders invisible */
+}
+
+.modal-table tr {
+  margin: 0; /* Removes extra space between rows */
+  padding: 0;
+  border: none;
+}
+
+.modal-table .left-column {
+  width: 30%; /* Set the width of the left column */
+}
+
+.modal-table .right-column {
+  width: 70%; /* Set the width of the right column */
+}
+
+@media (max-width: 768px) {
+  .navigation-buttons {
+    flex-direction: column;
+  }
+
+  button {
+    flex: 1 1 100%;
+  }
+
+  .admin-page-table table, thead, tbody, th, td, tr {
+    display: block;
+  }
+
+  .admin-page-table thead {
+    display: none; /* Hide the header row */
+  }
+
+  .admin-page-table tr {
+    margin-bottom: 1em;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .admin-page-table td {
+    display: flex;
+    justify-content: space-between; /* Space out the label and the data */
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .admin-page-table td::before {
+    content: attr(data-label); /* Use the column name as a label */
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-left: 10px; /* Push the label to the right */
+    text-align: left;
+    flex: 1 1 auto; /* Ensure the label adapts to its content */
+    white-space: nowrap; /* Prevent wrapping of labels */
+    width: 50%; /* Adjust label width as needed */
+  }
+
+  .admin-page-table td span {
+    margin-right: auto; /* Keep data on the left side */
+    text-align: right;
+    width: 50%; /* Adjust data width as needed */
+  }
+
+  .modal-table th, td {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+}
+
+.timeline {
+  display: flex;
+  position: relative;
+  height: 800px; /* Adjust as needed */
+}
+
+.driver-column {
+  flex: 1;
+  position: relative;
+  border-left: 1px solid #ddd;
+  padding-left: 10px;
+}
+
+.time-labels {
+  position: absolute;
+  left: 0;
+  width: 50px;
+  text-align: right;
+}
+
+.time-label {
+  height: 30px; /* Adjust to match time block height */
+  line-height: 30px;
+}
+
+.booking-block {
+  position: absolute;
+  width: 80%;
+  background-color: rgba(0, 128, 255, 0.5);
+  border: 1px solid #0080ff;
+  padding: 5px;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.date-navigation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.arrow-button {
+  background-color: #ddd;
+  border: none;
+  padding: 10px;
+  font-size: 20px;
+  cursor: pointer;
+  margin: 0 10px;
+}
+
+.date-button {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 16px;
+}

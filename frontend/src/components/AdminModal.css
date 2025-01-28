@@ -1,0 +1,98 @@
+/* BookingModal.css */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6); /* Semi-transparent background */
+  z-index: 999; /* Ensure the modal appears on top of other content */
+  overflow: hidden; /* Prevent scrolling on the background */
+}
+
+.modal {
+  position: absolute; /* Absolute position inside the overlay */
+  top: 10%; /* Positioned near the top of the screen */
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%); /* Offset horizontally */
+  background-color: white; /* Background color of the modal */
+  padding: 20px; /* Padding inside the modal */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Drop shadow */
+  z-index: 1000; /* Ensure it's above other content */
+  max-width: 600px; /* Maximum width of the modal */
+  width: 90%; /* Responsive width */
+  max-height: 80vh; /* Limit height to 80% of the viewport */
+  overflow-y: auto; /* Enable scrolling inside the modal if content exceeds height */
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.modify-button {
+  background-color: #28752b;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.complete-button {
+  background-color: #3623df;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+/* .complete-button-disabled {
+  background-color: gray;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: not-allowed;
+} */
+
+.cancel-button {
+  background-color: #a09e9e;
+  color: black;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.cancel-edit-button {
+  background-color: #a09e9e;
+  color: black;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.save-button {
+  background-color: #9351fd;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  cursor: pointer;
+}
