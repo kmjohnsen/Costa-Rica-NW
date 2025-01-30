@@ -22,3 +22,7 @@ export FLASK_APP="C:/Users/kmjoh/Documents/VSCode\reacttest/backend/server.py"
 flask run --debug
 
 # push to github
+#from reacttest
+git add .
+git commit -m "INSERT IDENTIFIERS HERE"
+git push origin main

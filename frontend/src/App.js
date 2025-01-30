@@ -24,7 +24,7 @@ function App() {
 
     try {
       // Send the token to your Flask backend for verification
-      const response = await axios.post('http://localhost:5000/api/auth/google', { idToken: credential });
+      const response = await axios.post('${API_BASE_URL}/api/auth/google', { idToken: credential });
 
       if (response.data.status === 'success') {
         // Save the token to local storage or state management
