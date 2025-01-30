@@ -51,5 +51,8 @@ if __name__ == '__main__':
 def favicon():
     return send_from_directory('../frontend/resources', 'favicon.ico', mimetype='image/x-icon')
 
-if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000, debug=True)
+# Set debug mode based on environment
+debug_mode = os.getenv("FLASK_ENV", "development") != "production"
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=debug_mode)

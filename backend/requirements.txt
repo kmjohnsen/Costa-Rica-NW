@@ -6,7 +6,6 @@ werkzeug==2.0.3
 phonenumbers
 pytz
 flask-limiter
-flask-sqlalchemy
 redis
 flask-jwt-extended
 flask-cors
