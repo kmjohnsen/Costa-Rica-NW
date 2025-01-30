@@ -60,7 +60,7 @@ function CompleteBooking() {
 
     try {
       const bookingData = { entries: watchEntries, firstName, lastName, email, telephone, questions, bookingsite, requestType, confirmationCode };
-      const response = await axios.post('http://127.0.0.1:5000/api/submit-booking', { bookingData });
+      const response = await axios.post('${API_BASE_URL}/api/submit-booking', { bookingData });
       
       setLoading(false);
       if (response.status === 200) {

@@ -13,8 +13,15 @@ app.config['JWT_SECRET_KEY'] = '76438521'  # Change this key for production
 # Initialize extensions
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})  # Adjust the origin as necessary
-CORS(app)
+# ✅ Allow CORS for both localhost (dev) and EC2 (prod)
+ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Local React frontend
+    "http://3.15.17.253",      # Replace with your EC2 public IP
+    "https://costaricanorthwest.com"   # Replace with your actual domain if using one
+]
+
+CORS(app, resources={r"/api/*": {"origins": ALLOWED_ORIGINS}})
+# CORS(app)
 
 # Register blueprints directly
 app.register_blueprint(locations_bp)

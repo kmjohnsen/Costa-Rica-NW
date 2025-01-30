@@ -20,3 +20,5 @@ cd  C:/Users/kmjoh/Documents/VSCode/reacttest/backend
 export FLASK_ENV="development"
 export FLASK_APP="C:/Users/kmjoh/Documents/VSCode\reacttest/backend/server.py"
 flask run --debug
+
+# push to github

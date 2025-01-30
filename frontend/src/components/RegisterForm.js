@@ -26,7 +26,7 @@ function RegisterForm() {
     
     try {
       // Send data to the backend for registration
-      const response = await axios.post('http://127.0.0.1:5000/api/register', {
+      const response = await axios.post('${API_BASE_URL}/api/register', {
         email,
         password,
         firstName,
@@ -40,9 +40,9 @@ function RegisterForm() {
         // Redirect or perform additional actions as needed
         navigate('/login'); // Navigate to the login page after successful registration
       }
-    } catch (err) {
-      setError('Registration failed, please try again.');
-    }
+    } catch (error) {
+      console.error('Error during registration:', error); // ✅ Now the error is used
+      setError('Registration failed, please try again.');    }
   };
 
   return (

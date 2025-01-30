@@ -20,7 +20,7 @@ function AdminBookingModal({ show, booking, isPending, onClose, onModify, isComp
   
   // Fetch the list of pickup locations from the Flask API when the component mounts
   useEffect(() => {
-    axios.get('http://127.0.0.1:5000/api/pickup_locations')
+    axios.get('${API_BASE_URL}/api/pickup_locations')
       .then((response) => {
         setPickupLocations(response.data);
       })
@@ -233,7 +233,7 @@ const handleCompletedTrip = async () => {
   if (!confirmCompleted) return;
 
   try {
-    const response = await axios.post('http://127.0.0.1:5000/api/completed-booking', {
+    const response = await axios.post('${API_BASE_URL}/api/completed-booking', {
       bookingID: booking.bookingID,
     });
 

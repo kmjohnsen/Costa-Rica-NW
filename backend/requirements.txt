@@ -9,5 +9,12 @@ phonenumbers
 pytz
 flask-limiter
 flask-sqlalchemy
-pymysql
 redis
+flask-jwt-extended
+flask-cors
+mysql-connector-python
+google-auth 
+google-auth-oauthlib 
+google-auth-httplib2
+google-api-python-client
+twilio
