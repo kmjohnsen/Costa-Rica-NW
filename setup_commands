@@ -26,3 +26,19 @@ flask run --debug
 git add .
 git commit -m "INSERT IDENTIFIERS HERE"
 git push origin main
+
+#pull to EC2
+#from inside /home/ec2-user/Costa-Rica-NW
+git pull origin main  
+
+#Create virtual environment on EC2
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+pip install mysql-connector-python
+
+#Move to Nginx
+#check that it is active
+systemctl status nginx
+sudo rm -rf /usr/share/nginx/html/*
+sudo cp -r build /usr/share/nginx/html/
