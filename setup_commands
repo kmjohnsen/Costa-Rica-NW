@@ -42,3 +42,10 @@ pip install mysql-connector-python
 systemctl status nginx
 sudo rm -rf /usr/share/nginx/html/*
 sudo cp -r build /usr/share/nginx/html/
+
+#Make Flask Env variable "production" (server.py will change debug mode to false)
+echo "FLASK_ENV=production" >> ~/.bashrc
+source ~/.bashrc
+
+ps aux | grep python
+nohup python server.py --host=0.0.0.0 > flask.log 2>&1 &

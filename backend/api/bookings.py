@@ -12,6 +12,7 @@ from flask_limiter.util import get_remote_address
 # from flask_limiter.storage import MySQLStorage
 # from flask_sqlalchemy import SQLAlchemy
 
+
 app = Flask(__name__)
 limiter = Limiter(
     get_remote_address,

@@ -36,8 +36,7 @@ def send_email(receiver_email, subject, body, confirmationcode):
         <img src="cid:image1" alt="Image 1" style="width:300px;"><br>
         <h1 style="color:blue;">Thank you for choosing LIR Shuttle!</h1>
         {body_html}
-        <p><h3Your confirmation number:</h3>
-        <h1>{confirmationcode}</h1></p>
+        <h3Your confirmation number: {confirmationcode}</h3>
         <h3>Payment</h3>
         <p><b>Cash is due at time of service, in US Dollars or Costa Rican Colones equivalent</b></p>
         <h3>Trip Modifications or Cancellations</h3>

@@ -5,6 +5,7 @@ import axios from 'axios';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import './AdminModal.css'; // Import CSS for styling
+import API_BASE_URL from '../config';
 
 function ModifyUserModal({ show, user, onClose, onModify }) {
   // State to handle edit mode
@@ -80,7 +81,7 @@ const handleSave = async () => {
 
   try {
     // Make an API call to update the users in the database
-    const response = await axios.put(`/api/users/save`, updatedFieldsUserID);
+    const response = await axios.put(`${API_BASE_URL}/api/users/save`, updatedFieldsUserID);
 
     if (response.status === 200) {
       // Successfully updated the user, you might want to update the UI accordingly

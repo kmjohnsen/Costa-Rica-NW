@@ -4,6 +4,8 @@ import PropTypes from 'prop-types';
 import axios from 'axios';
 import PhoneInput from 'react-phone-input-2';
 import './AdminModal.css'; // Import CSS for styling
+import API_BASE_URL from '../config';
+
 
 function AdminBookingModal({ show, booking, isPending, onClose, onModify, isCompleted }) {
   // State to handle edit mode
@@ -20,7 +22,7 @@ function AdminBookingModal({ show, booking, isPending, onClose, onModify, isComp
   
   // Fetch the list of pickup locations from the Flask API when the component mounts
   useEffect(() => {
-    axios.get('${API_BASE_URL}/api/pickup_locations')
+    axios.get(`${API_BASE_URL}/api/pickup_locations`)
       .then((response) => {
         setPickupLocations(response.data);
       })
@@ -32,7 +34,7 @@ function AdminBookingModal({ show, booking, isPending, onClose, onModify, isComp
   // Fetch dropoff locations when a valid pickup location is selected
   useEffect(() => {
     axios
-      .get(`http://127.0.0.1:5000/api/dropoff_locations_all`)
+      .get(`${API_BASE_URL}/api/dropoff_locations_all`)
       .then((response) => {
         setDropoffLocations(response.data);
       })
@@ -46,7 +48,7 @@ function AdminBookingModal({ show, booking, isPending, onClose, onModify, isComp
   useEffect(() => {
     if (editableBooking?.startcity) { // Ensure editableBooking is not null
       axios
-        .get(`http://127.0.0.1:5000/api/dropoff_locations?pickup=${encodeURIComponent(editableBooking.startcity)}`)
+        .get(`${API_BASE_URL}/api/dropoff_locations?pickup=${encodeURIComponent(editableBooking.startcity)}`)
         .then((response) => {
           setDropoffLocations(response.data);
         })
@@ -65,7 +67,7 @@ function AdminBookingModal({ show, booking, isPending, onClose, onModify, isComp
         // Fetch the `routenumber` if not already set
         if (editableBooking?.routeID) {
           try {
-            const response = await axios.get(`http://127.0.0.1:5000/api/prices`, {
+            const response = await axios.get(`${API_BASE_URL}/api/prices`, {
               params: {
                 routenumber: editableBooking?.routeID,
                 passengers: editableBooking?.passengers,
@@ -81,7 +83,7 @@ function AdminBookingModal({ show, booking, isPending, onClose, onModify, isComp
           }
         } else {
           try {
-            const routeResponse = await axios.get(`http://127.0.0.1:5000/api/bookings/fetch_route_number`, {
+            const routeResponse = await axios.get(`${API_BASE_URL}/api/bookings/fetch_route_number`, {
               params: { 
                 pickup: editableBooking?.startcity, 
                 dropoff: editableBooking?.endcity },
@@ -92,7 +94,7 @@ function AdminBookingModal({ show, booking, isPending, onClose, onModify, isComp
               setPrices("N/A")
             } else {
               try {
-                const response = await axios.get(`http://127.0.0.1:5000/api/prices`, {
+                const response = await axios.get(`${API_BASE_URL}/api/prices`, {
                   params: {
                     routenumber: currentRouteNumber,
                     passengers: editableBooking?.passengers,
@@ -203,7 +205,7 @@ const handleSave = async () => {
 
     try {
       // Make an API call to update the booking in the database
-      const response = await axios.put(`http://127.0.0.1:5000/api/bookings/modify`, {
+      const response = await axios.put(`${API_BASE_URL}/api/bookings/modify`, {
         updatedFields, 
         isPending
     });
@@ -233,7 +235,7 @@ const handleCompletedTrip = async () => {
   if (!confirmCompleted) return;
 
   try {
-    const response = await axios.post('${API_BASE_URL}/api/completed-booking', {
+    const response = await axios.post(`${API_BASE_URL}/api/completed-booking`, {
       bookingID: booking.bookingID,
     });
 
@@ -255,7 +257,7 @@ const handleRemove = async () => {
 
   // put what was in "entries" from Home.js into the same entries format:
   try {
-    await axios.delete(`http://127.0.0.1:5000/api/bookings/remove-booking`, {
+    await axios.delete(`${API_BASE_URL}/api/bookings/remove-booking`, {
       data: { 
         bookingID: isPending ? booking.tempbookingID : booking.bookingID,
         type: isPending ? 'temp' : 'confirmed'

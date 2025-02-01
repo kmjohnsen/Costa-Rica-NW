@@ -6,6 +6,8 @@ import airlineOptions from './airlineOptions'; // Import your airline options
 import { useLocation, useNavigate } from 'react-router-dom';
 import Navbar from './NavBar'; // Import the top navigation bar
 import axios from 'axios';
+import API_BASE_URL from '../config';
+
 
 function CompleteBooking() {
   const location = useLocation();
@@ -60,7 +62,7 @@ function CompleteBooking() {
 
     try {
       const bookingData = { entries: watchEntries, firstName, lastName, email, telephone, questions, bookingsite, requestType, confirmationCode };
-      const response = await axios.post('${API_BASE_URL}/api/submit-booking', { bookingData });
+      const response = await axios.post(`${API_BASE_URL}/api/submit-booking`, { bookingData });
       
       setLoading(false);
       if (response.status === 200) {

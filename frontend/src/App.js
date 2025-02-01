@@ -13,6 +13,8 @@ import ModifyUser from './components/ModifyUserPage';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios'
+import API_BASE_URL from './config';
+
 
 function App() {
   const navigate = useNavigate(); // Initialize the navigate function
@@ -24,7 +26,7 @@ function App() {
 
     try {
       // Send the token to your Flask backend for verification
-      const response = await axios.post('${API_BASE_URL}/api/auth/google', { idToken: credential });
+      const response = await axios.post(`${API_BASE_URL}/api/auth/google`, { idToken: credential });
 
       if (response.data.status === 'success') {
         // Save the token to local storage or state management

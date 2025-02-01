@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ModifyUserModal from './ModifyUserModal';
+import API_BASE_URL from '../config';
 
 
 function ModifyUserPage() {
@@ -12,7 +13,7 @@ function ModifyUserPage() {
   // Fetch all users
   const fetchUsers = async () => {
     try {
-      const response = await axios.get('/api/users/modify');
+      const response = await axios.get(`${API_BASE_URL}/api/users/modify`);
       setUsers(response.data);
     } catch (error) {
       console.error('Error fetching users:', error);

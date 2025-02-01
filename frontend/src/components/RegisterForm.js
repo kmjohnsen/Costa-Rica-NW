@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios'; // Assuming you'll use axios for API requests
 import { useNavigate } from 'react-router-dom'; // For navigation after successful registration
+import API_BASE_URL from '../config';
 
 function RegisterForm() {
   const [email, setEmail] = useState('');
@@ -26,7 +27,7 @@ function RegisterForm() {
     
     try {
       // Send data to the backend for registration
-      const response = await axios.post('${API_BASE_URL}/api/register', {
+      const response = await axios.post(`${API_BASE_URL}/api/register`, {
         email,
         password,
         firstName,

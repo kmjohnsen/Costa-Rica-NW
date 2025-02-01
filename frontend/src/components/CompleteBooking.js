@@ -9,6 +9,7 @@ import axios from 'axios';
 import RequiredFieldsModal from './RequiredFieldsModal';
 import { validateEntries } from './HelperFunctions';
 import { useDebounce } from 'use-debounce';
+import API_BASE_URL from '../config';
 
 
 function CompleteBooking() {
@@ -60,7 +61,7 @@ function CompleteBooking() {
 
   // Fetch margin used for selecting dates
   useEffect(() => {
-    axios.get('${API_BASE_URL}/api/datemargin')
+    axios.get(`${API_BASE_URL}/api/datemargin`)
     .then(response => setDateMargin(response.data))
     .catch(error => console.error("Error getting date margin for autobooking: ", error));
   }, []);
@@ -69,7 +70,7 @@ function CompleteBooking() {
   useEffect(() => {
     if (requestType !== 'Alternate Route' && debouncedTelephone && debouncedTelephone.length >= 3) {
       console.log("telephone", telephone)
-      axios.get(`http://127.0.0.1:5000/api/valid-phone`, {
+      axios.get(`${API_BASE_URL}/api/valid-phone`, {
         params: { phone: debouncedTelephone.startsWith('+') ? debouncedTelephone.slice(1) : debouncedTelephone },
       })
         .then((response) => {
@@ -95,7 +96,7 @@ function CompleteBooking() {
   // Fetch prices by date
   const fetchPrices = async (index, routenumber, passengers, startdate, enddate) => {
     try {
-      const response = await axios.get(`http://127.0.0.1:5000/api/prices`, {
+      const response = await axios.get(`${API_BASE_URL}/api/prices`, {
         params: { routenumber, passengers, startdate, enddate },
       });
       console.log("Fetched prices for trip:", response.data);
@@ -264,7 +265,7 @@ function CompleteBooking() {
       setConfirmModalIsOpen(true);
       setIsCodeEntry(true)
       // Generate Confirmation code
-      await axios.post('${API_BASE_URL}/api/send-verification',{
+      await axios.post(`${API_BASE_URL}/api/send-verification`,{
         telephone: telephone,
       }, {
         headers: {
@@ -281,7 +282,7 @@ function CompleteBooking() {
       // Not auto booking, create its own confirmation code
       const bookingData = { entries: watchEntries, firstName, lastName, email, telephone, questions, bookingsite, requestType, confirmationCode, manualRouteRequest, largeGroupPassengers };
       console.log("bookingData", bookingData)
-      const response = await axios.post('${API_BASE_URL}/api/submit-booking', { bookingData });
+      const response = await axios.post(`${API_BASE_URL}/api/submit-booking`, { bookingData });
       console.log("here2")
       setLoading(false);
       if (response.status === 200) {
@@ -303,7 +304,7 @@ function CompleteBooking() {
           return;
       }
 
-      const verifyResponse = await axios.post('${API_BASE_URL}/api/verify-code', {
+      const verifyResponse = await axios.post(`${API_BASE_URL}/api/verify-code`, {
           telephone,
           code: confirmationCode,
       });
@@ -311,7 +312,7 @@ function CompleteBooking() {
       if (verifyResponse.status === 200 && verifyResponse.data.success) {
           // Proceed to submit the booking
           const bookingData = { entries: watchEntries, firstName, lastName, email, telephone, questions, bookingsite, requestType, confirmationCode, manualRouteRequest };
-          const response = await axios.post('${API_BASE_URL}/api/submit-booking', { bookingData });
+          const response = await axios.post(`${API_BASE_URL}/api/submit-booking`, { bookingData });
 
           setLoading(false);
           if (response.status === 200) {

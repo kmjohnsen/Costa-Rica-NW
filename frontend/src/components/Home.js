@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
 import RequiredFieldsModal from './RequiredFieldsModal';
 import { validateEntries } from './HelperFunctions';
-// import { use } from 'react';
+import API_BASE_URL from '../config';
 
 
 Modal.setAppElement('#root');
@@ -67,7 +67,7 @@ function BookingForm() {
 
   // Fetch pickup and dropoff locations
   useEffect(() => {
-    axios.get('${API_BASE_URL}/api/locations')
+    axios.get(`${API_BASE_URL}/api/locations`)
       .then(response => {
         const destinationsData = response.data
         console.log("pickup locations", response.data)
@@ -85,14 +85,6 @@ function BookingForm() {
         setDropoffLocations(orderedLocations);
       })
       .catch(error => console.error("Error fetching pickup locations: ", error));
-  
-    // axios.get('${API_BASE_URL}/api/pickup_locations')
-    //   .then(response => setPickupLocations(response.data))
-    //   .catch(error => console.error("Error fetching pickup locations: ", error));
-
-    // axios.get('${API_BASE_URL}/api/all_dropoff_locations')
-    //   .then(response => setDropoffLocations(response.data))
-    //   .catch(error => console.error("Error fetching dropoff locations: ", error));
   }, []);
 
   useEffect(() => {
@@ -101,7 +93,7 @@ function BookingForm() {
 
   // Fetch margin used for selecting dates
   useEffect(() => {
-    axios.get('${API_BASE_URL}/api/datemargin')
+    axios.get(`${API_BASE_URL}/api/datemargin`)
     .then(response => setDateMargin(response.data))
     .catch(error => console.error("Error getting date margin for autobooking: ", error));
   }, [])
@@ -131,7 +123,7 @@ function BookingForm() {
         // Calculate Route Number
         let currentRouteNumber = '';
         try {
-          const routeResponse = await axios.get(`http://127.0.0.1:5000/api/bookings/fetch_route_number`, {
+          const routeResponse = await axios.get(`${API_BASE_URL}/api/bookings/fetch_route_number`, {
             params: { pickup, dropoff },
           });
           currentRouteNumber = routeResponse.data;
@@ -158,7 +150,7 @@ function BookingForm() {
             const nextYear = new Date(today);
             nextYear.setFullYear(today.getFullYear() + 1);
   
-            const priceResponse = await axios.get(`http://127.0.0.1:5000/api/prices`, {
+            const priceResponse = await axios.get(`${API_BASE_URL}/api/prices`, {
               params: {
                 routenumber: currentRouteNumber,
                 passengers,

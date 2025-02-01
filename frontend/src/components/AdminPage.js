@@ -11,6 +11,7 @@ import PhoneInput from 'react-phone-input-2';
 import Navbar from './NavBar'; // Import the top navigation bar
 import Calendar from 'react-calendar'; // Calendar component for selecting dates
 import 'react-calendar/dist/Calendar.css'; // Import calendar styles
+import API_BASE_URL from '../config';
 
 function AdminPage() {
   const [view, setView] = useState('allBookings');
@@ -72,7 +73,7 @@ function AdminPage() {
       navigate('/login');
     } else {
       // Verify the token with your backend
-      axios.get('${API_BASE_URL}/api/auth/verify-token', {
+      axios.get(`${API_BASE_URL}/api/auth/verify-token`, {
         headers: {
           Authorization: `Bearer ${token}`, // Include the token in the headers
         },
@@ -91,11 +92,11 @@ function AdminPage() {
   
   // Fetch pickup and dropoff locations
   useEffect(() => {
-    axios.get('${API_BASE_URL}/api/pickup_locations')
+    axios.get(`${API_BASE_URL}/api/pickup_locations`)
       .then(response => setPickupLocations(response.data))
       .catch(error => console.error("Error fetching pickup locations: ", error));
 
-    axios.get('${API_BASE_URL}/api/all_dropoff_locations')
+    axios.get(`${API_BASE_URL}/api/all_dropoff_locations`)
       .then(response => setDropoffLocations(response.data))
       .catch(error => console.error("Error fetching dropoff locations: ", error));
   }, []);
@@ -104,7 +105,7 @@ function AdminPage() {
   useEffect(() => {
     // Replace with your actual data fetching logic
     if (pickup && dropoff && passengers && date) {
-      fetch(`http://127.0.0.1:5000/api/prices_by_date?pickup=${encodeURIComponent(pickup)}&dropoff=${encodeURIComponent(dropoff)}&passengers=${encodeURIComponent(passengers)}&date=${encodeURIComponent(date)}`) 
+      fetch(`${API_BASE_URL}/api/prices_by_date?pickup=${encodeURIComponent(pickup)}&dropoff=${encodeURIComponent(dropoff)}&passengers=${encodeURIComponent(passengers)}&date=${encodeURIComponent(date)}`) 
         .then((response) => response.json())
         .then((data) => setPrices(data))
         .catch((error) => console.error("Error fetching prices: ", error));
@@ -158,7 +159,7 @@ const handleApprove = async (groupedBookings) => {
     // Make an API call to update the booking in the database
     const approvalPromises = groupedBookings.map(async (booking) => {
       try {
-        const response = await axios.post(`http://127.0.0.1:5000/api/approve-booking`, {
+        const response = await axios.post(`${API_BASE_URL}/api/approve-booking`, {
           bookingID: booking.tempbookingID,
         });
 
@@ -187,7 +188,7 @@ const handleApprove = async (groupedBookings) => {
 
 const handleRemove = async (booking) => {
   try {
-    await axios.delete(`http://127.0.0.1:5000/api/bookings/remove-booking`, {
+    await axios.delete(`${API_BASE_URL}/api/bookings/remove-booking`, {
       data: { 
         bookingID: isPending ? booking.tempbookingID : booking.bookingID,
         type: isPending ? 'temp' : 'confirmed'
@@ -201,7 +202,7 @@ const handleRemove = async (booking) => {
   // Fetch all bookings
   const fetchBookings = async () => {
     try {
-      const response = await axios.get('${API_BASE_URL}/api/bookings');
+      const response = await axios.get(`${API_BASE_URL}/api/bookings`);
       setBookings(response.data);
       console.log('all bookings:', response.data);
       setIsPending(false);
@@ -214,7 +215,7 @@ const handleRemove = async (booking) => {
   // Fetch completed bookings
   const fetchCompletedBookings = async () => {
     try {
-      const response = await axios.get('${API_BASE_URL}/api/get_completed_bookings');
+      const response = await axios.get(`${API_BASE_URL}/api/get_completed_bookings`);
       setBookings(response.data);
       setIsCompleted(true);
       console.log('Completed bookings:', response.data);
@@ -227,7 +228,7 @@ const handleRemove = async (booking) => {
   // Function to add a new blackout date
   const addBlackoutDate = async (newDate) => {
     try {
-      const response = await axios.post('${API_BASE_URL}/api/postblackoutdates', {newDate});
+      const response = await axios.post(`${API_BASE_URL}/api/postblackoutdates`, {newDate});
       
       if (response.status === 200) {
         fetchBlackoutDates(); // Refresh the list after adding a new date
@@ -242,7 +243,7 @@ const handleRemove = async (booking) => {
   // Function to remove a new blackout date
   const removeBlackoutDate = async (dateToRemove) => {
     try {
-      const response = await axios.post('${API_BASE_URL}/api/removeblackoutdates', {newDate: dateToRemove});
+      const response = await axios.post(`${API_BASE_URL}/api/removeblackoutdates`, {newDate: dateToRemove});
       
       if (response.status === 200) {
         fetchBlackoutDates(); // Refresh the list after adding a new date
@@ -263,7 +264,7 @@ const handleRemove = async (booking) => {
   // Fetch bookings for a specific day
   const fetchDailyBookings = async (day) => {
     try {
-      const response = await axios.get('${API_BASE_URL}/api/bookings/day', { params: { date: day } });
+      const response = await axios.get(`${API_BASE_URL}/api/bookings/day`, { params: { date: day } });
       setBookings(response.data);
       setIsPending(false);
       setIsCompleted(false);
@@ -275,7 +276,7 @@ const handleRemove = async (booking) => {
   // Fetch monthly summary
   const fetchMonthlySummary = async () => {
     try {
-      const response = await axios.get('${API_BASE_URL}/api/bookings/monthly-summary');
+      const response = await axios.get(`${API_BASE_URL}/api/bookings/monthly-summary`);
       setSummary(response.data);
       setIsPending(false);
     } catch (error) {
@@ -286,7 +287,7 @@ const handleRemove = async (booking) => {
   // Fetch monthly summary for drivers
   const fetchDriverSummaries = async () => {
     try {
-      const response = await axios.get('${API_BASE_URL}/api/drivers/monthly-summary');
+      const response = await axios.get(`${API_BASE_URL}/api/drivers/monthly-summary`);
       setDriverSummaries(response.data);
       setIsPending(false);
     } catch (error) {
@@ -297,7 +298,7 @@ const handleRemove = async (booking) => {
   // Fetch pending bookings
   const fetchPendingBookings = async () => {
     try {
-      const response = await axios.get('${API_BASE_URL}/api/pendingbookings');
+      const response = await axios.get(`${API_BASE_URL}/api/pendingbookings`);
       setBookings(response.data);
       console.log('pending bookings:', response.data);
       setIsPending(true);
@@ -310,7 +311,7 @@ const handleRemove = async (booking) => {
   // Fetch blackout dates
   const fetchBlackoutDates = async () => {
     try {
-      const response = await axios.get('${API_BASE_URL}/api/getblackoutdates');     
+      const response = await axios.get(`${API_BASE_URL}/api/getblackoutdates`);     
       setBlackoutDates(response.data); // Update state with the formatted dates
       console.log('blackout dates:', response.data);
     } catch (error) {
@@ -321,7 +322,7 @@ const handleRemove = async (booking) => {
    // Fetch pricing rules dates
    const fetchPricingRules = async () => {
     try {
-      const response = await axios.get('${API_BASE_URL}/api/getpricingrules');     
+      const response = await axios.get(`${API_BASE_URL}/api/getpricingrules`);     
       setPricingRules(response.data); // Update state with the formatted dates
       console.log('pricing rules:', response.data);
     } catch (error) {
@@ -332,7 +333,7 @@ const handleRemove = async (booking) => {
    // Function to add a new blackout date
    const addPricingRule = async () => {
     try {
-      const response = await axios.post('${API_BASE_URL}/api/postpricingrule', {newPricingRule});
+      const response = await axios.post(`${API_BASE_URL}/api/postpricingrule`, {newPricingRule});
       
       if (response.status === 200) {
         fetchPricingRules(); // Refresh the list after adding a new date
@@ -348,7 +349,7 @@ const handleRemove = async (booking) => {
   // Function to remove a new blackout date
   const removePricingRule = async (ruleID) => {
     try {
-      const response = await axios.post('${API_BASE_URL}/api/removepricingrule', {ruleID});
+      const response = await axios.post(`${API_BASE_URL}/api/removepricingrule`, {ruleID});
       
       if (response.status === 200) {
         fetchPricingRules(); // Refresh the list after adding a new date
@@ -437,7 +438,7 @@ const handleRemove = async (booking) => {
 
         try {
           // Send data to backend to insert into SQL database
-          await axios.post('${API_BASE_URL}/api/submit-booking', {bookingData });
+          await axios.post(`${API_BASE_URL}/api/submit-booking`, {bookingData });
         } catch {
           setMessage('Booking failed, please try again.');
           console.error(message)
