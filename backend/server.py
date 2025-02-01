@@ -44,9 +44,6 @@ def serve(path):
         # Serve the React app's index.html for all other routes
         return send_from_directory(app.static_folder, 'index.html')
 
-if __name__ == '__main__':
-    app.run(debug=True)
-
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory('../frontend/resources', 'favicon.ico', mimetype='image/x-icon')

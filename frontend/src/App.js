@@ -15,7 +15,6 @@ import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios'
 import API_BASE_URL from './config';
 
-
 function App() {
   const navigate = useNavigate(); // Initialize the navigate function
 
