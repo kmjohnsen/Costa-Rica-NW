@@ -9,8 +9,8 @@ import random
 import string
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-# from flask_limiter.storage import MySQLStorage
-# from flask_sqlalchemy import SQLAlchemy
+import os
+from dotenv import load_dotenv
 
 
 app = Flask(__name__)
@@ -21,13 +21,16 @@ limiter = Limiter(
     storage_uri="memory://",
 ) 
 
-# Database configuration
+# Load environment variables from .env file
+load_dotenv()
+
+# Database configuration using os.getenv()
 db_config = {
-    'user': 'root',
-    'password': '76438521',
-    'host': 'localhost',
-    'database': 'booking_database',
-    'port': 3306
+    'user': os.getenv("DB_USER"),
+    'password': os.getenv("DB_PASSWORD"),
+    'host': os.getenv("DB_HOST"),
+    'database': os.getenv("DB_NAME"),
+    'port': int(os.getenv("DB_PORT"))  # Convert port to integer
 }
 
 # Test route with a custom rate limit
@@ -35,10 +38,6 @@ db_config = {
 @limiter.limit("5/minute")  # Custom rate limit
 def test_route():
     return jsonify({"message": "This route is rate-limited to 5 requests per minute!"})
-
-
-# Define the path to your MySQL database file
-DATABASE = 'C:\\ProgramData\\MySQL\\MySQL Server 8.0\\Data\\booking_database'
 
 # Define a blueprint for locations
 bookings_bp = Blueprint('bookings', __name__)

@@ -5,6 +5,7 @@ from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 import os
 from api import locations_bp, prices_bp, authorize_bp, bookings_bp, users_bp, verification_bp
+from dotenv import load_dotenv
 
 # Initialize the Flask app
 app = Flask(__name__, static_folder='../frontend/build', static_url_path='/')
@@ -16,7 +17,7 @@ jwt = JWTManager(app)
 # ✅ Allow CORS for both localhost (dev) and EC2 (prod)
 ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Local React frontend
-    "http://3.15.17.253",      # Replace with your EC2 public IP
+    "http://3.94.61.214",      # Replace with your EC2 public IP
     "https://costaricanorthwest.com"   # Replace with your actual domain if using one
 ]
 
@@ -49,7 +50,11 @@ def favicon():
     return send_from_directory('../frontend/resources', 'favicon.ico', mimetype='image/x-icon')
 
 # Set debug mode based on environment
-debug_mode = os.getenv("FLASK_ENV", "development") != "production"
+load_dotenv()
+# ✅ Set debug mode based on environment
+RUNNING_LOCAL = os.getenv("RUNNING_LOCAL", "True").lower() == "true"
+
+debug_mode = True if RUNNING_LOCAL else False
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=debug_mode)

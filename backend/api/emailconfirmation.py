@@ -49,22 +49,31 @@ def send_email(receiver_email, subject, body, confirmationcode):
 
     msg_alternative.attach(MIMEText(html, 'html'))
 
-    # Attach the first image
-    try:
-       with open("C:/Users/kmjoh/Documents/VSCode/reacttest/backend/resources/images/LIRShuttleLogoImage.png", 'rb') as img_file1:
-          img1 = MIMEImage(img_file1.read())
-          img1.add_header('Content-ID', '<image1>')  # This matches the 'cid:image1' in the HTML
-          msg.attach(img1)
-    except FileNotFoundError:
-        print("File not found. Check the file path:", os.getcwd())
-    except Exception as e:
-        print(f"An error occurred: {e}")
+    # ✅ Use Relative Paths for Images
+    image_path1 = os.path.join(os.getcwd(), "resources", "images", "LIRShuttleLogoImage.png")
+    image_path2 = os.path.join(os.getcwd(), "resources", "images", "LIRShuttleLogoImage.png")
 
-    # Attach the second image
-    with open("C:/Users/kmjoh/Documents/VSCode/reacttest/backend/resources/images/LIRShuttleLogoImage.png", 'rb') as img_file2:
-        img2 = MIMEImage(img_file2.read())
-        img2.add_header('Content-ID', '<image2>')  # This matches the 'cid:image2' in the HTML
-        msg.attach(img2)
+    # Attach Image 1
+    try:
+        with open(image_path1, 'rb') as img_file1:
+            img1 = MIMEImage(img_file1.read())
+            img1.add_header('Content-ID', '<image1>')  # Matches 'cid:image1' in HTML
+            msg.attach(img1)
+    except FileNotFoundError:
+        print(f"Error: Image not found at {image_path1}")
+    except Exception as e:
+        print(f"An error occurred while attaching image1: {e}")
+
+    # Attach Image 2
+    try:
+        with open(image_path2, 'rb') as img_file2:
+            img2 = MIMEImage(img_file2.read())
+            img2.add_header('Content-ID', '<image2>')  # Matches 'cid:image2' in HTML
+            msg.attach(img2)
+    except FileNotFoundError:
+        print(f"Error: Image not found at {image_path2}")
+    except Exception as e:
+        print(f"An error occurred while attaching image2: {e}")
 
     try:
         # Set up the SMTP server

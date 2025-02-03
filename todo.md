@@ -1,6 +1,7 @@
 # TO DO LIST
 
 ## Important
+- [ ] add EMAIL_USER, EMAIL_PASSWORD, SMTP_SERVER and SMTP_PRT to .env and have those be different for local and production.
 - [ ] Add back generate email for booking for approve
 - [ ] modify generate email to search the database only for username and confirmation code
 - [ ] for Complete Booking, Submit Booking, etc. cycle generate email on the multiple trips in the databases with same username and confirmation code

@@ -35,7 +35,6 @@ git pull origin main
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-pip install mysql-connector-python
 
 #Create production build of React app:
 cd frontend
@@ -43,10 +42,34 @@ npm run build
 sudo rm -rf /var/www/html/frontend/build
 sudo cp -r build /var/www/html/frontend
 
+#Start gunicorn:
+gunicorn --bind 127.0.0.1:5000 server:app
+nohup gunicorn --bind 0.0.0.0:5000 server:app > gunicorn.log 2>&1 &
+#Start serve
+serve -s build -l 3000
 
-#Move to Nginx
+#Connect to RDS MySQL:
+mysql -h costa-rica-northwest-sqldb.c5oimye6svgo.us-east-1.rds.amazonaws.com -u admin -p
+
+
+
+#NOT BELOW YET
+#Nginx
+#make sure nginx can read build
+sudo chown -R nginx:nginx /home/ec2-user/Costa-Rica-NW/frontend/build
+sudo find /home/ec2-user/Costa-Rica-NW/frontend/build -type d -exec chmod 755 {} \;
+sudo find /home/ec2-user/Costa-Rica-NW/frontend/build -type f -exec chmod 644 {} \;
+
+
+sudo chmod -R 755 /home/ec2-user/Costa-Rica-NW/frontend/build
+sudo nginx -t
+sudo systemctl restart nginx
 #check that it is active
 systemctl status nginx
+
+#Nginx conf file: /etc/nginx/conf.d/costaricanorthwest.conf
+
+
 sudo rm -rf /usr/share/nginx/html/*
 sudo cp -r build /usr/share/nginx/html/
 

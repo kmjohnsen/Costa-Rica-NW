@@ -1,21 +1,22 @@
 from flask import Flask, Blueprint, jsonify, request
 import mysql.connector
+import os
+from dotenv import load_dotenv
 
 app = Flask(__name__)
-
-# Define the path to your SQLite database file
-DATABASE = 'C:\ProgramData\MySQL\MySQL Server 8.0\Data\booking_database'
 
 # Define a blueprint for locations
 locations_bp = Blueprint('locations', __name__)
 
-# Database connection configuration
+load_dotenv()
+
+# Database configuration using os.getenv()
 db_config = {
-    'user': 'root',
-    'password': '76438521',
-    'host': 'localhost',
-    'database': 'booking_database',
-    'port': 3306
+    'user': os.getenv("DB_USER"),
+    'password': os.getenv("DB_PASSWORD"),
+    'host': os.getenv("DB_HOST"),
+    'database': os.getenv("DB_NAME"),
+    'port': int(os.getenv("DB_PORT"))  # Convert port to integer
 }
 
 # Route to get the list of pickup locations

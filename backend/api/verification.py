@@ -4,23 +4,25 @@ import phonenumbers
 import random
 import mysql.connector
 import os
+from dotenv import load_dotenv
+
 
 app = Flask(__name__)
 
 # Define a blueprint for locations
 verification_bp = Blueprint('verification', __name__)
 
-# Define the path to your SQLite database file
-DATABASE = 'C:\\ProgramData\\MySQL\\MySQL Server 8.0\\Data\\booking_database'
+load_dotenv()
 
-# Database configuration
+# Database configuration using os.getenv()
 db_config = {
-    'user': 'root',
-    'password': '76438521',
-    'host': 'localhost',
-    'database': 'booking_database',
-    'port': 3306
+    'user': os.getenv("DB_USER"),
+    'password': os.getenv("DB_PASSWORD"),
+    'host': os.getenv("DB_HOST"),
+    'database': os.getenv("DB_NAME"),
+    'port': int(os.getenv("DB_PORT"))  # Convert port to integer
 }
+
 # List of approved country codes
 approved_country_codes = ['+1', '+44', '+31', '+33', '+34', '+45', '+46', '+47', '+61', '+64', '+49', '+41', '+43', '+27', '+351', '+353', '+354']  
 # Example codes for USA/Canada, UK, Netherlands, France, Spain, Denmark, Sweden, Norway, Australia, New Zealand Germany, Switzerland, Austria, South Africa, Portugal, Ireland, Iceland
