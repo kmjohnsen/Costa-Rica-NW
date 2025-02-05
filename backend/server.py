@@ -23,8 +23,9 @@ jwt = JWTManager(app)
 # ✅ Allow CORS for both localhost (dev) and EC2 (prod)
 ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Local React frontend
-    "http://3.94.61.214",      # Replace with your EC2 public IP
-    "https://costaricanorthwest.com"   # Replace with your actual domain if using one
+    "http://3.94.61.214",      # EC2 public IP
+    "http://3.94.61.214:3000",      # EC2 public IP
+    "https://costaricanorthwest.com"   # Domain
 ]
 CORS(app, origins=ALLOWED_ORIGINS, supports_credentials=True)
 

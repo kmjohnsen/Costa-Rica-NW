@@ -56,6 +56,8 @@ mysql -h costa-rica-northwest-sqldb.c5oimye6svgo.us-east-1.rds.amazonaws.com -u 
 
 #check if gunicorn is running:
 ps aux | grep gunicorn
+#kill gunicorn
+pkill gunicorn
 
 
 #NOT BELOW YET
