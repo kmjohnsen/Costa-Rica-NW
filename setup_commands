@@ -47,10 +47,15 @@ gunicorn --bind 127.0.0.1:5000 server:app
 nohup gunicorn --bind 0.0.0.0:5000 server:app > gunicorn.log 2>&1 &
 #Start serve
 serve -s build -l 3000
+OR 
+http-server build -p 3000 --cors --host 0.0.0.0
+http://3.94.61.214:3000/
 
 #Connect to RDS MySQL:
 mysql -h costa-rica-northwest-sqldb.c5oimye6svgo.us-east-1.rds.amazonaws.com -u admin -p
 
+#check if gunicorn is running:
+ps aux | grep gunicorn
 
 
 #NOT BELOW YET

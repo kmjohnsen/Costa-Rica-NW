@@ -7,9 +7,15 @@ import os
 from api import locations_bp, prices_bp, authorize_bp, bookings_bp, users_bp, verification_bp
 from dotenv import load_dotenv
 
+load_dotenv()
+
+# Set debug mode based on environment
+RUNNING_LOCAL = os.getenv("RUNNING_LOCAL", "True").lower() == "true"
+
 # Initialize the Flask app
 app = Flask(__name__, static_folder='../frontend/build', static_url_path='/')
-app.config['JWT_SECRET_KEY'] = '76438521'  # Change this key for production
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'default-secret-key')  # Change this key for production
+app.config["DEBUG"] = RUNNING_LOCAL
 
 # Initialize extensions
 bcrypt = Bcrypt(app)
@@ -20,8 +26,9 @@ ALLOWED_ORIGINS = [
     "http://3.94.61.214",      # Replace with your EC2 public IP
     "https://costaricanorthwest.com"   # Replace with your actual domain if using one
 ]
+CORS(app, origins=ALLOWED_ORIGINS, supports_credentials=True)
 
-CORS(app, resources={r"/api/*": {"origins": ALLOWED_ORIGINS}})
+# CORS(app, resources={r"/api/*": {"origins": ALLOWED_ORIGINS}})
 # CORS(app)
 
 # Register blueprints directly
@@ -49,12 +56,7 @@ def serve(path):
 def favicon():
     return send_from_directory('../frontend/resources', 'favicon.ico', mimetype='image/x-icon')
 
-# Set debug mode based on environment
-load_dotenv()
-# ✅ Set debug mode based on environment
-RUNNING_LOCAL = os.getenv("RUNNING_LOCAL", "True").lower() == "true"
-
 debug_mode = True if RUNNING_LOCAL else False
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=debug_mode)
+    app.run(host="0.0.0.0", port=5000, debug=RUNNING_LOCAL)
