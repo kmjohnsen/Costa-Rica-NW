@@ -136,7 +136,7 @@ body {
   padding: 0px;
   justify-content: center;
   width: 100%;
-  overflow-y: auto;
+  overflow-y: visible !important;
   font-family: "Helvetica Neue", Arial, sans-serif;
   margin: 0 auto; /* Center the hero-section within the page */
 }
@@ -314,6 +314,55 @@ input[type="email"]::-webkit-calendar-picker-indicator,
 input[type="number"]::-webkit-calendar-picker-indicator, 
 input[type="search"]::-webkit-calendar-picker-indicator {
     display: none !important;
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left:0;
+  background: var(--light-background);
+  border: 1px solid var(--light-background);
+  max-height: 300px;
+  overflow-y: auto;
+  list-style-type: none; /* Removes bullets */
+  width: 100%;
+  z-index: 9999;
+  padding: 8px 0;
+  margin: 0;
+  border-radius: 4px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease-in-out;
+}
+.dropdown li {
+  padding: 12px 16px;
+  cursor: pointer;
+  font-size: 1.0rem;
+  color: black;
+  background-color: var(--light-background);
+  transition: background 0.2s ease-in-out;
+}
+/* Rounded edges for last item */
+.dropdown li:last-child {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+/* ✅ Modern hover effect */
+.dropdown li:hover {
+  background: #f0f0f0;
+  transform: scale(1.02); /* Slight scaling for a subtle effect */
+}
+
+/* ✅ Mobile-friendly touch effect */
+@media (max-width: 768px) {
+  .dropdown {
+    max-height: 200px; /* Smaller height on mobile */
+  }
+
+  .dropdown li {
+    font-size: 1rem;
+    padding: 10px 14px;
+  }
 }
 
 .book-button {

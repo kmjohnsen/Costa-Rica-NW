@@ -56,6 +56,11 @@ function BookingForm() {
   const [isRouteInDB, setIsRouteInDB] = useState(false)
   const [isRoundTrip, setIsRoundTrip] = useState(false)
   const [isValues, setIsValues] = useState(false)
+  const [filteredPickupLocations, setFilteredPickupLocations] = useState([]);
+  const [filteredDropoffLocations, setFilteredDropoffLocations] = useState([]);
+  const [showPickupDropdown, setShowPickupDropdown] = useState(false);
+  const [showDropoffDropdown, setShowDropoffDropdown] = useState(false);
+
 
 
   const scrollToTop = () => {
@@ -455,59 +460,105 @@ function BookingForm() {
                   {index === 1 && isRoundTrip ? ( // If this is the second trip and roundtrip is selected
                     null
                   ) : (
-                    <div className="input-container-hero">
-                      <input 
+                    // <div className="input-container-hero">
+                    //   <input 
+                    //     type="text"
+                    //     value={watchEntries[index]?.pickup || ''} // Use 'value' instead of 'defaultValue'
+                    //     onFocus={() => {
+                    //       setValue(`entries.${index}.pickup`, ''); // Clear the input value
+                    //       setValue(`entries.${index}.routenumber`, '')
+                    //     }}
+                    //     onChange={(e) => {
+                    //       const value = e.target.value;
+                    //       setValue(`entries.${index}.pickup`, value); // Update the form value
+                        
+                    //       // Check if the value matches a valid location and trigger fetch
+                    //       if (pickupLocations.includes(value)) {
+                    //         fetchRouteAndPrices(); // Explicitly fetch prices after valid selection
+                    //       }
+                    //     }}
+                    //     onBlur={(e) => {
+                    //       const value = e.target.value;
+                      
+                    //       if (pickupLocations.includes(value)) {
+                    //         fetchRouteAndPrices();
+                    //       }
+                    //     }}
+                    //     {...register(`entries.${index}.pickup`)}
+                    //     style={{
+                    //       width: '220px',
+                    //       fontSize: (watchEntries[index]?.pickup || '').length < 12 ? '2.5rem' : '1.3rem',
+                    //       whiteSpace: 'normal',
+                    //       overflowWrap: 'break-word',
+                    //       wordWrap: 'break-word',
+                    //       height: '70px',
+                    //       display: 'inline-block',
+                    //     }}                      
+                    //     list={`pickup-options-${index}`}
+                    //     placeholder="From"
+                    //   />
+                    //   <div className='label-with-upper-line'>
+                    //     <label>Your Origin</label>
+                    //   </div>
+
+                    //   <datalist id={`pickup-options-${index}`}>
+                    //   {pickupLocations
+                    //     .filter(option => 
+                    //       option.toLowerCase().includes(
+                    //         (watchEntries[index]?.pickup || '').toLowerCase() // Ensure we handle undefined
+                    //       )
+                    //     )
+                    //     .map((option, idx) => (
+                    //       <option key={idx} value={option} />
+                    //     ))
+                    //   }
+                    //   </datalist>
+                    // </div>
+                    <div className="input-container-hero"  style={{ position: "relative", width: "220px" }}>
+                      <input
                         type="text"
-                        value={watchEntries[index]?.pickup || ''} // Use 'value' instead of 'defaultValue'
-                        onFocus={() => {
-                          setValue(`entries.${index}.pickup`, ''); // Clear the input value
-                          setValue(`entries.${index}.routenumber`, '')
+                        value={watchEntries[index]?.pickup || ""}
+                        onClick={() => {
+                          setFilteredPickupLocations(pickupLocations);
+                          setShowPickupDropdown(true);
                         }}
                         onChange={(e) => {
                           const value = e.target.value;
-                          setValue(`entries.${index}.pickup`, value); // Update the form value
-                        
-                          // Check if the value matches a valid location and trigger fetch
-                          if (pickupLocations.includes(value)) {
-                            fetchRouteAndPrices(); // Explicitly fetch prices after valid selection
-                          }
+                          setValue(`entries.${index}.pickup`, value);
+                          setFilteredPickupLocations(
+                            pickupLocations.filter((option) =>
+                              option.toLowerCase().includes(value.toLowerCase())
+                            )
+                          );
                         }}
-                        onBlur={(e) => {
-                          const value = e.target.value;
-                      
-                          if (pickupLocations.includes(value)) {
-                            fetchRouteAndPrices();
-                          }
+                        onFocus={() => {
+                          setShowPickupDropdown(true);
+                          setValue(`entries.${index}.routenumber`, '');
                         }}
-                        {...register(`entries.${index}.pickup`)}
+                        onBlur={() => setTimeout(() => setShowPickupDropdown(false), 200)} // Delay to allow selection
                         style={{
                           width: '220px',
                           fontSize: (watchEntries[index]?.pickup || '').length < 12 ? '2.5rem' : '1.3rem',
-                          whiteSpace: 'normal',
-                          overflowWrap: 'break-word',
-                          wordWrap: 'break-word',
                           height: '70px',
-                          display: 'inline-block',
-                        }}                      
-                        list={`pickup-options-${index}`}
+                        }}
                         placeholder="From"
                       />
-                      <div className='label-with-upper-line'>
-                        <label>Your Origin</label>
-                      </div>
-
-                      <datalist id={`pickup-options-${index}`}>
-                      {pickupLocations
-                        .filter(option => 
-                          option.toLowerCase().includes(
-                            (watchEntries[index]?.pickup || '').toLowerCase() // Ensure we handle undefined
-                          )
-                        )
-                        .map((option, idx) => (
-                          <option key={idx} value={option} />
-                        ))
-                      }
-                      </datalist>
+                      {showPickupDropdown && (
+                        <ul className="dropdown">
+                          {filteredPickupLocations.map((option, idx) => (
+                            <li
+                              key={idx}
+                              onClick={() => {
+                                setValue(`entries.${index}.pickup`, option);
+                                setShowPickupDropdown(false);
+                                fetchRouteAndPrices();
+                              }}
+                            >
+                              {option}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </div>
                   )}
                     
@@ -522,69 +573,105 @@ function BookingForm() {
                   {index === 1 && isRoundTrip ? ( // If this is the second trip and roundtrip is selected
                     null
                   ) : (
-                    <div className="input-container-hero" >
+                    // <div className="input-container-hero" >
+                    //   <input
+                    //     type="text"
+                    //     value={watchEntries[index]?.dropoff || ''} // Use 'value' instead of 'defaultValue'
+                    //     onFocus={() => {
+                    //       setValue(`entries.${index}.dropoff`, ''); // Clear the input value
+                    //       setValue(`entries.${index}.routenumber`, '')
+                    //     }}
+                    //     onChange={(e) => {
+                    //       console.log("Input changed"); // Debugging output
+                    //       const value = e.target.value;
+                    //       setValue(`entries.${index}.dropoff`, value); // Update the form value
+
+                    //       // Check if the value matches a valid location and trigger fetch
+                    //       if (dropoffLocations.includes(value)) {
+                    //         fetchRouteAndPrices(); // Explicitly fetch prices after valid selection
+                    //       }
+                    //     }}
+                    //     onBlur={(e) => {
+                    //       const value = e.target.value;
+                      
+                    //       if (dropoffLocations.includes(value)) {
+                    //         fetchRouteAndPrices();
+                    //       }
+                    //     }}
+                    //     {...register(`entries.${index}.dropoff`)}
+                    //     style={{
+                    //       width: '220px',
+                    //       fontSize: (watchEntries[index]?.dropoff || '').length < 12 ? '2.5rem' : '1.3rem',
+                    //       whiteSpace: 'normal',
+                    //       overflowWrap: 'break-word',
+                    //       wordWrap: 'break-word',
+                    //       height: '70px',
+                    //       display: 'inline-block',
+                    //     }}
+                    //     list={`dropoff-options-${index}`}
+                    //     placeholder="To"
+                    //   />
+                    //   <datalist id={`dropoff-options-${index}`}>
+                    //   {dropoffLocations
+                    //     .filter(option => 
+                    //       option.toLowerCase().includes(
+                    //         (watchEntries[index]?.dropoff || '').toLowerCase() // Ensure we handle undefined
+                    //       )
+                    //     )
+                    //     .map((option, idx) => (
+                    //       <option key={idx} value={option} />
+                    //     ))
+                    //   }
+                    //   </datalist>
+
+                    //   <label>Your Destination</label>
+                    // </div>
+                    <div className="input-container-hero"  style={{ position: "relative", width: "220px" }}>
                       <input
                         type="text"
-                        value={watchEntries[index]?.dropoff || ''} // Use 'value' instead of 'defaultValue'
-                        onFocus={() => {
-                          setValue(`entries.${index}.dropoff`, ''); // Clear the input value
-                          setValue(`entries.${index}.routenumber`, '')
+                        value={watchEntries[index]?.dropoff || ""}
+                        onClick={() => {
+                          setFilteredDropoffLocations(dropoffLocations);
+                          setShowDropoffDropdown(true);
                         }}
                         onChange={(e) => {
-                          console.log("Input changed"); // Debugging output
                           const value = e.target.value;
-                          setValue(`entries.${index}.dropoff`, value); // Update the form value
-
-                          // Check if the value matches a valid location and trigger fetch
-                          if (dropoffLocations.includes(value)) {
-                            fetchRouteAndPrices(); // Explicitly fetch prices after valid selection
-                          }
-                          // console.log("Value:", value); // See if the value is being read
-                          // console.log("Exact destination", destinations)
-                          // if (destinations[value]) {
-                          //   setValue(`entries.${index}.dropoff`, destinations[value].long);
-                          //   document.getElementById(`label-${index}`).textContent = destinations[value].long;
-                          //   e.target.placeholder = destinations[value].short;
-                          //   console.log("Destination found:", destinations[value]);
-                            
-                          // } else {
-                          //   console.error(`Destination "${value}" not found in destinations`);
-                          // }
+                          setValue(`entries.${index}.dropoff`, value);
+                          setFilteredDropoffLocations(
+                            dropoffLocations.filter((option) =>
+                              option.toLowerCase().includes(value.toLowerCase())
+                            )
+                          );
                         }}
-                        onBlur={(e) => {
-                          const value = e.target.value;
-                      
-                          if (dropoffLocations.includes(value)) {
-                            fetchRouteAndPrices();
-                          }
+                        onFocus={() => {
+                          setShowDropoffDropdown(true);
+                          setValue(`entries.${index}.routenumber`, '');
                         }}
-                        {...register(`entries.${index}.dropoff`)}
+                        onBlur={() => setTimeout(() => setShowDropoffDropdown(false), 200)}
                         style={{
-                          width: '220px',
+                          width: "220px",
                           fontSize: (watchEntries[index]?.dropoff || '').length < 12 ? '2.5rem' : '1.3rem',
-                          whiteSpace: 'normal',
-                          overflowWrap: 'break-word',
-                          wordWrap: 'break-word',
-                          height: '70px',
-                          display: 'inline-block',
+                          height: "70px",
                         }}
-                        list={`dropoff-options-${index}`}
                         placeholder="To"
                       />
-                      <datalist id={`dropoff-options-${index}`}>
-                      {dropoffLocations
-                        .filter(option => 
-                          option.toLowerCase().includes(
-                            (watchEntries[index]?.dropoff || '').toLowerCase() // Ensure we handle undefined
-                          )
-                        )
-                        .map((option, idx) => (
-                          <option key={idx} value={option} />
-                        ))
-                      }
-                      </datalist>
 
-                      <label>Your Destination</label>
+                      {showDropoffDropdown && filteredDropoffLocations.length > 0 && (
+                        <ul className="dropdown">
+                          {filteredDropoffLocations.map((option, idx) => (
+                            <li
+                              key={idx}
+                              onClick={() => {
+                                setValue(`entries.${index}.dropoff`, option);
+                                setShowDropoffDropdown(false);
+                                fetchRouteAndPrices();
+                              }}
+                            >
+                              {option}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </div>
                   )}
 
