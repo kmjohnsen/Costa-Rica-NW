@@ -6,7 +6,6 @@
 - [ ] modify generate email to search the database only for username and confirmation code
 - [ ] for Complete Booking, Submit Booking, etc. cycle generate email on the multiple trips in the databases with same username and confirmation code
 - [ ] Group Approve by all trips by that confirmation number
-- [ ] Research hosting AWS, Dreamhost (speed and google searchability)
 - [ ] Test that all inputs on complete booking (like pickup detailed) go to sql database
 - [ ] CompleteBooking - add for invalid phone
 - [ ] Test booking with time zones
@@ -16,7 +15,6 @@
 - [ ] Test to make sure price is being input to sql from the correct request (prices.py, modified - pushed input)
 - [ ] Make Twilio production version
 - [ ] Fix Pricing rules
-
 
 ## Auth stuff
 - [ ] Add check token for API requests
@@ -59,7 +57,8 @@
 - [ ] change JWT SECRET KEY for production (in server.py)
 
 ### Completed ✓
-- [ ] Make a "completed bookings" table
+- [✓] Research hosting AWS, Dreamhost (speed and google searchability)
+- [✓] Make a "completed bookings" table
 - [✓] Roundtrip fix, to make work
 - [✓] bookings.py requires on SQL parameterized query:
       query = "SELECT * FROM routes WHERE pickup = %s"

@@ -1026,6 +1026,7 @@ const handleRemove = async (booking) => {
         {view === 'pricingrules' && (
           <div>
             <h1>Pricing Rules</h1>
+            <h4><i>Note: You cannot have more than one percent increase for a given day, or more than one additive increase. Only the first will show up. You CAN have a percent and additive increase on the same day. </i></h4>
             
             <button onClick={openPricingRuleModal}>Add Pricing Rule</button>
 

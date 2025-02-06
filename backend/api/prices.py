@@ -1,5 +1,6 @@
 from flask import Flask, Blueprint, jsonify, request
-from datetime import datetime, timedelta
+from datetime import datetime, date, timedelta
+from decimal import Decimal
 import mysql.connector
 import os
 from dotenv import load_dotenv
@@ -223,12 +224,16 @@ def get_pricing_rules():
     columns = ["ruleID", "datestart", "dateend", "percentinc", "addinc", "override"]
     rules_dicts = [
         {
-            columns[i]: row[i].isoformat() if isinstance(row[i], datetime.date) else row[i]
+            columns[i]: (
+                row[i].isoformat() if isinstance(row[i], date) else  # Convert `datetime.date` to string
+                float(row[i]) if isinstance(row[i], Decimal) else   # Convert `Decimal` to float
+                row[i]
+            )
             for i in range(len(columns))
         }
         for row in rules
     ]
-
+    
     cursor.close()
     conn.close()
 
