@@ -15,6 +15,12 @@ import API_BASE_URL from '../config';
 function CompleteBooking() {
   const location = useLocation();
   const navigate = useNavigate();
+  
+  // Scroll to top when the component loads
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+    
   const {
     requestType: initialRequestType,
     entries: initialEntries,

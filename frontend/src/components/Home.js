@@ -15,6 +15,11 @@ import API_BASE_URL from '../config';
 Modal.setAppElement('#root');
 
 function BookingForm() {
+  // Scroll to top when the component loads
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
   const { register, control, setValue, getValues, formState: { errors} } = useForm({
     defaultValues: {
       entries: [{
