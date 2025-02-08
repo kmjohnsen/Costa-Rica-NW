@@ -757,7 +757,7 @@ function BookingForm() {
                         // textDecoration: 'underline',
                         textAlign: 'right'}}
                     >
-                      Outgoing Trip:
+                      Trip 1:
                     </p>
                   ) : index === 1 ? (
                     <p 
@@ -767,7 +767,7 @@ function BookingForm() {
                         // textDecoration: 'underline',
                         textAlign: 'right'}}
                     >
-                      Return Trip:
+                      Trip 2:
                     </p>                  
                   ) : null
                 )}
@@ -801,20 +801,25 @@ function BookingForm() {
                   
                 </div>
 
-                <div className='input-container' style={{ width: '130px' }}>
+                <div className="input-container" style={{ width: '130px' }}>
                   <div>
                     <input
                       type="time"
                       name="pickup_time"
                       {...register(`entries.${index}.time`, { required: true })}
-                      defaultValue={watchEntries[index]?.time || ''} // Default to the existing value or an empty string
-                      step="300" //for 5 minute increments
+                      value={watchEntries[index]?.time || ""}
+                      onChange={(e) => setValue(`entries.${index}.time`, e.target.value)}
+                      step="300" // 5-minute increments
+                      min="00:00"  // ✅ Ensures a valid time range
+                      max="23:55"  // ✅ Prevents invalid times
                       required
-                      style={{ fontSize: '1.5rem' }} 
+                      className={watchEntries[index]?.time ? "time-selected" : "time-default"} // ✅ Add conditional class
                     />
                   </div>
                   <label>Pickup Time</label>
-                </div>                    
+                </div>
+
+              
               
               <div className='input-container' style={{ paddingLeft: '30px'}}>
                 <div>

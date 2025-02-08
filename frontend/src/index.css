@@ -547,6 +547,49 @@ tr {
   max-width: 35%;
 }
 
+input[type="time"] {
+  font-size: 1.5rem;
+  text-align: center;
+  width: 100%;
+  padding: 10px;
+  background-color: var(--dark-background);
+  color: var(--text-color);
+  border: none;
+  outline: none;
+}
+
+/* Default grey color for unselected time */
+input[type="time"].time-default {
+  color: #999 !important; /* Grey when default */
+  opacity: 1; /* Ensures visibility */
+}
+
+/* White color when a time is selected */
+input[type="time"].time-selected {
+  color: white !important; /* White when selected */
+}
+
+/* Mobile Optimization */
+@media (max-width: 600px) {
+  input[type="time"] {
+    font-size: 1.2rem;
+    min-width: 120px;
+  }
+}
+
+/* Change clock icon color inside time input */
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1); /* Inverts the black clock icon to white */
+  opacity: 1; /* Ensures it's visible */
+  cursor: pointer; /* Makes it clickable */
+}
+
+/* Safari fix for iOS */
+input[type="time"]::-webkit-datetime-edit {
+  color: white; /* Ensures text inside the input is white */
+}
+
+
 .bottom-section {
   background-color: #f3f3f3;
   color: var(--dark-background);

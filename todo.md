@@ -1,6 +1,22 @@
 # TO DO LIST
 
 ## Important
+- [ ] When clicking From or To, have the word disappear with cursor, and dropdown
+- [ ] Restrict to to/from the airport only
+- [ ] Add a form to fill out if want something different "More than airport transportation, use this form"
+- [ ] Flight Arrival Time/Flight Departure Time with note Landing: "Our driver ... " See whatsapp message
+- [ ] Add trip doing weird thing with dropdown
+- [ ] Select To, From, Date, then passengers, then show price
+- [ ] Move time to CompleteBooking.js
+- [ ] Calendar doesnt have price
+- [ ] Change NEXT To BOOK NOW
+- [ ] From / To in clear boxes
+- [ ] Remove roundtrip, my location is not listed
+- [ ] reference https://www.amstardmc.com/en/
+- [ ] Logo - use costaricanorthwest svg van image
+- [ ] Boeing blue instead of dark blue
+- [ ] Move airline info to 1st step from Completebooking.js
+- [ ] If input a destination not in database, under the Trip 1 etc on Home.js, have it say "This trip requires you to contact customer service for a price quote by completing the form after clicking "NEXT"."
 - [ ] add EMAIL_USER, EMAIL_PASSWORD, SMTP_SERVER and SMTP_PRT to .env and have those be different for local and production.
 - [ ] Add back generate email for booking for approve
 - [ ] modify generate email to search the database only for username and confirmation code
@@ -14,7 +30,6 @@
 - [ ] Allow filters to see bookings by day, month, customer, other metrics on Admin Page
 - [ ] Test to make sure price is being input to sql from the correct request (prices.py, modified - pushed input)
 - [ ] Make Twilio production version
-- [ ] Fix Pricing rules
 
 ## Auth stuff
 - [ ] Add check token for API requests
@@ -57,6 +72,7 @@
 - [ ] change JWT SECRET KEY for production (in server.py)
 
 ### Completed ✓
+- [✓] Fix Pricing rules
 - [✓] Research hosting AWS, Dreamhost (speed and google searchability)
 - [✓] Make a "completed bookings" table
 - [✓] Roundtrip fix, to make work
