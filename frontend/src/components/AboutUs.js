@@ -1,11 +1,14 @@
 import React from 'react';
 import Navbar from './NavBar'; // Assuming you have a Navbar component
+import FleetCarousel from './FleetCarousel';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSnowflake } from '@fortawesome/free-solid-svg-icons';
 
 function AboutUs() {
   return (
     <div>
       <Navbar />
-      <div className="container" style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
+      <div className="text-container" style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
         <h1>About Us</h1>
         <section>
           <h2>People love us! We hope you do to.</h2>
@@ -64,6 +67,18 @@ function AboutUs() {
           </div>
 
         </section>
+
+        <section>
+          <h2>Our Fleet</h2>
+          <p>All of our shuttles are operated in a fleet of modern SUVs, vans, minibuses, and coach buses, ensuring a comfortable and secure journey:</p>
+          <ul>
+            <li>2021 or newer</li>
+            <li><FontAwesomeIcon icon={faSnowflake} style={{ color: 'lightblue'}} /> Fully air-conditioned for your comfort <FontAwesomeIcon icon={faSnowflake} style={{ color: 'lightblue'}}/></li>
+            <li>Meticulously maintained to exceed international safety standards</li>
+            <li>Thoroughly cleaned and disinfected after each service</li>
+          </ul>
+          <FleetCarousel />
+        </section>
         
         <section>
           <h2>Around-the-Clock Airport Transfers</h2>
@@ -113,13 +128,6 @@ function AboutUs() {
           <h2>Car Seats</h2>
           <p>
             We can provide up to two car seats per shuttle service, available at $10 USD per seat. If possible, we recommend bringing your own car seats, as not all vehicles in our fleet have 3-point seatbelts. Our drivers are happy to assist with installation, but please ensure you’re familiar with your seat model. Costa Rica regulations require only lap belts in rear seats.
-          </p>
-        </section>
-
-        <section>
-          <h2>Our Fleet</h2>
-          <p>
-            Our shuttles are operated in a fleet of modern SUVs, vans, minibuses, and coach buses, each 2021 or newer, and fully air-conditioned for your comfort. Every vehicle is meticulously maintained to exceed international safety standards, ensuring a comfortable and secure journey.
           </p>
         </section>
 

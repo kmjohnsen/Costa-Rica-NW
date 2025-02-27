@@ -2,39 +2,75 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Modal from 'react-modal';
 import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import CalendarWithPrices from './Calendars';
+// import CalendarWithPrices from './Calendars';
 import axios from 'axios';
 import Navbar from './NavBar'; // Import the top navigation bar
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
 import RequiredFieldsModal from './RequiredFieldsModal';
 import { validateEntries } from './HelperFunctions';
 import API_BASE_URL from '../config';
+import PassengersDropdown from './PassengersDropdown'; 
+import LocationDropdown from './LocationDropdown'; 
+import CalendarRoundTrip from "./CalendarRoundTrip";
+import DateSelectorSingleDate from "./CalendarSingleDate";
+import TripTypeDropdown from "./TripType"; 
 
 
 Modal.setAppElement('#root');
+
+const heroImages = [
+  "/all_photos/IMG_TOMVD.png",
+  "/all_photos/IMG_7054.jpg",
+  "/all_photos/to-andaz.jpg",
+  "/all_photos/IMG_5187.jpg",
+  "/all_photos/IMG_2680.jpg",
+  "/all_photos/IMG_5047.jpg",
+]
 
 function BookingForm() {
   // Scroll to top when the component loads
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % heroImages.length);
+    }, 10000); // Change every 10 seconds
+
+    return () => clearInterval(interval);
+  }, []);
   
-  const { register, control, setValue, getValues, formState: { errors} } = useForm({
+  const { control, setValue, getValues } = useForm({
+    // Default is for a round trip, so start with two entries
     defaultValues: {
-      entries: [{
-        pickup: '',
-        dropoff: '',
-        routenumber: '',
-        pickupdetailed: '',
-        dropoffdetailed: '',
-        date: '',
-        time: '',
-        passengers: '1',
-        airline: '',
-        flightnumber: '',
-        prices: {},
-      }]
+      entries: [
+        {
+          pickup: '',
+          dropoff: '',
+          routenumber: '',
+          pickupdetailed: '',
+          dropoffdetailed: '',
+          time: '',
+          date: '',
+          airline: '',
+          flightnumber: '',
+          prices: {},
+        },
+        {
+          pickup: '',
+          dropoff: '',
+          routenumber: '',
+          pickupdetailed: '',
+          dropoffdetailed: '',
+          time: '',
+          date: '',
+          airline: '',
+          flightnumber: '',
+          prices: {},
+        }
+      ]
     }
   });
 
@@ -46,12 +82,8 @@ function BookingForm() {
   const [pickupLocations, setPickupLocations] = useState([]);
   const [dropoffLocations, setDropoffLocations] = useState([]);
   const [destinations, setDestinations] = useState({});
-
-  // const [step, setStep] = useState(1); // Step state to track current booking step
-  
+  const [passengers, setPassengers] = useState('');
   const navigate = useNavigate(); // Use navigate to change pages
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(null);
   const [dateMargin, setDateMargin] = useState('');
   const [requestType, setRequestType] = useState('');
   const [isLargeGroup, setIsLargeGroup] = useState(false);
@@ -59,14 +91,8 @@ function BookingForm() {
   const [totalPrice, setTotalPrice] = useState(0);
   const [isHeroExpanded, setIsHeroExpanded] = useState(false);
   const [isRouteInDB, setIsRouteInDB] = useState(false)
-  const [isRoundTrip, setIsRoundTrip] = useState(false)
+  const [TripType, setTripType] = useState('roundtrip')
   const [isValues, setIsValues] = useState(false)
-  const [filteredPickupLocations, setFilteredPickupLocations] = useState([]);
-  const [filteredDropoffLocations, setFilteredDropoffLocations] = useState([]);
-  const [showPickupDropdown, setShowPickupDropdown] = useState(false);
-  const [showDropoffDropdown, setShowDropoffDropdown] = useState(false);
-
-
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -110,18 +136,11 @@ function BookingForm() {
 
   // Watch all entries for changes
   const watchEntries = useWatch({ control, name: "entries"});
-  const [activeIndex, setActiveIndex] = useState(null);
-
-  const toggleCalendarModal = (index) => {
-    setActiveIndex(index); // Set the active index for the calendar modal
-    setIsCalendarOpen(!isCalendarOpen);
-  };
-  
 
   const fetchRouteAndPrices = useCallback(async () => {
     await Promise.all(
       watchEntries.map(async (entry, index) => {
-        const { pickup, dropoff, routenumber, passengers } = entry;
+        const { pickup, dropoff, routenumber } = entry;
         console.log("pickup, dropoff, route num, passengers", pickup, dropoff, routenumber, passengers)
   
         // Ensure `pickup` and `dropoff` are set before making requests
@@ -176,33 +195,48 @@ function BookingForm() {
           }
         }
       })
+
     );
-  }, [watchEntries, setValue]);
-  
-  // TODO collect prices for all trips
-  useEffect(() => {
-    // Calculate total price whenever watchEntries changes
-    const calculateTotalPrice = () => {
-      const total = watchEntries.reduce((sum, trip) => {
-        const tripPrice = trip.prices?.[trip.date]; // Get price for the selected date
-        return tripPrice ? sum + parseFloat(tripPrice) : sum; // Add price if it exists
-      }, 0);
-      setTotalPrice(total); // Update total price state
-    };
-
-    calculateTotalPrice(); // Run the calculation
-  }, [watchEntries]); // Re-run whenever watchEntries changes
-
+    
+  }, [watchEntries, passengers, setValue]);
   
   const previousEntriesRef = useRef(watchEntries); // Track previous state
+
+  const prevEntriesRef = useRef([]);
+
+  useEffect(() => {
+    const allFieldsFilled = watchEntries.every(
+      (entry) => entry.pickup && entry.dropoff && entry.date && passengers
+    );
+
+    const hasChanged = JSON.stringify(watchEntries) !== JSON.stringify(prevEntriesRef.current);
+    
+    if (allFieldsFilled && hasChanged) {
+      prevEntriesRef.current = watchEntries;  // ✅ Store previous state to prevent re-fetching
+      fetchRouteAndPrices();
+    }
+  }, [watchEntries, passengers]);
+
+  useEffect(() => {
+    const calculateTotalPrice = () => {
+      const total = watchEntries.reduce((sum, trip) => {
+        const formattedDate = trip.date ? new Date(trip.date).toISOString().split('T')[0] : '';
+        const tripPrice = trip.prices?.[formattedDate] ? parseFloat(trip.prices[formattedDate]) : 0;
+        return sum + tripPrice;
+      }, 0);
+
+      setTotalPrice(total);
+    };
+
+    calculateTotalPrice();
+  }, [watchEntries]); // ⬅️ Runs only when `watchEntries` change
 
   useEffect(() => {
     const hasChangesInInputs = watchEntries.some((entry, index) => {
       const prevEntry = previousEntriesRef.current[index] || {};
       return (
         entry.pickup !== prevEntry.pickup ||
-        entry.dropoff !== prevEntry.dropoff ||
-        entry.passengers !== prevEntry.passengers
+        entry.dropoff !== prevEntry.dropoff 
       );
     });
   
@@ -213,8 +247,7 @@ function BookingForm() {
         const prevEntry = previousEntriesRef.current[index] || {};
         if (
           entry.pickup !== prevEntry.pickup ||
-          entry.dropoff !== prevEntry.dropoff ||
-          entry.passengers !== prevEntry.passengers
+          entry.dropoff !== prevEntry.dropoff 
         ) {
           updates.push(index); // Track indices to update
         }
@@ -223,7 +256,6 @@ function BookingForm() {
       // Apply updates in bulk to minimize renders
       if (updates.length > 0) {
         updates.forEach(index => {
-          setValue(`entries.${index}.date`, '', { shouldDirty: false });
           setValue(`entries.${index}.prices`, {}, { shouldDirty: false });
         });
   
@@ -233,61 +265,66 @@ function BookingForm() {
   
     previousEntriesRef.current = [...watchEntries]; // Update previous state
   }, [watchEntries, fetchRouteAndPrices, setValue]);
-  
-  const handleRoundtripChange = async (isChecked, index, event) => {
-    const checkbox = event.target; // Get the checkbox element
 
-    if (isChecked) {
-      setIsRoundTrip(true)
-      const currentEntry = watchEntries[index];
-      const { pickup, dropoff, passengers, routenumber, prices } = currentEntry;
+  const handleDateChangeRoundTrip = (departureDate, returnDate) => {
+    const formattedDeparture = new Date(departureDate).toISOString().split('T')[0];
+    const formattedReturn = new Date(returnDate).toISOString().split('T')[0];
+    setValue("entries.0.date", formattedDeparture);
+    setValue("entries.1.date", formattedReturn);
+    console.log("entires", formattedReturn)
+  };
   
-      // Ensure pickup and dropoff are set
-      if (pickup && dropoff) {
-        try {
+  const handleTripTypeChange = (value) => {
+    setTripType(value);
+    if (value === "roundtrip" || value === "multi") {
+      const trip = watchEntries?.[0]; // Ensure it exists before accessing properties
+      if (!trip) return;
   
-          // Append the return trip
-          append({
-            pickup: dropoff,
-            dropoff: pickup,
-            pickupdetailed: '',
-            dropoffdetailed: '',
-            date: '', // Set default or empty date
-            time: '', // Set default or empty time
-            passengers,
-            airline: '',
-            flightnumber: '',
-            prices,
-            routenumber,
-          });
-
-          // Remove focus from the entire page
-          if (document.activeElement) {
-            document.activeElement.blur();}
-          // setValue(`entries.${index}.pickup`, dropoff)
-  
-          // Update the active index to the new trip
-          const newIndex = watchEntries.length; // New trip will be added at the end
-          setActiveIndex(newIndex);
-          
-        } catch (error) {
-          console.error("Error fetching route number for return trip:", error);
+      setValue("entries", [
+        {
+          pickup: '',
+          dropoff: '',
+          routenumber: '',
+          pickupdetailed: '',
+          dropoffdetailed: '',
+          time: '',
+          date: '',
+          airline: '',
+          flightnumber: '',
+          prices: {},
+        },
+        {
+          pickup: '',
+          dropoff: '',
+          routenumber: '',
+          pickupdetailed: '',
+          dropoffdetailed: '',
+          time: '',
+          date: '',
+          airline: '',
+          flightnumber: '',
+          prices: {},
         }
-      } else {
-        console.error("Pickup and dropoff must be selected before adding a return trip.");
-      }
-    } else {
-      // Remove the last trip if unchecking roundtrip
-      setIsRoundTrip(false)
-      const lastEntry = fields[fields.length - 1];
-      const currentEntry = watchEntries[index];
-      if (lastEntry.pickup === currentEntry.dropoff && lastEntry.dropoff === currentEntry.pickup) {
-        remove(fields.length - 1);
-      }
+      ])
     }
-    checkbox.blur();
-  };  
-  
+    else if (value === "oneway") {
+      setValue("entries", [
+        {
+          pickup: '',
+          dropoff: '',
+          routenumber: '',
+          pickupdetailed: '',
+          dropoffdetailed: '',
+          time: '',
+          date: '',
+          airline: '',
+          flightnumber: '',
+          prices: {},
+        }
+      ])
+    }
+  };
+
   // Log values whenever they are updated
   useEffect(() => {
     watchEntries.forEach((trip, index) => {
@@ -298,12 +335,11 @@ function BookingForm() {
       console.log("Pickup Detailed:", trip.pickupdetailed);
       console.log("Dropoff Detailed:", trip.dropoffdetailed);
       console.log("Date:", trip.date);
-      console.log("Time:", trip.time);
-      console.log("Passengers:", trip.passengers);
+      console.log("Passengers:", passengers);
       console.log("Prices:", trip.prices);
       // console.log("Destinations", destinations);
     });
-  }, [watchEntries]);
+  }, [watchEntries, passengers]);
 
   // See if there is any input to To / From:
   useEffect(() => {
@@ -329,9 +365,8 @@ function BookingForm() {
   
   // Check if the group is too large for auto-booking
   useEffect(() => {
-    const largeGroup = watchEntries.some(entry => entry.passengers === '11+');
-    setIsLargeGroup(largeGroup);
-  }, [watchEntries]);
+    setIsLargeGroup(passengers === '11+');
+  }, [passengers]); 
 
   // Check if the date is valid for auto-booking
   useEffect(() => {
@@ -340,11 +375,6 @@ function BookingForm() {
       const currentDate = new Date();
       const dateMarginInMilliseconds = dateMargin * 24 * 60 * 60 * 1000; // Convert margin to milliseconds
       const futureDateMargin = new Date(currentDate.getTime() + dateMarginInMilliseconds); // Current date + margin
-      
-      // console.log("current Date", currentDate);
-      // console.log("futureDateMargin", futureDateMargin);
-      // console.log("booking Date HERE:", bookingDate, futureDateMargin);
-
       return bookingDate > futureDateMargin; // Date valid if after margin
     });
 
@@ -380,8 +410,8 @@ function BookingForm() {
 
   const handleCompleteBooking = async () => {
     const entries = getValues('entries'); // get the entries from form state
-    const { hasIncompleteFields, missingFieldsMessage } = validateEntries(entries, ['pickup', 
-      'dropoff', 'date', 'time'
+    const { hasIncompleteFields, missingFieldsMessage } = validateEntries(entries, passengers, ['pickup', 
+      'dropoff', 'date'
     ]);
     
     if (hasIncompleteFields) {
@@ -392,7 +422,7 @@ function BookingForm() {
 
     console.log("Request type:", requestType)
     // if (requestType === 'Large Group' || requestType === 'Upcoming') {
-    navigate('/completebooking', { state: { requestType, entries, isLargeGroup, isDateValid } })
+    navigate('/completebooking', { state: { requestType, entries, passengers, isLargeGroup, isDateValid } })
     // } else {
     //   navigate('/completebooking', { state: { requestType, entries } })
     // }
@@ -403,10 +433,43 @@ function BookingForm() {
       <nav>
         <Navbar onBookClick={handleBookClick}/>
       </nav>
-      <div className="hero-section">
-        {fields.map((entry, index) => (
-          <div key={entry.id} >
-            {/* Not in DB Popup */}
+
+      {/* Hero Section with Background Image */}
+      <div className="hero-container">
+        <img
+          src={heroImages[currentImageIndex]}
+          alt="Travel Destination"
+          className={`hero-image ${
+            currentImageIndex % 2 === 0 ? "ken-burns-zoom-in" : "ken-burns-zoom-out"
+          }`}
+        />
+        <div className="hero-text">
+          <h1>Stress-Free Airport Transfers</h1>
+          <h2>Explore Northwest Costa Rica with safe, reliable, and convenient transportation.</h2>
+        </div>
+      </div>
+
+
+      <div className="booking-container">
+        <div 
+          className="flex-container" 
+          style={{
+            maxWidth: '600px', // Dynamically set maxWidth
+          }}>
+          
+          <TripTypeDropdown handleTripTypeChange={handleTripTypeChange} />
+
+          <PassengersDropdown
+            selectedPassengers={passengers}
+            onPassengerChange={(value) => setPassengers(value)}
+            style={{ width: "180px" }}
+          />
+
+        </div>
+        
+        {TripType === "roundtrip" ? (
+          // Render only one set of fields when "Round Trip" is selected
+          <div>
             <Modal
               isOpen={locationNotInDBModalIsOpen}
               onRequestClose={() => setLocationNotInDBModalIsOpen(false)}
@@ -415,452 +478,103 @@ function BookingForm() {
               overlayClassName="calendar-modal-overlay"
             >
               <h2>Location Not Listed</h2>
-              <p>No worries! Even if you cannot find your location, we can still get you there! </p>
-              <p><b>Please manually type your location into the To/From field,</b> fill out the date and time, and click the Book button. After you complete your booking, a sales associate will reach out to you to confirm your details and ensure you have an excellent trip!</p>
+              <p>No worries! Even if you cannot find your location, we can still get you there!</p>
+              <p><b>Please manually type your location into the To/From field,</b> fill out the date and time, and click the Book button. After you complete your booking, a sales associate will reach out to confirm your details.</p>
               <button onClick={() => setLocationNotInDBModalIsOpen(false)}>Close</button>
-
-            </Modal>
-            {/* Calendar Modal Popup */}
-            <Modal
-              isOpen={isCalendarOpen}
-              onRequestClose={() => setIsCalendarOpen(false)}
-              contentLabel="Select Date"
-              className="calendar-modal"
-              overlayClassName="calendar-modal-overlay"
-            >
-              {activeIndex !== null && (
-                <CalendarWithPrices
-                  date={selectedDate}
-                  prices={watchEntries[activeIndex]?.prices}
-                  passengers={watchEntries[activeIndex]?.passengers}
-                  // setDate={setSelectedDate}
-                  
-                  onDateChange={(dateString) => {
-                    console.log("Received date string:", dateString); // Debugging output
-                
-                    // Validate date string format before updating the state
-                    const validDate = new Date(dateString);
-                    if (!isNaN(validDate.getTime())) {
-                        setSelectedDate(validDate); // Update selectedDate for local state
-                        setValue(`entries.${activeIndex}.date`, dateString); // Save formatted date in form
-                        setIsCalendarOpen(false); // Close modal after date selection
-                    } else {
-                        console.error("Invalid date string received:", dateString);
-                    }
-                  }}
-                
-                  index={activeIndex}
-                />
-              )}
-
-              <button onClick={() => setIsCalendarOpen(false)}>Close Calendar</button>
             </Modal>
 
-            <div 
-              className="flex-container" 
-              style={{
-                maxWidth: isHeroExpanded ? '600px' : '100%', // Dynamically set maxWidth
-                transition: 'max-width 0.5s ease', // Smooth transition
-              }}>
-                  {index === 1 && isRoundTrip ? ( // If this is the second trip and roundtrip is selected
-                    null
-                  ) : (
-                    // <div className="input-container-hero">
-                    //   <input 
-                    //     type="text"
-                    //     value={watchEntries[index]?.pickup || ''} // Use 'value' instead of 'defaultValue'
-                    //     onFocus={() => {
-                    //       setValue(`entries.${index}.pickup`, ''); // Clear the input value
-                    //       setValue(`entries.${index}.routenumber`, '')
-                    //     }}
-                    //     onChange={(e) => {
-                    //       const value = e.target.value;
-                    //       setValue(`entries.${index}.pickup`, value); // Update the form value
-                        
-                    //       // Check if the value matches a valid location and trigger fetch
-                    //       if (pickupLocations.includes(value)) {
-                    //         fetchRouteAndPrices(); // Explicitly fetch prices after valid selection
-                    //       }
-                    //     }}
-                    //     onBlur={(e) => {
-                    //       const value = e.target.value;
-                      
-                    //       if (pickupLocations.includes(value)) {
-                    //         fetchRouteAndPrices();
-                    //       }
-                    //     }}
-                    //     {...register(`entries.${index}.pickup`)}
-                    //     style={{
-                    //       width: '220px',
-                    //       fontSize: (watchEntries[index]?.pickup || '').length < 12 ? '2.5rem' : '1.3rem',
-                    //       whiteSpace: 'normal',
-                    //       overflowWrap: 'break-word',
-                    //       wordWrap: 'break-word',
-                    //       height: '70px',
-                    //       display: 'inline-block',
-                    //     }}                      
-                    //     list={`pickup-options-${index}`}
-                    //     placeholder="From"
-                    //   />
-                    //   <div className='label-with-upper-line'>
-                    //     <label>Your Origin</label>
-                    //   </div>
+            <div className="flex-container-spaced">
+              {/* Single Origin & Destination for Round Trip */}
+              <LocationDropdown
+                label="Origin"
+                value={watchEntries[0]?.pickup || ""}
+                locations={pickupLocations}
+                onChange={(value) => {
+                  setValue("entries.0.pickup", value);
+                  setValue("entries.1.dropoff", value);
+                }}
+              />
 
-                    //   <datalist id={`pickup-options-${index}`}>
-                    //   {pickupLocations
-                    //     .filter(option => 
-                    //       option.toLowerCase().includes(
-                    //         (watchEntries[index]?.pickup || '').toLowerCase() // Ensure we handle undefined
-                    //       )
-                    //     )
-                    //     .map((option, idx) => (
-                    //       <option key={idx} value={option} />
-                    //     ))
-                    //   }
-                    //   </datalist>
-                    // </div>
-                    <div className="input-container-hero"  style={{ position: "relative", width: "220px" }}>
-                      <input
-                        type="text"
-                        value={watchEntries[index]?.pickup || ""}
-                        onClick={() => {
-                          setFilteredPickupLocations(pickupLocations);
-                          setShowPickupDropdown(true);
-                        }}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setValue(`entries.${index}.pickup`, value);
-                          setFilteredPickupLocations(
-                            pickupLocations.filter((option) =>
-                              option.toLowerCase().includes(value.toLowerCase())
-                            )
-                          );
-                        }}
-                        onFocus={() => {
-                          setShowPickupDropdown(true);
-                          setValue(`entries.${index}.routenumber`, '');
-                        }}
-                        onBlur={() => setTimeout(() => setShowPickupDropdown(false), 200)} // Delay to allow selection
-                        style={{
-                          width: '220px',
-                          fontSize: (watchEntries[index]?.pickup || '').length < 12 ? '2.5rem' : '1.3rem',
-                          height: '70px',
-                        }}
-                        placeholder="From"
-                      />
-                      {showPickupDropdown && (
-                        <ul className="dropdown">
-                          {filteredPickupLocations.map((option, idx) => (
-                            <li
-                              key={idx}
-                              onClick={() => {
-                                setValue(`entries.${index}.pickup`, option);
-                                setShowPickupDropdown(false);
-                                fetchRouteAndPrices();
-                              }}
-                            >
-                              {option}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  )}
-                    
-                  {index === 1 && isRoundTrip ? ( // If this is the second trip and roundtrip is selected
-                    null
-                  ) : (
-                    <div className='input-container-green'>
-                      <p style={{ fontSize: '2rem' }}><b>&#8594;</b></p>
-                    </div>
-                  )}
+              <LocationDropdown
+                label="Destination"
+                value={watchEntries[0]?.dropoff || ""}
+                locations={dropoffLocations}
+                onChange={(value) => {
+                  setValue("entries.0.dropoff", value);
+                  setValue("entries.1.pickup", value);
+                }}
+              />
 
-                  {index === 1 && isRoundTrip ? ( // If this is the second trip and roundtrip is selected
-                    null
-                  ) : (
-                    // <div className="input-container-hero" >
-                    //   <input
-                    //     type="text"
-                    //     value={watchEntries[index]?.dropoff || ''} // Use 'value' instead of 'defaultValue'
-                    //     onFocus={() => {
-                    //       setValue(`entries.${index}.dropoff`, ''); // Clear the input value
-                    //       setValue(`entries.${index}.routenumber`, '')
-                    //     }}
-                    //     onChange={(e) => {
-                    //       console.log("Input changed"); // Debugging output
-                    //       const value = e.target.value;
-                    //       setValue(`entries.${index}.dropoff`, value); // Update the form value
-
-                    //       // Check if the value matches a valid location and trigger fetch
-                    //       if (dropoffLocations.includes(value)) {
-                    //         fetchRouteAndPrices(); // Explicitly fetch prices after valid selection
-                    //       }
-                    //     }}
-                    //     onBlur={(e) => {
-                    //       const value = e.target.value;
-                      
-                    //       if (dropoffLocations.includes(value)) {
-                    //         fetchRouteAndPrices();
-                    //       }
-                    //     }}
-                    //     {...register(`entries.${index}.dropoff`)}
-                    //     style={{
-                    //       width: '220px',
-                    //       fontSize: (watchEntries[index]?.dropoff || '').length < 12 ? '2.5rem' : '1.3rem',
-                    //       whiteSpace: 'normal',
-                    //       overflowWrap: 'break-word',
-                    //       wordWrap: 'break-word',
-                    //       height: '70px',
-                    //       display: 'inline-block',
-                    //     }}
-                    //     list={`dropoff-options-${index}`}
-                    //     placeholder="To"
-                    //   />
-                    //   <datalist id={`dropoff-options-${index}`}>
-                    //   {dropoffLocations
-                    //     .filter(option => 
-                    //       option.toLowerCase().includes(
-                    //         (watchEntries[index]?.dropoff || '').toLowerCase() // Ensure we handle undefined
-                    //       )
-                    //     )
-                    //     .map((option, idx) => (
-                    //       <option key={idx} value={option} />
-                    //     ))
-                    //   }
-                    //   </datalist>
-
-                    //   <label>Your Destination</label>
-                    // </div>
-                    <div className="input-container-hero"  style={{ position: "relative", width: "220px" }}>
-                      <input
-                        type="text"
-                        value={watchEntries[index]?.dropoff || ""}
-                        onClick={() => {
-                          setFilteredDropoffLocations(dropoffLocations);
-                          setShowDropoffDropdown(true);
-                        }}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setValue(`entries.${index}.dropoff`, value);
-                          setFilteredDropoffLocations(
-                            dropoffLocations.filter((option) =>
-                              option.toLowerCase().includes(value.toLowerCase())
-                            )
-                          );
-                        }}
-                        onFocus={() => {
-                          setShowDropoffDropdown(true);
-                          setValue(`entries.${index}.routenumber`, '');
-                        }}
-                        onBlur={() => setTimeout(() => setShowDropoffDropdown(false), 200)}
-                        style={{
-                          width: "220px",
-                          fontSize: (watchEntries[index]?.dropoff || '').length < 12 ? '2.5rem' : '1.3rem',
-                          height: "70px",
-                        }}
-                        placeholder="To"
-                      />
-
-                      {showDropoffDropdown && filteredDropoffLocations.length > 0 && (
-                        <ul className="dropdown">
-                          {filteredDropoffLocations.map((option, idx) => (
-                            <li
-                              key={idx}
-                              onClick={() => {
-                                setValue(`entries.${index}.dropoff`, option);
-                                setShowDropoffDropdown(false);
-                                fetchRouteAndPrices();
-                              }}
-                            >
-                              {option}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  )}
-
-                  <div className="input-container"   style={{ width: '200px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }} > 
-                    {index === 0 && (
-                      <>
-                        <input
-                          type="checkbox"
-                          id={`roundtrip-${index}`} // Unique ID for each checkbox
-                          {...register(`entries.${index}.roundtrip`)} // Register with React Hook Form
-                          style={{ display: 'none' }} // Hide the native checkbox
-                          // onMouseDown={(e) => e.preventDefault()}
-                          onChange={(e) => handleRoundtripChange(e.target.checked, index, e)} // Handle change
-                        />
-                        <label
-                          htmlFor={`roundtrip-${index}`}
-                          style={{ fontSize: '0.9rem', fontWeight: 'normal'}}
-                          className="styled-checkbox"
-                        >
-                          Roundtrip
-                        </label>
-                      </>
-                    )}
-                    
-                    {index === 1 && isRoundTrip ? ( // If this is the second trip and roundtrip is selected
-                      null
-                    ) : (
-                      <div>
-                        <input
-                          type="checkbox"
-                          id={`unlisted-location-${index}`} // Unique ID for each checkbox
-                          {...register(`entries.${index}.unlisted-location`)} // Register with React Hook Form
-                          style={{ display: 'none' }} // Hide the native checkbox
-                        />
-                        <label
-                          htmlFor={`unlisted-location-${index}`}
-                          className="styled-checkbox"
-                          style={{ fontSize: '0.9rem', fontWeight: 'normal'}}
-                        >
-                          My Location Is Not Listed
-                        </label>
-                      </div>
-                    )}
-                  </div>
-
-                  {index === 1 && isRoundTrip ? ( // If this is the second trip and roundtrip is selected
-                    null
-                  ) : (
-                    <div className="input-container"  style={{ width: '230px' }} > 
-                      <select
-                        {...register(`entries.${index}.passengers`, { required: true })}
-                        value={watchEntries[index]?.passengers || "1"} // Default to the existing value or an empty string
-                        required
-                        style={{ fontSize: '1.5rem', fontFamily: 'Segoe UI' }}
-                        // className={!watchEntries[index]?.passengers ? 'placeholder' : ''} // Apply class if no value is selected
-                      >
-                        {["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11+"].map((value) => (
-                          <option key={value} value={value} >
-                            {value} {value === "1" ? "Passenger" : "Passengers"}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-          </div>
-          <div 
-            className="flex-container" 
-            style={{
-              maxWidth: isHeroExpanded ? '600px' : '100%', // Dynamically set maxWidth
-              transition: 'max-width 0.5s ease', // Smooth transition
-            }}>
-                {isRoundTrip && (
-                  index === 0 ? ( // If this is the second trip and roundtrip is selected
-                    <p 
-                      style={{
-                        width: '120px', 
-                        fontWeight: 'bold', 
-                        // textDecoration: 'underline',
-                        textAlign: 'right'}}
-                    >
-                      Trip 1:
-                    </p>
-                  ) : index === 1 ? (
-                    <p 
-                      style={{
-                        width: '120px', 
-                        fontWeight: 'bold', 
-                        // textDecoration: 'underline',
-                        textAlign: 'right'}}
-                    >
-                      Trip 2:
-                    </p>                  
-                  ) : null
-                )}
-                <div className="input-container" style={{ width: '250px' }}>
-                  {watchEntries[index]?.pickup && watchEntries[index]?.dropoff && watchEntries[index]?.passengers ? (
-                    <button
-                      onClick={() => toggleCalendarModal(index)} // Pass index explicitly
-                      className="calendar-button"
-                    >
-                    {watchEntries[index]?.date && watchEntries[index]?.passengers === '11+'
-                      ? `${watchEntries[index].date}`
-                      : watchEntries[index]?.date && !isRouteInDB
-                      ? `${watchEntries[index].date}`
-                      : watchEntries[index]?.date
-                      ? `${watchEntries[index].date} | $${watchEntries[index].prices[watchEntries[index].date]}`
-                      : (
-                          <>
-                            <FontAwesomeIcon icon={faCalendarAlt} />
-                            <span> Select Date</span>
-                          </>
-                        )
-                    }              
-                    </button>
-                  ) : (
-                    <p style={{ color: 'grey' }}><i>Select From, To & Passengers</i></p>
-                  )}
-                  {errors.entries?.[index]?.date && (
-                    <p style={{ color: 'red', fontSize: '12px' }}>Date selection is required.</p>
-                  )}
-                  <label>Date & Prices Calendar</label>
-                  
-                </div>
-
-                <div className="input-container" style={{ width: '130px' }}>
-                  <div>
-                    <input
-                      type="time"
-                      name="pickup_time"
-                      {...register(`entries.${index}.time`, { required: true })}
-                      value={watchEntries[index]?.time || ""}
-                      onChange={(e) => setValue(`entries.${index}.time`, e.target.value)}
-                      step="300" // 5-minute increments
-                      min="00:00"  // ✅ Ensures a valid time range
-                      max="23:55"  // ✅ Prevents invalid times
-                      required
-                      className={watchEntries[index]?.time ? "time-selected" : "time-default"} // ✅ Add conditional class
-                    />
-                  </div>
-                  <label>Pickup Time</label>
-                </div>
-
+              <CalendarRoundTrip 
+                onDateChange={handleDateChangeRoundTrip} 
+                label={
+                  watchEntries[0]?.date 
+                    ? "Dates" 
+                    : "Select Dates"
+                }              
+              />
               
-              
-              <div className='input-container' style={{ paddingLeft: '30px'}}>
-                <div>
-                  {index >= 1 && !isRoundTrip ? (
-                    <button className="book-button" onClick={() => remove(index)}><b>REMOVE TRIP</b></button> //{index + 1}
-                  ) : (null)}
-                </div>
-              </div>
-              
-              {isRoundTrip ? (
-                null
-              ) : ( 
-                (isValues && (
-                  <div className='input-container' style={index === 0 ? { paddingLeft: '30px'}: {}}>
-                    <button className="book-button" type="button-right" onClick={() => append({
-                      pickup: '',
-                      dropoff: '',
-                      pickupdetailed: '',
-                      dropoffdetailed: '',
-                      date: '',
-                      time: '',
-                      passengers: '1',
-                      airline: '',
-                      flightnumber: '',
-                      prices: {},
-                    })}>
-                      <b>ADD TRIP</b>
-                    </button>
-                  </div>
-                ))
-              )}
             </div>
           </div>
-        ))}
-        
+        ) : (
+          // Render trip entries for One Way & Multi
+          fields.map((entry, index) => (
+            <div key={entry.id}>
+              <Modal
+                isOpen={locationNotInDBModalIsOpen}
+                onRequestClose={() => setLocationNotInDBModalIsOpen(false)}
+                contentLabel="Location not listed"
+                className="calendar-modal"
+                overlayClassName="calendar-modal-overlay"
+              >
+                <h2>Location Not Listed</h2>
+                <p>No worries! Even if you cannot find your location, we can still get you there!</p>
+                <p><b>Please manually type your location into the To/From field,</b> fill out the date and time, and click the Book button. After you complete your booking, a sales associate will reach out to confirm your details.</p>
+                <button onClick={() => setLocationNotInDBModalIsOpen(false)}>Close</button>
+              </Modal>
+
+              <div className="flex-container-spaced">
+                <LocationDropdown
+                  label="Origin"
+                  value={watchEntries[index]?.pickup || ""}
+                  locations={pickupLocations}
+                  onChange={(value) => {
+                    setValue(`entries.${index}.pickup`, value);
+                  }}
+                />
+
+                <LocationDropdown
+                  label="Destination"
+                  value={watchEntries[index]?.dropoff || ""}
+                  locations={dropoffLocations}
+                  onChange={(value) => {
+                    setValue(`entries.${index}.dropoff`, value);
+                  }}
+                />
+
+                <DateSelectorSingleDate
+                  value={watchEntries[0]?.date || ""}
+                  onChange={(date) => {
+                    setValue(`entries.${index}.date`, date);
+                  }}
+                />
+              </div>
+
+              {index >= 1 && TripType === "multi" ? (
+                <button className="book-button" onClick={() => remove(index)}>
+                  <b>REMOVE TRIP</b>
+                </button>
+              ) : null}
+            </div>
+          ))
+        )}
+
         <div className='flex-container'>
           <div className='input-container'>
             <table style={{ border: 'none', borderCollapse: 'collapse' }}>
               <tbody>
               {watchEntries.map((entry, index) => (
-                entry.pickup && entry.dropoff && entry.passengers && entry.date && entry.time && (
+                entry.pickup && entry.dropoff && passengers && entry.date && entry.time && (
                   <tr key={index}>
                     <td style={{ border: 'none', padding: '0', lineHeight: '1.0' }}>
                     <div style={{ margin: '0px 20px' }}><h4 style={{ margin: '0' }}>Trip {index + 1}</h4></div>
@@ -869,13 +583,13 @@ function BookingForm() {
                       <div style={{ margin: '0px 20px' }}><h4 style={{ margin: '0' }}>{entry.date}</h4></div>
                     </td>
                     <td style={{ border: 'none' }}>
-                      <p style={{ margin: '0px 20px' }}>{entry.pickup} to {entry.dropoff} with pickup at {entry.time}, for {entry.passengers} passengers.</p>
+                      <p style={{ margin: '0px 20px' }}>{entry.pickup} to {entry.dropoff} with pickup at {entry.time}, for {passengers} passengers.</p>
                       
                       {entry.airline && <p>Airline: {entry.airline}</p>}
                       {entry.flightnumber && <p>Flight Number: {entry.flightnumber}</p>}
                     </td>
                     <td style={{ border: 'none', margin: '0px 20px' }}>
-                      {watchEntries.some(entry => entry.passengers === '11+') || !isRouteInDB ? (
+                      {(passengers === '11+') || !isRouteInDB ? (
                         <></>
                       ) : (
                         <p style={{ margin: '0px 20px' }}><b>${entry.prices[entry.date]}</b></p>
@@ -888,50 +602,45 @@ function BookingForm() {
             </table>
           </div>
         </div>
-        <div 
-          className='flex-container-right' 
-          style={{
-            maxWidth: isHeroExpanded ? '600px' : '1500px', // Dynamically set maxWidth
-            transition: 'max-width 0.5s ease', // Smooth transition
-          }}
-        >
-          <div className='input-container' style={{ margin: '0px 20px', alignContent:'center', display: 'flex'}}>
-            {totalPrice > 0 && !isLargeGroup && isRouteInDB && (
-              <h2><b>Total: ${totalPrice}</b></h2>
-            )}
-          </div>
-          
-          {isValues && (
+        <div>
+          {TripType === 'multi' ? (
             <div className='input-container'>
-              <button className="book-button" type="button-right" onClick={handleCompleteBooking}><b>NEXT</b></button>
-              <RequiredFieldsModal
-                isOpen={isRequiredFieldsModalOpen}
-                onClose={() => setIsRequiredFieldsModalOpen(false)}
-                missingFields={missingFields}            
-              />
+              <button className="book-button" type="button-right" onClick={() => append({
+                pickup: '',
+                dropoff: '',
+                pickupdetailed: '',
+                dropoffdetailed: '',
+                date: '',
+                time: '',
+                airline: '',
+                flightnumber: '',
+                prices: {},
+              })}>
+                <b>ADD TRIP</b>
+              </button>
             </div>
+          ) : ( 
+            null
           )}
+        </div>
 
+        <div className='flex-container-centered'>
+          {totalPrice > 0 && !isLargeGroup && isRouteInDB && (
+            <h3><b>Total Price: ${totalPrice}</b></h3>
+          )}
+        </div>
+
+        <div className='flex-container-centered'>
+          <div>
+            <button className="book-button" type="button-right" onClick={handleCompleteBooking}><b>BOOK NOW</b></button>
+            <RequiredFieldsModal
+              isOpen={isRequiredFieldsModalOpen}
+              onClose={() => setIsRequiredFieldsModalOpen(false)}
+              missingFields={missingFields}            
+            />
+          </div>
         </div>
       </div>
-
-      <div className='background-image-van'>
-        <h1>Stress-Free Travel</h1>
-        <h2>Explore Northwest Costa Rica with safe, reliable and convenient transportation.</h2>
-      
-      </div>
-
-      <div //This is here to force a focus to this area, so that roundtrip works
-        id="hidden-focus-target"
-        style={{
-          position: 'absolute',
-          width: '1px',
-          height: '1px',
-          overflow: 'hidden',
-          clip: 'rect(0 0 0 0)',
-        }}
-        tabIndex="-1"
-      />
 
       <div className='bottom-section'>
         <div style={{ textAlign: 'center' }}><h2 style={{}}>Convenient Destinations Served</h2></div>

@@ -1,0 +1,165 @@
+/* General calendar container */
+.calendar-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+/* Grey out past dates */
+.past-date {
+  color: var(--placeholder-color) !important;
+}
+
+/* Black text for today and future dates */
+.future-date {
+  color: var(--dark-text) !important;
+}
+
+/* Thin border around today's date */
+.today-date {
+  border: 2px solid var(--accent) !important;
+  border-radius: 50%;
+  background-color: var(--bright-white);
+}
+
+/* Calendar layout: Start on Sunday */
+.react-calendar {
+  width: 350px;
+  max-width: 100%;
+  background: var(--bright-white);
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px var(--shadow-for-box);
+}
+
+.react-calendar__month-view__weekdays {
+  text-transform: uppercase;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* Ensure Sunday is the first column */
+.react-calendar__month-view__days {
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
+}
+
+.react-calendar .react-calendar__tile--weekend {
+  color: black !important;
+}
+
+/* Date Selector Container */
+.date-selector-container {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: left;
+  width: 260px;
+}
+
+/* Position the chevron like in LocationDropdown */
+.chevron-container {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none; /* Prevents interaction */
+}
+
+/* Adjust the button to prevent overlap */
+.date-picker-button {
+  width: 100%;
+  height: 49px;
+  padding: 12px 40px 12px 14px; /* Extra padding on right for chevron */
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.3s ease-in-out;
+  background-color: var(--bright-white);
+  box-shadow: 0px 2px 5px var(--shadow-for-box);
+  border: none;
+  position: relative; /* Ensure chevron positioning */
+  text-align: left;
+}
+
+.date-text {
+  flex-grow: 1;
+  text-align: left;
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Hover Effect */
+.date-picker-button:hover {
+  border-color: var(--accent);
+}
+
+/* Icon Styles */
+.calendar-icon {
+  margin-right: 10px;
+  color: var(--accent);
+}
+
+.chevron-icon {
+  margin-left: 10px;
+  color: var(--dark-text);
+}
+
+
+/* Calendar Modal */
+.calendar-modal {
+  background: white;
+  padding: 20px;
+  max-width: 350px;
+  margin: auto;
+  border-radius: 12px;
+  box-shadow: 0px 5px 15px var(--shadow-for-box);
+  text-align: center;
+}
+
+.calendar-modal h2 {
+  font-size: 20px;
+  color: #333;
+}
+
+/* Close Modal Button */
+.close-modal-btn {
+  margin-top: 10px;
+  background-color: var(--accent);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.close-modal-btn:hover {
+  background-color: var(--accent);
+}
+
+/* Calendar Modal Overlay */
+.calendar-modal-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* ✅ Mobile-friendly touch effect */
+@media (max-width: 1000px) {
+
+  .date-selector-container {
+    width: 100%;
+  }
+
+}

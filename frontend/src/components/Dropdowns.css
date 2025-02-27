@@ -1,0 +1,74 @@
+/* Dropdown Container */
+.dropdown-container {
+  position: relative;
+  display: inline-block; /* Prevents stretching */
+}
+
+/* Styled Button Acting as Dropdown */
+.dropdown-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: auto;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--dark-text);
+  background: var(--bright-white); /* Use your main theme color */
+  border-radius: 30px; /* Rounder corners */
+  cursor: pointer;
+  transition: background 0.3s ease-in-out, transform 0.2s ease;
+  border: none;
+  outline: none;
+  gap: 8px;
+}
+
+/* Hover & Focus Effects */
+.dropdown-button:focus {
+  border-color: var(--primary-color)
+}
+
+/* Dropdown List */
+.dropdown-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0px 4px 8px var(--shadow-for-box);
+  padding: 0px 0;
+  margin-top: 0px;
+  z-index: 100;
+  overflow: hidden;
+}
+
+/* Style each dropdown item */
+.dropdown-list li {
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+}
+
+/* Add hover effect */
+.dropdown-list li:hover {
+  background: var(--accent);
+  color: white;
+}
+
+/* Chevron Icon */
+.chevron-icon {
+  font-size: 12px;
+  transition: transform 0.3s ease;
+  color: var(--accent);
+}
+
+/* Rotate Chevron When Open */
+.dropdown-button.open .chevron-icon {
+  transform: rotate(180deg);
+}

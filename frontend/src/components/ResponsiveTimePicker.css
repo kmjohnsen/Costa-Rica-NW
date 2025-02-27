@@ -1,0 +1,48 @@
+/* Container styling for the ResponsiveTimePicker */
+.responsive-time-picker {
+  margin: 0px 0;
+  padding: 0px;
+  border: none;
+}
+
+/* Remove any red error border by overriding error and focus states */
+.responsive-time-picker .MuiOutlinedInput-root {
+  /* Default border color */
+  fieldset {
+    border: 1px solid var(--placeholder-color); /* Set solid border */
+    border-radius: 8px;
+  }
+}
+
+/* Remove error border if somehow error classes are applied */
+.responsive-time-picker .MuiOutlinedInput-root.Mui-error fieldset {
+  border: 1px solid var(--placeholder-color); /* Set solid border */
+}
+
+/* Override focused state border color to match normal state */
+.responsive-time-picker .MuiOutlinedInput-root.Mui-focused fieldset {
+  border: 1px solid var(--placeholder-color); /* Set solid border */
+}
+
+/* Style the placeholder text to be grey */
+.responsive-time-picker .MuiInputBase-input::placeholder {
+  color: grey !important;
+  opacity: 1; /* Ensure full opacity */
+  font-size: 1.2rem; /* Match your design */
+}
+
+.responsive-time-picker input::placeholder {
+  color: grey !important;
+  opacity: 1;
+}
+
+/* Adjust the TextField input font size */
+.responsive-time-picker .MuiInputBase-input {
+  font-size: 1.2rem; 
+  border: none;
+}
+
+/* Optionally adjust the label font size */
+.responsive-time-picker .MuiInputLabel-root {
+  font-size: 1.2rem;
+}

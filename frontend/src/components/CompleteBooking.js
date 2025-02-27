@@ -10,6 +10,7 @@ import RequiredFieldsModal from './RequiredFieldsModal';
 import { validateEntries } from './HelperFunctions';
 import { useDebounce } from 'use-debounce';
 import API_BASE_URL from '../config';
+import ResponsiveTimePicker from './ResponsiveTimePicker';
 
 
 function CompleteBooking() {
@@ -24,6 +25,7 @@ function CompleteBooking() {
   const {
     requestType: initialRequestType,
     entries: initialEntries,
+    passengers: initialPassengers,
     isLargeGroup: initialIsLargeGroup,
     isDateValid: initialIsDateValid,
   } = location.state || {}; // Default to {} if state is undefined
@@ -51,6 +53,7 @@ function CompleteBooking() {
   const [isLargeGroup, setIsLargeGroup] = useState(initialIsLargeGroup || false)
   const [isDateValid, setIsDateValid] = useState(initialIsDateValid || false)
   const [requestType, setRequestType] = useState(initialRequestType || false)
+  const [passengers, setPassengers] = useState(initialPassengers || false)
   const [largeGroupPassengers, setLargeGroupPassengers] = useState('');
   const [debouncedTelephone] = useDebounce(telephone, 300);
   const [successfulBooking, setSuccessfulBooking] = useState(false)
@@ -59,11 +62,10 @@ function CompleteBooking() {
 
   // Initialize useForm and useFieldArray
   const { register, control, setValue } = useForm({
-    defaultValues: { entries: initialEntries }
+    defaultValues: { entries: initialEntries, passengers: passengers }
   });
 
-  const watchEntries = useWatch({ control, name: "entries" });
-    console.log("large group passenger", largeGroupPassengers)
+  const watchEntries = useWatch({ control, name: "entries" }) || [];
 
   // Fetch margin used for selecting dates
   useEffect(() => {
@@ -121,7 +123,7 @@ function CompleteBooking() {
   const manualRouteTextCreate = useCallback(async () => {
     let manualroutetext = '';
     watchEntries.forEach((entry, index) => {
-      manualroutetext += `Trip ${index + 1}: ${entry.date}. ${entry.pickup} to ${entry.dropoff} at ${entry.time} for ${entry.passengers} passengers. `;
+      manualroutetext += `Trip ${index + 1}: ${entry.date}. ${entry.pickup} to ${entry.dropoff} for ${entry.passengers} passengers. `;
       console.log("Manual route text", manualroutetext);
     });
     setManualRouteRequest(manualroutetext);
@@ -138,8 +140,8 @@ function CompleteBooking() {
   useEffect(() => {
     if (initialEntries) {
       initialEntries.forEach((entry, index) => {
-        if (entry.routenumber && entry.passengers && entry.date) {
-          fetchPrices(index, entry.routenumber, entry.passengers, entry.date, entry.date);
+        if (entry.routenumber && passengers && entry.date) {
+          fetchPrices(index, entry.routenumber, passengers, entry.date, entry.date);
         }
       });
     }
@@ -147,7 +149,7 @@ function CompleteBooking() {
 
   // Check if the group is too large for auto-booking
   useEffect(() => {
-    const largeGroup = watchEntries.some(entry => entry.passengers === '11+');
+    const largeGroup = (passengers === '11+');
     setIsLargeGroup(largeGroup);
   }, [watchEntries]);
 
@@ -243,7 +245,6 @@ function CompleteBooking() {
       lastName: lastName || '',
       email: email || '',
       telephone: telephone || '',
-      largeGroupPassengers: isLargeGroup ? (largeGroupPassengers || '') : undefined,
     }];
 
     // Add `largeGroupPassengers` if `isLargeGroup` is true
@@ -253,11 +254,14 @@ function CompleteBooking() {
 
     // Define the required fields dynamically
     const requiredFields = ['firstName', 'lastName', 'email', 'telephone'];
+    console.log("LArge Group passengers", isLargeGroup)
     if (isLargeGroup) {
         requiredFields.push('largeGroupPassengers');
     }
     
-    const { hasIncompleteFields, missingFieldsMessage } = validateEntries(fields, requiredFields);
+    console.log("Fields before validation:", fields);
+    console.log("Required Fields:", requiredFields);
+    const { hasIncompleteFields, missingFieldsMessage } = validateEntries(fields, passengers, requiredFields);
     
     if (hasIncompleteFields) {
       setMissingFields(missingFieldsMessage);
@@ -468,8 +472,10 @@ function CompleteBooking() {
               <div className="input-container">
                 <label>Passengers:</label>
                 <select
-                  value={tempEdit.passengers || "1"} // Set the value to tempEdit.passengers or default to "1"
-                  onChange={(e) => setTempEdit({ ...tempEdit, passengers: e.target.value })} // Update tempEdit when the value changes
+                  value={passengers || "1"} 
+                  onChange={(value) => {
+                    setPassengers(value)
+                  }}
                   required
                   style={{ fontSize: '1.5rem', fontFamily: 'Segoe UI' }}
                   // className={!watchEntries[index]?.passengers ? 'placeholder' : ''} // Apply class if no value is selected
@@ -506,270 +512,286 @@ function CompleteBooking() {
         )}
       </Modal>
 
-      {requestType === 'Large Group' && (
-        <>
-          <div className="flex-container-completebooking">
-            <h2>Submit Email Request Form</h2>
-          </div>
-          <div className="flex-container-completebooking">
-            <p style={{ fontSize:'1.2rem' }}>Thank you for choosing us for your upcoming trip!</p>
-          </div>
-          <div className="flex-container-completebooking">
-            <p  style={{ width:'90%', maxWidth:'850px', fontSize:'1.2rem', textAlign: 'center', margin: '0 auto' }}><i>Due to the size of your party, we want to ensure that every detail is perfectly arranged. Please complete the form, and a dedicated sales associate will reach out to discuss your specific needs and ensure a seamless, enjoyable experience.</i></p>
-          </div>
-
-          <div className="flex-container-completebooking">
-            <div className="input-container" style={{ width: '300px', margin: '20px 0' }}>        
-              <input
-                type="number"
-                value={largeGroupPassengers}
-                style={{ fontSize: '1.5rem', width: '100%', justifyContent: 'center' }}
-                onChange={(e) => setLargeGroupPassengers(e.target.value)}
-                placeholder="Passengers"
-                required
-              />
-              <label>PASSENGERS</label>
-            </div>
-          </div>
-        </>
-      )}
-
-{requestType === 'Alternate Route' && (
-        <>
-          <div className="flex-container-completebooking">
-            <h2>Submit Email Request Form</h2>
-          </div>
-          <div className="flex-container-completebooking">
-            <p style={{ fontSize:'1.2rem' }}>Thank you for choosing us for your upcoming trip!</p>
-          </div>
-          <div className="flex-container-completebooking">
-            <p  style={{ width:'90%', maxWidth:'850px', fontSize:'1.2rem', textAlign: 'center', margin: '0 auto' }}><i>We want to ensure that every detail is perfectly arranged. Please complete the form, and a dedicated sales associate will reach out to discuss your specific needs, share a quote, and ensure a seamless, enjoyable experience.</i></p>
-          </div>
-        </>
-      )}
-      
-      {requestType === 'Upcoming' && (
-        <>
-          <div  className="flex-container-completebooking">
-            <h2>Submit Email Request Form</h2>
-            </div>
-          <div className="flex-container-completebooking">
-            <p style={{ fontSize:'1.2rem' }} >Thank you for choosing us for your upcoming trip!</p>
-            </div>
-          <div className="flex-container-completebooking">
-            <p><i>Given the short notice, please complete the form and we will reach out directly to confirm all the details to ensure you receive the exceptional transportation experience we’re known for.</i></p>
-          </div>
-        </>
-      )}
-
-      <div  className="flex-container-completebooking">
-        <h2>Add Personal Information</h2>
-      </div>
-
-      <div className='flex-container-completebooking' >
-        <div className="input-container" style={{ width: '300px' }}>        
-          <input type="text" value={firstName}  style={{ fontSize: '1.5rem', width: '100%', justifyContent: 'center' }} onChange={(e) => setFirstName(e.target.value)} 
-          placeholder='First Name'
-          required />
-          <label>FIRST NAME</label>
-        </div>
-        <div className="input-container" style={{ width: '300px' }}>        
-          <input className='input' style={{ fontSize: '1.5rem', width: '100%' }} type="text" value={lastName} onChange={(e) => setLastName(e.target.value)}
-          placeholder='Last Name'
-          required />
-          <label>LAST NAME</label>
-        </div>
-      </div>
-      <div className='flex-container-completebooking' >
-        <div className="input-container" style={{ width: '400px' }}>
-          <input type="email" style={{ fontSize: '1.5rem', width: '100%' }} value={email} onChange={(e) => setEmail(e.target.value)} 
-          placeholder='email@domain.com'
-          required />
-          <label>EMAIL</label>
-        </div>
-        <div className="input-container" style={{ width: '280px' }}>
-          <PhoneInput
-            country="us"
-            value={telephone}
-            onChange={(phone) => setTelephone(phone)}
-            required
-            inputStyle={{
-              fontSize: '1.1rem',
-              padding: '10px',
-              width: '100%',
-              height: 'auto',
-              backgroundColor: 'var(--dark-background)', // Sets custom background color
-              color: 'var(--text-color)', // Sets text color
-              border: 'none', // Removes default border
-              borderRadius: '8px', // Matches your desired styling
-              placeholder: 'var(--placeholder-text)',
-          }}
-            buttonStyle={{
-              backgroundColor: 'var(--dark-background)', // Custom background color for flag dropdown
-              border: 'none',
-              borderRadius: '8px',
-              padding: '5px', // Adjusts padding if needed
-          }}
-          inputProps={{ required: true }}
-          containerClass="custom-phone-input" // Adds a custom class for easier styling
-          />
-          <label>PHONE NUMBER</label>
-        </div>
-      </div>
-      <div  className="flex-container-completebooking">
-        <div style={{
-          height: '4px', /* Adjust thickness */
-          backgroundColor: 'var(--primary-color)', /* Color of the line */
-          width: '20%', /* Full width */
-          margin: '30px 0'
-        }}></div>
-      </div>
-      <div  className="flex-container-completebooking">
-        <h2>Complete Booking Details</h2>
-      </div>
-      {/* Display each entry */}
-      {watchEntries.map((entry, index) => (
-        entry.pickup && entry.dropoff && entry.passengers && entry.date && entry.time && (
-          <React.Fragment key={index}>
+      <div className='text-container' style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
+        {requestType === 'Large Group' && (
+          <>
             <div className="flex-container-completebooking">
-              <p style={{ fontSize: '2.0rem', margin: '0' }}><u>Trip {index + 1}</u></p>
+              <h2>Submit Email Request Form</h2>
             </div>
-            <div className="flex-container-completebooking" key={index}>
-              <div className="input-container" style={{ margin: '2px 20px' }}>
-                <p style={{ fontSize: '1.5rem', margin: '0' }}><b>{entry.date}</b></p>
-              </div>
+            <div className="flex-container-completebooking">
+              <p style={{ fontSize:'1.2rem' }}>Thank you for choosing us for your upcoming trip!</p>
+            </div>
+            <div className="flex-container-completebooking">
+              <p  style={{ width:'90%', maxWidth:'850px', fontSize:'1.2rem', textAlign: 'center', margin: '0 auto' }}><i>Due to the size of your party, we want to ensure that every detail is perfectly arranged. Please complete the form, and a dedicated sales associate will reach out to discuss your specific needs and ensure a seamless, enjoyable experience.</i></p>
+            </div>
 
-              <div className="input-container" style={{ minWidth: '350px', maxWidth: '90%', display: 'flex', alignItems: 'center' }}>
-                <p>
-                  <span style={{ fontSize: '2.0rem' }}>{entry.pickup}</span>
-                  <span style={{ fontSize: '2rem', margin: '0 5px', color: 'var(--primary-color)' }}>
-                    <b>&#8594;</b>
-                  </span>
-                  <span style={{ fontSize: '2.0rem' }}>{entry.dropoff}</span>
-                  <span style={{ fontSize: '1.5rem' }}>, pickup at </span>
-                  <span style={{ fontSize: '2.0rem' }}>{entry.time} </span>
-                  <span style={{ fontSize: '1.5rem' }}> for </span>
-                  <span style={{ fontSize: '2.0rem' }}>
-                    {requestType === 'Large Group' ? (
-                      `${largeGroupPassengers} Passengers`
-                    ) : 
-                      `${entry.passengers} Passenger${entry.passengers > 1 ? 's' : ''}`
-                    }
-                  </span>
-                </p>
+            <div className="flex-container-completebooking">
+              <div className="input-container" style={{ width: '300px', margin: '20px 0' }}>        
+                <input
+                  type="number"
+                  value={largeGroupPassengers}
+                  style={{ fontSize: '1.5rem', width: '100%', justifyContent: 'center' }}
+                  onChange={(e) => setLargeGroupPassengers(e.target.value)}
+                  placeholder="Passengers"
+                  required
+                />
+                <label>PASSENGERS</label>
               </div>
+            </div>
+          </>
+        )}
 
-              {/* Display price of the trip */}
-              {(requestType !== 'Large Group' && requestType !== 'Alternate Route') && (
-                <div className="input-container" style={{ minWidth: '100px', maxWidth: '100%', display: 'flex', alignItems: 'center' }}>
+        {requestType === 'Alternate Route' && (
+          <>
+            <div className="flex-container-completebooking">
+              <h2>Submit Email Request Form</h2>
+            </div>
+            <div className="flex-container-completebooking">
+              <p style={{ fontSize:'1.2rem' }}>Thank you for choosing us for your upcoming trip!</p>
+            </div>
+            <div className="flex-container-completebooking">
+              <p  style={{ width:'90%', maxWidth:'850px', fontSize:'1.2rem', textAlign: 'center', margin: '0 auto' }}><i>We want to ensure that every detail is perfectly arranged. Please complete the form, and a dedicated sales associate will reach out to discuss your specific needs, share a quote, and ensure a seamless, enjoyable experience.</i></p>
+            </div>
+          </>
+        )}
+        
+        {requestType === 'Upcoming' && (
+          <>
+            <div  className="flex-container-completebooking">
+              <h2>Submit Email Request Form</h2>
+              </div>
+            <div className="flex-container-completebooking">
+              <p style={{ fontSize:'1.2rem' }} >Thank you for choosing us for your upcoming trip!</p>
+              </div>
+            <div className="flex-container-completebooking">
+              <p><i>Given the short notice, please complete the form and we will reach out directly to confirm all the details to ensure you receive the exceptional transportation experience we’re known for.</i></p>
+            </div>
+          </>
+        )}
+
+        <div  className="flex-container-completebooking">
+          <h2>Add Personal Information</h2>
+        </div>
+
+        <div className='flex-container-completebooking' >
+          <div className="input-container-light" style={{ width: '300px' }}>        
+            <input type="text" value={firstName}  style={{ fontSize: '1.5rem', width: '100%', justifyContent: 'center' }} onChange={(e) => setFirstName(e.target.value)} 
+            placeholder='First Name'
+            required />
+            <label>FIRST NAME</label>
+          </div>
+          <div className="input-container-light" style={{ width: '300px' }}>        
+            <input className='input' style={{ fontSize: '1.5rem', width: '100%' }} type="text" value={lastName} onChange={(e) => setLastName(e.target.value)}
+            placeholder='Last Name'
+            required />
+            <label>LAST NAME</label>
+          </div>
+        </div>
+        <div className='flex-container-completebooking' >
+          <div className="input-container-light" style={{ width: '400px' }}>
+            <input type="email" style={{ fontSize: '1.5rem', width: '100%' }} value={email} onChange={(e) => setEmail(e.target.value)} 
+            placeholder='email@domain.com'
+            required />
+            <label>EMAIL</label>
+          </div>
+          <div className="input-container-light" style={{ width: '280px' }}>
+            <PhoneInput
+              country="us"
+              value={telephone}
+              onChange={(phone) => setTelephone(phone)}
+              required
+              inputStyle={{
+                fontSize: '1.1rem',
+                padding: '12px',
+                width: '100%',
+                height: 'auto',
+                backgroundColor: 'var(--input-background)', // Sets custom background color
+                color: 'var(--dark-text)', // Sets text color
+                border: '1px solid var(--placeholder-color)',
+                borderRadius: '8px', // Matches your desired styling
+                placeholder: 'var(--placeholder-text)',
+            }}
+              buttonStyle={{
+                backgroundColor: 'var(--input-background)', // Custom background color for flag dropdown
+                borderRadius: '8px',
+                border: '1px solid var(--placeholder-color)',
+                padding: '5px', // Adjusts padding if needed
+            }}
+            inputProps={{ required: true }}
+            containerClass="custom-phone-input" // Adds a custom class for easier styling
+            />
+            <label>PHONE NUMBER</label>
+          </div>
+        </div>
+        <div  className="flex-container-completebooking">
+          <div style={{
+            height: '4px', /* Adjust thickness */
+            backgroundColor: 'var(--accent)', /* Color of the line */
+            width: '20%', /* Full width */
+            margin: '30px 0'
+          }}></div>
+        </div>
+        <div  className="flex-container-completebooking">
+          <h2>Complete Booking Details</h2>
+        </div>
+        {/* Display each entry */}
+        {watchEntries.map((entry, index) => (
+          entry.pickup && entry.dropoff && passengers && entry.date && (
+            <React.Fragment key={index}>
+              <div className="flex-container-completebooking">
+                <p style={{ fontSize: '1.5rem', margin: '0' }}><u>Trip {index + 1}</u></p>
+              </div>
+              <div className="flex-container-completebooking" key={index}>
+                <div style={{ margin: '2px 20px' }}>
+                  <p style={{ fontSize: '1.5rem', margin: '0' }}><b>{entry.date}</b></p>
+                </div>
+
+                <div style={{ minWidth: '350px', maxWidth: '90%', display: 'flex', alignItems: 'center' }}>
                   <p>
-                    {tripPrices[index]?.[entry.date] ? (
-                      <span style={{ fontSize: '2.0rem' }}> ${tripPrices[index][entry.date]} </span>
-                    ) : (
-                      <span style={{ fontSize: '1.5rem', color: 'gray' }}>Fetching price...</span>
-                    )}
+                    <span style={{ fontSize: '1.5rem' }}>{entry.pickup}</span>
+                    <span style={{ fontSize: '1.5rem', margin: '0 5px', color: 'var(--accent)' }}>
+                      <b>&#8594;</b>
+                    </span>
+                    <span style={{ fontSize: '1.5rem' }}>{entry.dropoff}</span>
+                    <span style={{ fontSize: '1.5rem' }}>, pickup at </span>
+                    <span style={{ fontSize: '1.5rem' }}> for </span>
+                    <span style={{ fontSize: '1.5rem' }}>
+                      {requestType === 'Large Group' ? (
+                        `${largeGroupPassengers} Passengers`
+                      ) : 
+                        `${passengers} Passenger${passengers > 1 ? 's' : ''}`
+                      }
+                    </span>
                   </p>
                 </div>
-              )}
 
-              
-
-              <div className='flex-container-completebooking'>
-                {/* <div className="input-container" style={{ width: '400px' }}>
-                  <input 
-                    style={{ fontSize: '1.5rem', width: '400px' }}
-                    placeholder="Address, Hotel Name, or Map Pin"
-                    type="text"
-                    defaultValue={entry.pickupdetailed || ''}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setValue(`entries.${index}.pickupdetailed`, value); // Update the form value
-                    }}
-                  />
-                  <label>{entry.pickup.toUpperCase()} PICKUP DETAILS (OPTIONAL)</label>
-                </div> */}
-                
-                {/* <div className="input-container" style={{ width: '400px' }}>
-                  <input 
-                    style={{ fontSize: '1.5rem', width: '400px' }}
-                    placeholder="Address, Hotel Name, or Map Pin"
-                    type="text"
-                    defaultValue={entry.dropoffdetailed || ''}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setValue(`entries.${index}.dropoffdetailed`, value); // Update the form value
-                    }}
-                  />
-                  <label>{entry.dropoff.toUpperCase()} DROPOFF DETAILS (OPTIONAL)</label>
-                </div> */}
-
-                {(airportLocations.includes(entry.pickup) || airportLocations.includes(entry.dropoff)) && (
-                  <>
-                    <div className="input-container" style={{ width: '400px' }}>
-                      <input
-                        style={{ fontSize: '1.5rem' }}
-                        type="text"
-                        defaultValue={watchEntries[index]?.airline || ''} // Default to the existing value or an empty string
-                        {...register(`entries.${index}.airline`)}
-                        list="airline-options"
-                        placeholder='Airline Name'
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setValue(`entries.${index}.airline`, value); // Update the form value
-                        }}                      />
-                      <datalist id="airline-options">
-                          {airlineOptions
-                            .filter(option => option.toLowerCase().includes(watchEntries[index]?.airline.toLowerCase()))
-                            .map((option, index) => (
-                              <option key={index} value={option} />
-                            ))}
-                        </datalist>
-                      <label>AIRLINE (OPTIONAL)</label>
-                    </div>
-                    <div className="input-container" style={{ width: '400px' }}>
-                      <input 
-                        placeholder="Flight Number"
-                        type="number"
-                        style={{ fontSize: '1.5rem' }}
-                        defaultValue={entry.flightnumber || ''}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setValue(`entries.${index}.flightnumber`, value); // Update the form value
-                        }}   
-                      />
-                      <label>FLIGHT NUMBER (OPTIONAL)</label>
-                    </div>
-                  </>
+                {/* Display price of the trip */}
+                {(requestType !== 'Large Group' && requestType !== 'Alternate Route') && (
+                  <div style={{ minWidth: '100px', maxWidth: '100%', display: 'flex', alignItems: 'center' }}>
+                    <p>
+                      {tripPrices[index]?.[entry.date] ? (
+                        <span style={{ fontSize: '1.5rem' }}> ${tripPrices[index][entry.date]} - cash due on dropoff </span>
+                      ) : (
+                        <span style={{ fontSize: '1.5rem', color: 'gray' }}>Fetching price...</span>
+                      )}
+                    </p>
+                  </div>
                 )}
-                <div className="input-container" style={{ width: '500px' }}>
-                  <textarea 
-                    style={{ fontSize: '1.5rem', width: '300px', alignContent: 'center' }}
-                    placeholder="Add questions or comments"
-                    className='large-textarea'
-                    onChange={handleQuestionsChange} // No need for an inline function
-                  />
-                  <label>QUESTIONS / COMMENTS (OPTIONAL)</label>
-                </div>
-                <div>
-                  <button className="book-button" type="button-right" style = {{ marginLeft: '40px', display: 'none' }} onClick={() => openEditModal(index)}>MODIFY TRIP {index + 1}</button>
-                </div>
 
+                
+
+                <div className='flex-container-completebooking'>
+                  {/* <div className="input-container" style={{ width: '400px' }}>
+                    <input 
+                      style={{ fontSize: '1.5rem', width: '400px' }}
+                      placeholder="Address, Hotel Name, or Map Pin"
+                      type="text"
+                      defaultValue={entry.pickupdetailed || ''}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setValue(`entries.${index}.pickupdetailed`, value); // Update the form value
+                      }}
+                    />
+                    <label>{entry.pickup.toUpperCase()} PICKUP DETAILS (OPTIONAL)</label>
+                  </div> */}
+                  
+                  {/* <div className="input-container" style={{ width: '400px' }}>
+                    <input 
+                      style={{ fontSize: '1.5rem', width: '400px' }}
+                      placeholder="Address, Hotel Name, or Map Pin"
+                      type="text"
+                      defaultValue={entry.dropoffdetailed || ''}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setValue(`entries.${index}.dropoffdetailed`, value); // Update the form value
+                      }}
+                    />
+                    <label>{entry.dropoff.toUpperCase()} DROPOFF DETAILS (OPTIONAL)</label>
+                  </div> */}
+
+                  
+
+                  {(airportLocations.includes(entry.pickup) || airportLocations.includes(entry.dropoff)) && (
+                    <>
+                      <div className="input-container-light" style={{ width: '200px' }}>
+                        <ResponsiveTimePicker
+                          value={entry.time || ''}
+                          onChange={(time) => setValue(`entries.${index}.time`, time)}
+                        />
+                        <label>
+                          {airportLocations.includes(entry.pickup)
+                            ? "FLIGHT ARRIVAL TIME"
+                            : airportLocations.includes(entry.dropoff)
+                              ? "FLIGHT DEPARTURE TIME"
+                              : "SHUTTLE PICKUP TIME"}
+                        </label>
+                      </div>
+                      <div className="input-container-light" style={{ width: '400px' }}>
+                        <input
+                          style={{ fontSize: '1.5rem' }}
+                          type="text"
+                          defaultValue={watchEntries[index]?.airline || ''} // Default to the existing value or an empty string
+                          {...register(`entries.${index}.airline`)}
+                          list="airline-options"
+                          placeholder='Airline Name'
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setValue(`entries.${index}.airline`, value); // Update the form value
+                          }}                      />
+                        <datalist id="airline-options">
+                            {airlineOptions
+                              .filter(option => option.toLowerCase().includes(watchEntries[index]?.airline.toLowerCase()))
+                              .map((option, index) => (
+                                <option key={index} value={option} />
+                              ))}
+                          </datalist>
+                        <label>AIRLINE (OPTIONAL)</label>
+                      </div>
+                      <div className="input-container-light" style={{ width: '400px' }}>
+                        <input 
+                          placeholder="Flight Number"
+                          type="number"
+                          style={{ fontSize: '1.5rem' }}
+                          defaultValue={entry.flightnumber || ''}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setValue(`entries.${index}.flightnumber`, value); // Update the form value
+                          }}   
+                        />
+                        <label>FLIGHT NUMBER (OPTIONAL)</label>
+                      </div>
+                    </>
+                  )}
+                  <div className="input-container-light" style={{ width: '500px' }}>
+                    <textarea 
+                      style={{ fontSize: '1.5rem', width: '300px', alignContent: 'center' }}
+                      placeholder="Add questions or comments"
+                      className='large-textarea'
+                      onChange={handleQuestionsChange} // No need for an inline function
+                    />
+                    <label>QUESTIONS / COMMENTS (OPTIONAL)</label>
+                  </div>
+                  <div>
+                    <button className="book-button" type="button-right" style = {{ marginLeft: '40px', display: 'none' }} onClick={() => openEditModal(index)}>MODIFY TRIP {index + 1}</button>
+                  </div>
+
+                </div>
               </div>
-            </div>
-          </React.Fragment>
-        )
-      ))}
-      <div className='input-container'>
-        <button className="book-button" 
-          type="button-right"
-          onClick={() => handleSubmitBooking()}
-          style={{ marginTop: '10px' }}
-        ><b>{requestType==='Auto' ? "BOOK IT NOW!" : "REQUEST BOOKING"}</b></button>
-        <RequiredFieldsModal
-            isOpen={isRequiredFieldsModalOpen}
-            onClose={() => setIsRequiredFieldsModalOpen(false)}
-            missingFields={missingFields}            
-          />
+            </React.Fragment>
+          )
+        ))}
+        <div className='input-container-light'>
+          <button className="book-button" 
+            type="button-right"
+            onClick={() => handleSubmitBooking()}
+            style={{ marginTop: '10px' }}
+          ><b>{requestType==='Auto' ? "BOOK IT NOW!" : "REQUEST BOOKING"}</b></button>
+          <RequiredFieldsModal
+              isOpen={isRequiredFieldsModalOpen}
+              onClose={() => setIsRequiredFieldsModalOpen(false)}
+              missingFields={missingFields}            
+            />
+        </div>
       </div>
     </>
   );

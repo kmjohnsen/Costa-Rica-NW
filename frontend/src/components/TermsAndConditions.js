@@ -5,7 +5,7 @@ const TermsAndConditions = () => {
   return (
     <div>
       <Navbar />
-      <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
+      <div className='text-container' style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
         <h1>Terms and Conditions</h1>
         <p>Welcome to Costa Rica Northwest (the “Company”). By booking and using our airport shuttle and private transfer services, you agree to the following terms and conditions:</p>
 

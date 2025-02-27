@@ -1,0 +1,56 @@
+import React from 'react';
+import PropTypes from 'prop-types';
+import { TextField, useMediaQuery, useTheme } from '@mui/material';
+import { LocalizationProvider, DesktopTimePicker, MobileTimePicker } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import './ResponsiveTimePicker.css';
+
+function ResponsiveTimePicker({ value, onChange, label }) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const renderInput = (params) => (
+    <TextField
+      {...params}
+      placeholder="hh:mm aa"
+      error={false}
+      fullWidth
+      sx={{
+        '& .MuiInputBase-input::placeholder': {
+          color: 'grey',
+          opacity: 1,
+        },
+      }}
+    />
+  );
+
+  return (
+    <div className="responsive-time-picker">
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
+        {isMobile ? (
+          <MobileTimePicker
+            label={label}
+            value={value}
+            onChange={onChange}
+            renderInput={renderInput}
+          />
+        ) : (
+          <DesktopTimePicker
+            label={label}
+            value={value}
+            onChange={onChange}
+            renderInput={renderInput}
+          />
+        )}
+      </LocalizationProvider>
+    </div>
+  );
+}
+
+ResponsiveTimePicker.propTypes = {
+  value: PropTypes.oneOfType([PropTypes.instanceOf(Date), PropTypes.string]).isRequired,
+  onChange: PropTypes.func.isRequired,
+  label: PropTypes.string.isRequired,
+};
+
+export default ResponsiveTimePicker;

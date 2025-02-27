@@ -5,7 +5,7 @@ function FAQs() {
   return (
     <div>
       <Navbar />
-      <div className="container" style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
+      <div className='text-container' style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
         <h1>FAQs</h1>
         <section>
           <h2>What are your COVID-19 cleaning protocols?</h2>

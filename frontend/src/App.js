@@ -1,7 +1,6 @@
 import React from 'react';
 import { Route, Routes, Link, useNavigate } from 'react-router-dom';
 import Home from './components/Home';
-import LoginForm from './components/LoginForm';
 import AdminPage from './components/AdminPage';
 import CompleteBooking from './components/CompleteBooking';
 import RequestBooking from './components/RequestBooking';
@@ -14,6 +13,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios'
 import API_BASE_URL from './config';
+import './index.css'
 
 function App() {
   const navigate = useNavigate(); // Initialize the navigate function
@@ -52,7 +52,6 @@ function App() {
       <div className="content">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/login" element={<LoginForm />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/aboutus" element={<AboutUs />} />
           <Route path="/terms" element={<TermsConditions />} />

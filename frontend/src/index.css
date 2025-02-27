@@ -6,7 +6,11 @@
   --light-background: #f5f8fa;
   --text-color: #e3e3e3;
   --placeholder-color: #575757;
+  --input-background: rgb(231, 232, 240);
   --bright-white: #ffffff;
+  --dark-text: rgb(20, 16, 44);
+  --accent: #007bff;
+  --shadow-for-box: rgba(0, 0, 0, 0.3);
 }
 
 body {
@@ -77,80 +81,147 @@ body {
   }
 }
 
-.navbar {
-  display: flex;
-  gap: 0px 120px;
-  padding: 20px;
-  background-color: var(--dark-background);
-  justify-content: center;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.nav-link {
-  position: relative;
-  color: var(--text-color);
-  text-decoration: none;
-  font-size: 1.2rem;
-  font-family: "Helvetica", Arial, sans-serif;
-}
-
-.active-link {
-  position: relative;
-  color: var(--text-color);
-  text-decoration: none;
-  font-size: 1.2rem;
-  font-family: "Helvetica", Arial, sans-serif;
-}
-
-.active-link::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: -4px; /* Adjusts the position lower */
-  width: 100%;
-  height: 3px; /* Adjusts the thickness */
-  background-color: var(--primary-color); /* Matches the text color */
-}
-
 .large-textarea {
   width: 95%;
   height: 70px; /* Set desired height */
   overflow-wrap: break-word; /* Ensures long words break onto the next line */
   word-wrap: break-word; /* Supports older browsers */
   white-space: normal; /* Prevents the text from continuing on one line */
-  background-color: var(--dark-background);
+  background-color: var(--input-background);
   font-family: "Helvetica", Arial, sans-serif;
-  color: var(--text-color);
-  border: none;
-  border: none;
-  outline: none;
+  color: var(--dark-text);
+  border: 1px solid var(--placeholder-color); /* Set solid border */
+  border-radius: 8px;
   resize: none;
 }
 
-/* Hero Section styling */
-.hero-section {
+/* Hero Image Section */
+.hero-container {
   position: relative;
-  background-color: var(--dark-background);
-  color: var(--text-color);
-  padding: 0px;
-  justify-content: center;
   width: 100%;
-  overflow-y: visible !important;
-  font-family: "Helvetica", Arial, sans-serif;
-  margin: 0 auto; /* Center the hero-section within the page */
+  height: 40vh; /* Adjust height as needed */
+  overflow: hidden; /* Prevents image from overflowing */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: white;
+}
+
+.hero-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensures the image covers the area */
+  animation: kenBurns 10s infinite alternate ease-in-out;
+
+}
+
+/* 🔥 Zoom IN effect */
+.ken-burns-zoom-in {
+  animation: zoomIn 10s infinite alternate ease-in-out;
+}
+
+@keyframes zoomIn {
+  0% { transform: scale(1.0) translate(0, 0); }
+  100% { transform: scale(1.1) translate(-2%, -2%); }
+}
+
+/* 🔥 Zoom OUT effect */
+.ken-burns-zoom-out {
+  animation: zoomOut 10s infinite alternate ease-in-out;
+}
+
+@keyframes zoomOut {
+  0% { transform: scale(1.1) translate(0, 0); }
+  100% { transform: scale(1.0) translate(-2%, -2%); }
+}
+
+.hero-text {
+  position: relative; /* Keep text above the moving image */
+  z-index: 2;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* Aligns content to the right */
+  text-align: right; /* Aligns text to the right */
+  width: 80%; /* Adjust width */
+  max-width: 800px;
+}
+
+.hero-text h1 {
+  top: 20%; /* Adjust vertical positioning */
+  text-align: right; /* Align text to the left */
+  font-size: clamp(2rem, 5vw, 4rem); /* Adjusts between 2rem and 4rem based on screen width */
+  margin: 5%;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6); /* Dark shadow for contrast */
+
+}
+
+.hero-text h2 {
+  top: 20%; /* Adjust vertical positioning */
+  text-align: right; /* Align text to the left */
+  font-size: clamp(1rem, 3vw, 2rem); /* Adjusts between 1rem and 2rem */
+  max-width: 60%;
+  margin: 5%;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6); /* Dark shadow for contrast */
+
+}
+
+/* Booking Form Box */
+.booking-container {
+  background: var(--bright-white);
+  padding: 10px;
+  border-radius: 15px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 850px;
+  margin: -50px auto 20px; /* Move it up slightly */
+  position: relative;
+  z-index: 10;
+}
+
+/* Booking Form Box */
+.text-container {
+  background: var(--bright-white);
+  padding: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 850px;
+  margin: -50px auto 20px; /* Move it up slightly */
+  position: relative;
+  z-index: 10;
+}
+
+.flex-container-spaced {
+  display: flex;
+  flex-wrap: wrap; /* Ensures wrapping on smaller screens */
+  justify-content: space-between; /* Aligns items properly */
+  align-items: center;
+  gap: 10px; /* Adds spacing between elements */
+  padding: 10px 0; /* Optional: Adds vertical spacing */
+  width: 100%;
+}
+
+.flex-container-centered {
+  display: flex;
+  flex-wrap: wrap; /* Ensures wrapping on smaller screens */
+  justify-content: center; /* Aligns items properly */
+  align-items: center;
+  gap: 10px; /* Adds spacing between elements */
+  padding: 0px 0; /* Optional: Adds vertical spacing */
+  width: 100%;
 }
 
 .flex-container {
   display: flex;
-  gap: 0px 10px; /* Space between the two inputs */
   flex-wrap: wrap; /* Allows wrapping on smaller screens */
-  justify-content: center;
-  background-color: var(--dark-background);
+  justify-content: left;
+  background-color: var(--bright-white);
   align-items: center;
-  width: 100%;
-  max-width: 1500px;
-  margin: 0 auto; /* Center the flex container within the hero-section */
 }
 
 .flex-container input::placeholder {
@@ -166,30 +237,19 @@ body {
   justify-content: center;
   align-items: center;
   width: 100%;
+  max-width: 800px;
   margin: 0 auto; 
-  background-color: var(--dark-background);
-  color: var(--text-color);
+  background-color: var(--bright-white);
+  color: var(--dark-text);
   display: flex;
   flex-wrap: wrap;
   gap: 0px;
 }
 
 
-.flex-container-right {
-  display: flex;
-  gap: 0px 20px; /* Space between the two inputs */
-  flex-wrap: wrap; /* Allows wrapping on smaller screens */
-  justify-content: right;
-  align-items: center;
-  background-color: var(--dark-background);
-  width: 95%;
-  max-width: 1500px;
-  margin: 0 auto; 
-}
-
-.input-container , .input-container-hero {
-  background-color: var(--dark-background); /* White background for the box */
-  color: var(--text-color);
+.input-container, 
+.input-container-bottom,
+.input-container-light {
   padding: 0px ; /* Padding inside the container */
   display: flex;
   flex-direction: column;
@@ -198,50 +258,26 @@ body {
   font-family: "Helvetica", Arial, sans-serif;
 }
 
+.input-container, 
 .input-container-bottom {
-  background-color: var(--light-background); /* White background for the box */
-  color: var(--text-color);
-  padding: 0px ; /* Padding inside the container */
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 4px; /* Space below the box */
+  background-color: var(--input-background); /* White background for the box */
+  color: var(--text-color)
+}
+
+.input-container-light {
+  background-color: var(--bright-white); /* White background for the box */
+  color: black;
+  border-radius: 8px; /* Rounded edges */
+  border: black;
+  padding: 10px ; /* Padding inside the container */
+  margin-bottom: 0px; /* Space below the box */
+  margin: 5px;
   align-items: center;
-  font-family: "Helvetica", Arial, sans-serif;
 }
 
 .input-container input::placeholder {
   color: var(--placeholder-color); /* White color for placeholder text */
   opacity: 1; /* Ensures full visibility of placeholder text */
-  font-family: "Helvetica", Arial, sans-serif;
-}
-
-.input-container-hero input::placeholder {
-  color: var(--text-color); /* White color for placeholder text */
-  opacity: 1; /* Ensures full visibility of placeholder text */
-  font-family: "Helvetica", Arial, sans-serif;
-}
-
-.input-container-green {
-  background-color: var(--dark-background); /* White background for the box */
-  color: var(--primary-color);
-  border-radius: 8px; /* Rounded edges */
-  padding: 0px ; /* Padding inside the container */
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 4px; /* Space below the box */
-  align-items: center;
-  font-family: "Helvetica", Arial, sans-serif;
-}
-
-.input-container-light {
-  background-color: var(--light-background); /* White background for the box */
-  color: black;
-  border-radius: 8px; /* Rounded edges */
-  padding: 10px ; /* Padding inside the container */
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 0px; /* Space below the box */
-  align-items: center;
   font-family: "Helvetica", Arial, sans-serif;
 }
 
@@ -259,25 +295,12 @@ body {
   font-size: 1rem;
   color: var(--text-color);
   background-color: var(--dark-background);
+  border: 1px solid var(--placeholder-color); /* Set solid border */
   box-sizing: border-box;
-  border: none;
   box-shadow: none;
-  outline: none;
   text-align: center;
 }
 
-.input-container-hero input {
-  width: 100%; /* Full width inside the container */
-  padding: 10px;
-  font-size: 1rem;
-  color: var(--text-color);
-  background-color: var(--dark-background);
-  box-sizing: border-box;
-  border: none;
-  box-shadow: none;
-  outline: none;
-  text-align: center;
-}
 
 .input-container select {
   background-color: var(--dark-background);
@@ -300,14 +323,12 @@ body {
   padding: 10px;
   font-size: 1rem;
   color: black;
-  background-color: var(--light-background);
-  box-sizing: border-box;
-  border: none;
+  background-color: var(--input-background);
+  border: 1px solid var(--placeholder-color); /* Set solid border */
+  border-radius: 8px;
   box-shadow: none;
-  outline: none;
   text-align: center;
 }
-
 
 input[type="text"]::-webkit-calendar-picker-indicator,
 input[type="email"]::-webkit-calendar-picker-indicator,
@@ -316,60 +337,14 @@ input[type="search"]::-webkit-calendar-picker-indicator {
     display: none !important;
 }
 
-.dropdown {
-  position: absolute;
-  top: 100%;
-  left:0;
-  background: var(--light-background);
-  border: 1px solid var(--light-background);
-  max-height: 300px;
-  overflow-y: auto;
-  list-style-type: none; /* Removes bullets */
-  width: 100%;
-  z-index: 9999;
-  padding: 8px 0;
-  margin: 0;
-  border-radius: 4px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
-  transition: all 0.2s ease-in-out;
-}
-.dropdown li {
-  padding: 12px 16px;
-  cursor: pointer;
-  font-size: 1.0rem;
-  color: black;
-  background-color: var(--light-background);
-  transition: background 0.2s ease-in-out;
-}
-/* Rounded edges for last item */
-.dropdown li:last-child {
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
-}
-
-/* ✅ Modern hover effect */
-.dropdown li:hover {
-  background: #f0f0f0;
-  transform: scale(1.02); /* Slight scaling for a subtle effect */
-}
-
-/* ✅ Mobile-friendly touch effect */
-@media (max-width: 768px) {
-  .dropdown {
-    max-height: 200px; /* Smaller height on mobile */
-  }
-
-  .dropdown li {
-    font-size: 1rem;
-    padding: 10px 14px;
-  }
-}
 
 .book-button {
-  background-color: var(--primary-color);
+  background-color: var(--accent);
   color: var(--text-color);
   box-sizing: border-box;
   border: none;
+  border-radius: 25px;
+  width: 200px;
   box-shadow: none;
   outline: none;
   padding: 10px 30px;
@@ -390,40 +365,6 @@ input[type="search"]::-webkit-calendar-picker-indicator {
   margin-bottom: 10px; /* Space between label and input */
   font-family: "Helvetica", Arial, sans-serif;
   border-radius: 0; 
-}
-
-.calendar-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000; /* Ensure it appears above other content */
-}
-
-.calendar-modal {
-  position: relative;
-  background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  max-width: 400px;
-  width: 90%;
-  outline: none; /* Remove default outline */
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3); /* Optional shadow for effect */
-}
-
-.calendar-button {
-  background-color: var(--dark-background);
-  color: var(--text-color);
-  box-sizing: border-box;
-  border: none;
-  font-size: 1.5rem;
-  box-shadow: none !important;
-  outline: none;
 }
 
 
@@ -453,7 +394,7 @@ input[type="search"]::-webkit-calendar-picker-indicator {
   position: relative;
   padding-left: 30px; /* Space for the checkbox */
   font-size: 1.5rem;
-  color: #333;
+  color: var(--placeholder-color);
   cursor: pointer;
   user-select: none;
   font-family: "Helvetica", Arial, sans-serif;
@@ -467,7 +408,7 @@ input[type="search"]::-webkit-calendar-picker-indicator {
   transform: translateY(-50%);
   width: 20px;
   height: 20px;
-  border: 1px solid #333;
+  border: 1px solid var(--placeholder-color);
   border-radius: 4px; /* Rounded checkbox */
   background-color: #fff;
   box-sizing: border-box;
@@ -515,37 +456,7 @@ tr {
   width: 70%; /* Set the width of the right column */
 }
 
-.background-image-van {
-  position: relative;
-  width: 100%;
-  padding-top: 40.25%; /* Aspect ratio: 16:9 (height/width * 100) */
-  background-image: url('../public/IMG_2597-2048x1536.png'); /* Note the leading slash */
-  background-size: cover; /* Ensures the image covers the entire container */
-  background-position: center 60%; /* Center the image */
-  background-repeat: no-repeat;
-  overflow: hidden;
-}
 
-/* To place content in the center, use absolute positioning */
-.background-image-van h1 {
-  position: absolute;
-  top: 10%;
-  left: 10%;
-  color: var(--bright-white);
-  font-size: 5vw;
-  font-family: 'Helvetica';
-}
-
-/* To place content in the center, use absolute positioning */
-.background-image-van h2 {
-  position: absolute;
-  top: 50%;
-  left: 10%;
-  color: var(--bright-white);
-  font-size: 2.4vw;
-  font-family: 'Helvetica';
-  max-width: 35%;
-}
 
 input[type="time"] {
   font-size: 1.5rem;
@@ -591,7 +502,7 @@ input[type="time"]::-webkit-datetime-edit {
 
 
 .bottom-section {
-  background-color: #f3f3f3;
+  background-color: var(--light-background);
   color: var(--dark-background);
   width: 90%;
   max-width: 1000px; /* Ensures the width doesn’t exceed 90% */
@@ -610,6 +521,14 @@ input[type="time"]::-webkit-datetime-edit {
 @media (max-width: 1000px) {
   .navbar {
     gap: 0px 65px;
+  }
+
+  .booking-container{
+    width: 550px;
+  }
+
+  .flex-container-spaced{
+    width: 550px;
   }
 }
 
@@ -646,6 +565,14 @@ input[type="time"]::-webkit-datetime-edit {
   .navbar {
     gap: 0px 40px;
   }
+
+  .booking-container{
+    width: 550px;
+  }
+
+  .flex-container-spaced{
+    width: 550px;
+  }
 }
 
 /* Media query for even smaller screens (mobile devices) */
@@ -677,6 +604,14 @@ input[type="time"]::-webkit-datetime-edit {
   .navbar {
     gap: 0px 20px;
   }
+
+  .booking-container{
+    width: 90%;
+  }
+
+  .flex-container-spaced{
+    width: 90%;
+  }
 }
 
 .Modal-for-popup {
@@ -689,7 +624,7 @@ input[type="time"]::-webkit-datetime-edit {
   background: var(--light-background);
   color: var(--dark-background);
   padding: 20px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--placeholder-color);
   border-radius: 10px;
   max-width: 500px;
   width: 90%;
@@ -740,17 +675,3 @@ input[type="time"]::-webkit-datetime-edit {
 .custom-phone-input .flag-dropdown .selected-flag {
   padding-right: 10px; /* Adjusts padding around the flag icon if needed */
 }
-
-/* Overlay styling */
-/* .overlay {
-  position: relative;
-  left: 50%;
-  transform: translate(-50%, 0%);
-  background-color: rgba(255, 255, 255, 0.9); 
-  padding: 30px;
-  justify-content: center;
-  border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15); 
-  width: 100%;
-  overflow-y: auto;
-} */

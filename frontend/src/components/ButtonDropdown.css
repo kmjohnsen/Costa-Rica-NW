@@ -1,0 +1,138 @@
+/* Container */
+.location-dropdown {
+  position: relative;
+  width: 285px;
+  display: flex;
+}
+
+/* Input Field Container */
+.location-input-container {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+}
+
+/* Input Field */
+.location-input {
+  width: 100%;
+  height: 25px;
+  padding: 12px 40px 12px 14px; 
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.3s ease-in-out;
+  background-color: var(--bright-white);
+  box-shadow: 0px 2px 5px var(--shadow-for-box);
+  border: none;
+}
+
+/* Focused Input */
+.location-input:focus {
+  border-color: var(--accent);
+  background-color: white;
+  box-shadow: 0 0 10px var(--accent);
+}
+
+/* Container for chevron icon */
+.chevron-container {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none; /* Prevents interaction */
+}
+
+/* Chevron icon styling */
+.chevron-icon {
+  font-size: 12px;
+}
+
+/* Floating Label */
+.floating-label {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  color: var(--dark-text);
+  font-size: 16px;
+  transition: all 0.3s ease-in-out;
+  pointer-events: none;
+}
+
+/* Move Label Up When Active */
+.location-input:focus + .floating-label,
+.label-active {
+  top: 8px;
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--accent);
+}
+
+
+/* Dropdown List */
+.dropdown-list {
+  position: absolute;
+  width: 100%;
+  background-color: var(--bright-white);
+  border: 1px solid var(--bright-white);
+  border-radius: 8px;
+  box-shadow: 0px 4px 6px var(--shadow-for-box);
+  max-height: 250px;
+  overflow-y: auto;
+  margin-top: 5px;
+  z-index: 10;
+}
+
+/* Search Bar Inside Dropdown */
+.dropdown-search {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background-color: var(--bright-white);
+  border-bottom: 1px solid var(--bright-white);
+}
+
+.search-icon {
+  color: var(--placeholder-color);
+  margin-right: 10px;
+}
+
+.dropdown-search-input {
+  border: none;
+  width: 100%;
+  font-size: 16px;
+  outline: none;
+  background: none;
+}
+
+/* Dropdown Items */
+.dropdown-item {
+  padding: 12px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.dropdown-item:hover {
+  background-color: var(--bright-white);
+}
+
+
+/* ✅ Mobile-friendly touch effect */
+@media (max-width: 1000px) {
+  .dropdown {
+    max-height: 200px; /* Smaller height on mobile */
+  }
+
+  .dropdown li {
+    font-size: 1rem;
+    padding: 10px 14px;
+  }
+
+  .location-dropdown {
+    width: 100%;
+  }
+}

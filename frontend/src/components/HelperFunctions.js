@@ -1,20 +1,21 @@
-export function validateEntries(entries, fields) {
-  console.log("entries", entries)
-  console.log("fields", fields)
+export function validateEntries(entries, passengers, fields) {
   const capitalizeFirstLetter = (string) => 
     `${string.charAt(0).toUpperCase()}${string.slice(1)}`;
 
   let missingFieldsMessage = '';
-  let hasIncompleteFields = false
+  let hasIncompleteFields = false;
 
   entries.forEach((entry, index) => {
-    let entryErrors = [];
+    let entryErrors = []; // Reset for each entry
 
     // Check for missing fields in the current entry
     fields.forEach(field => {
-      if (!entry[field] || typeof value === 'string') {
-        let uppercase_Field = capitalizeFirstLetter(field)
-        entryErrors.push(uppercase_Field); // Add missing field to the error list
+      const fieldValue = entry[field];
+
+      // Ensure the field is checked properly
+      if (fieldValue === undefined || fieldValue === null || (typeof fieldValue === "string" && fieldValue.trim() === "")) {
+        let uppercaseField = capitalizeFirstLetter(field);
+        entryErrors.push(uppercaseField);
       }
     });
 
@@ -26,13 +27,19 @@ export function validateEntries(entries, fields) {
     }
   });
 
-  // Append final message if there are any missing fields
-  if (hasIncompleteFields) {
-    missingFieldsMessage += ' Please fill in the missing fields before proceeding.';
+  // Check if passengers is missing
+  if (!passengers || (typeof passengers === "string" && passengers.trim() === "")) {
+    hasIncompleteFields = true;
+    missingFieldsMessage += "Passengers field is required. ";
   }
 
-  console.log("incomplete fields", hasIncompleteFields)
-  console.log("missing fields message", missingFieldsMessage)
+  // Append final message if there are any missing fields
+  if (hasIncompleteFields) {
+    missingFieldsMessage += "Please fill in the missing fields before proceeding.";
+  }
+
+  console.log("incomplete fields:", hasIncompleteFields);
+  console.log("missing fields message:", missingFieldsMessage);
 
   return { hasIncompleteFields, missingFieldsMessage };
 }
