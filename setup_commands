@@ -40,7 +40,7 @@ pip install -r requirements.txt
 
 #Create production build of React app:
 cd frontend
-npm run build
+NODE_OPTIONS="--max-old-space-size=4096" npm run build
 sudo rm -rf /var/www/html/frontend/build
 sudo cp -r build /var/www/html/frontend
 

@@ -32,48 +32,142 @@ def send_email(receiver_email, subject, body, confirmationcode):
     # HTML version with embedded images
     html = f"""
     <html>
-      <body>
-        <img src="cid:image1" alt="Image 1" style="width:300px;"><br>
-        <h1 style="color:blue;">Thank you for choosing LIR Shuttle!</h1>
-        {body_html}
-        <h3Your confirmation number: {confirmationcode}</h3>
-        <h3>Payment</h3>
-        <p><b>Cash is due at time of service, in US Dollars or Costa Rican Colones equivalent</b></p>
-        <h3>Trip Modifications or Cancellations</h3>
-        <p>For cancellations or modifications please write to our sales team by replying to this email.</p>
-        <img src="cid:image2" alt="Image 2" style="width:300px;"><br>
-        <p style="color:green;">Thank you for choosing us!</p>
-      </body>
-    </html>
+        <head>
+            <style>
+            body {{
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+                margin: 0;
+                padding: 0;
+            }}
+            .email-container {{
+                max-width: 600px;
+                margin: 20px auto;
+                background: #ffffff;
+                border-radius: 8px;
+                box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+                padding: 20px;
+            }}
+            .header {{
+                background-color: blue;
+                text-align: center;
+                padding: 20px;
+                border-radius: 8px 8px 0 0;
+            }}
+            .header img {{
+                height: 100px;
+                width: auto;
+            }}
+            .content {{
+                padding: 20px;
+                text-align: center;
+            }}
+            .content h1 {{
+                color: #333;
+            }}
+            .content p {{
+                font-size: 16px;
+                color: #555;
+                line-height: 1.5;
+            }}
+            .confirmation-code {{
+                font-size: 18px;
+                font-weight: bold;
+                color: #007bff;
+            }}
+            .cta-button {{
+                background-color: #007bff;
+                color: white;
+                font-weight: bold;
+                padding: 10px 20px;
+                text-decoration: none;
+                border-radius: 5px;
+                display: inline-block;
+                margin-top: 20px;
+                font-size: 16px;
+            }}
+            .footer {{
+                text-align: center;
+                padding: 20px;
+                font-size: 14px;
+                color: #777;
+            }}
+            .footer a {{
+                color: blue;
+                text-decoration: none;
+            }}
+            </style>
+        </head>
+        <body>
+            <div class="email-container">
+            <!-- HEADER -->
+            <div class="header" style="background-color: #007bff; text-align: center; padding: 20px; border-radius: 8px 8px 0 0;">
+                <div style="display: inline-block; background-color: #007bff; border-radius: 8px;">
+                    <img src="cid:image1" alt="Company Logo" style="height: 54px; display: block; margin: 0 auto;">
+                </div>
+            </div>
+
+
+            <!-- CONTENT -->
+            <div class="content">
+                <h1>Thank You for Booking with LIR Shuttle!</h1>
+                {body_html}
+
+                <p><strong>Your Confirmation Number:</strong></p>
+                <p class="confirmation-code">{confirmationcode}</p>
+
+                <h3>Payment Information</h3>
+                <p><b>Cash is due at the time of service, payable in US Dollars or Costa Rican Colones.</b></p>
+
+                <h3>Trip Modifications or Cancellations</h3>
+                <p>If you need to cancel or modify your reservation, please reply to this email to contact our sales team.</p>
+
+                <!-- CTA BUTTON -->
+                <a href="https://www.costaricanorthwest.com" class="cta-button" style="background-color: #007bff; color: #ffffff; font-weight: bold; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 20px; font-size: 16px;">Book another Trip</a>
+
+            </div>
+
+            <!-- FOOTER -->
+            <div class="footer">
+                <p>Thank you for choosing us! We look forward to serving you.</p>
+                <p>For any assistance, reply to this email or email us at <a href="mailto:booking@costaricanorthwest.com">booking@costaricanorthwest.com</a></p>
+            </div>
+            <div style="display: inline-block; background-color: #007bff; padding: 10px; border-radius: 8px;">
+                <img src="cid:image2" alt="Van" style="width: 560px; display: block; margin: 0 auto;">
+            </div>
+            <div class="footer">
+                <p>&copy; 2025 Costa Rica Northwest. All rights reserved.</p>
+            </div>
+            </div>
+        </body>
+        </html>
     """
 
     msg_alternative.attach(MIMEText(html, 'html'))
 
+    def attach_png(msg, image_path, cid):
+        try:
+            with open(image_path, 'rb') as img_file:
+                img_data = img_file.read()
+                # Use MIMEImage for PNG images
+                img_part = MIMEImage(img_data, _subtype="png")
+                img_part.add_header('Content-ID', f'<{cid}>')  # Matches 'cid:image1' in HTML
+                img_part.add_header("Content-Disposition", "inline", filename="logo.png")
+                msg.attach(img_part)
+        except FileNotFoundError:
+            print(f"Error: Image not found at {image_path}")
+        except Exception as e:
+            print(f"An error occurred while attaching {cid}: {e}")
+
+
     # ✅ Use Relative Paths for Images
-    image_path1 = os.path.join(os.getcwd(), "resources", "images", "LIRShuttleLogoImage.png")
-    image_path2 = os.path.join(os.getcwd(), "resources", "images", "LIRShuttleLogoImage.png")
+    # Use relative paths for images
+    image_path1 = os.path.join(os.getcwd(), "resources", "images", "CostaRicaNW_Logo.png")
+    image_path2 = os.path.join(os.getcwd(), "resources", "images", "leave_airport_small.png")
 
-    # Attach Image 1
-    try:
-        with open(image_path1, 'rb') as img_file1:
-            img1 = MIMEImage(img_file1.read())
-            img1.add_header('Content-ID', '<image1>')  # Matches 'cid:image1' in HTML
-            msg.attach(img1)
-    except FileNotFoundError:
-        print(f"Error: Image not found at {image_path1}")
-    except Exception as e:
-        print(f"An error occurred while attaching image1: {e}")
-
-    # Attach Image 2
-    try:
-        with open(image_path2, 'rb') as img_file2:
-            img2 = MIMEImage(img_file2.read())
-            img2.add_header('Content-ID', '<image2>')  # Matches 'cid:image2' in HTML
-            msg.attach(img2)
-    except FileNotFoundError:
-        print(f"Error: Image not found at {image_path2}")
-    except Exception as e:
-        print(f"An error occurred while attaching image2: {e}")
+    # Attach PNG images using MIMEImage
+    attach_png(msg, image_path1, "image1")
+    attach_png(msg, image_path2, "image2")
 
     try:
         # Set up the SMTP server

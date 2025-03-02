@@ -1,6 +1,13 @@
 # TO DO LIST
 
 ## Important
+- [✓] Modify email to make it more appropriate
+- [✓] Dont allow clicking off the confirm email popup, but put in a cancel button there
+- [✓] Complete booking make sure times are required
+- [ ] Get submit booking working to have into database
+- [ ] Make sure passengers gets in email, and in database
+- [ ] Email lists time with date in it, remove so only the time.
+
 - [ ] Restrict to to/from the airport only
 - [ ] Add a form to fill out if want something different "More than airport transportation, use this form"
 - [ ] Flight Arrival Time/Flight Departure Time with note Landing: "Our driver ... " See whatsapp message

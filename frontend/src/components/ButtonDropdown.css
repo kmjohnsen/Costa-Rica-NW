@@ -136,3 +136,11 @@
     width: 100%;
   }
 }
+
+
+/* Media query for even smaller screens (mobile devices) */
+@media (max-width: 480px) {
+  .location-dropdown {
+    width: 100%;
+  }
+}

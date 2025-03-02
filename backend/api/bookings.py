@@ -21,6 +21,8 @@ limiter = Limiter(
     storage_uri="memory://",
 ) 
 
+costaricanwemail = "kmjohnsen@gmail.com"
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -355,8 +357,8 @@ def submit_booking():
     print(f'booking data {booking_data}')
 
     # Extract personal details
-    first_name, last_name, email, telephone, requestType, questions, bookingsite, confirmation_code, manualRouteRequest, largeGroupPassengers = (
-        booking_data.get(key) for key in ['firstName', 'lastName', 'email', 'telephone', 'requestType', 'questions', 'bookingsite', 'confirmationCode', 'manualRouteRequest', 'largeGroupPassengers']
+    first_name, last_name, email, telephone, requestType, questions, bookingsite, confirmation_code, manualRouteRequest, passengers, largeGroupPassengers = (
+        booking_data.get(key) for key in ['firstName', 'lastName', 'email', 'telephone', 'requestType', 'questions', 'bookingsite', 'confirmationCode', 'manualRouteRequest', 'passengers', 'largeGroupPassengers']
         )
     entries = booking_data.get('entries', [])
     print(f"personal details: {first_name}, {last_name}, {email}, {telephone}, {requestType}, {questions}, {bookingsite} {manualRouteRequest} {largeGroupPassengers}")
@@ -837,6 +839,7 @@ def generate_email_confirmation(entries, requestType, passengers, email, first_n
     print(f"email body: {emailbody}")
 
     tripnum = 1
+    dates = ""
     for entry in entries:
         # Extract details for each trip
         routeID = entry.get('routenumber') or None
@@ -877,6 +880,7 @@ def generate_email_confirmation(entries, requestType, passengers, email, first_n
             prices = list(day_price.values())[0]
             print(f"price3: {prices}, type {type(prices)}")
         # prices = entry.get('prices', {}) or None
+        dates = dates + " " + date
         print(f"Price after emailbody1: {prices}")
         emailbody.append(f"Trip {str(tripnum)} details: Pickup at {pickup} on {date} at {time}, for shuttle service to {dropoff} for {str(passengers)} passengers.")
         print(f"Price after emailbody2: {prices}")
@@ -902,14 +906,18 @@ def generate_email_confirmation(entries, requestType, passengers, email, first_n
         emailbody.append(" Expect someone to reach out to you soon to confirm your trip!")
         # TODO make a send email for Aaron, and mark URGENT if the date is soon
         if requestType == 'Upcoming':
-            send_email('kmjohnsen@gmail.com', "Urgent: New Upcoming Booking Request", emailbody, confirmationcode)        
+            send_email(email, "Urgent: New Upcoming Booking Request", emailbody, confirmationcode)        
+            send_email(costaricanwemail, "Urgent: New Upcoming Booking Request", emailbody, confirmationcode)        
         else:
-            send_email('kmjohnsen@gmail.com', "New Booking Request", emailbody, confirmationcode)        
+            send_email(email, "New Booking Request", emailbody, confirmationcode)        
+            send_email(costaricanwemail, "New Booking Request", emailbody, confirmationcode)        
 
     # Send confirmation email
     print(emailbody)
     try:
-        send_email(email, "LIR Shuttle Confirmation", emailbody, confirmationcode)
+        send_email(email, "Costa Rica Northwest: Shuttle Confirmation", emailbody, confirmationcode)
+        subjectline = "Trip Booked: Date " + dates + ", Conf: " + confirmationcode + " " + first_name + " " + last_name
+        send_email(costaricanwemail, subjectline, emailbody, confirmationcode)
         print(f"email sent")
     except Exception as e:
         print(f"Error during email sending")

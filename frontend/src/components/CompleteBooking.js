@@ -247,6 +247,9 @@ function CompleteBooking() {
       telephone: telephone || '',
     }];
 
+    const notime = watchEntries.some((entry) => !entry.time);
+
+
     // Add `largeGroupPassengers` if `isLargeGroup` is true
     if (isLargeGroup) {
         fields.largeGroupPassengers = largeGroupPassengers;
@@ -254,7 +257,7 @@ function CompleteBooking() {
 
     // Define the required fields dynamically
     const requiredFields = ['firstName', 'lastName', 'email', 'telephone'];
-    console.log("LArge Group passengers", isLargeGroup)
+    console.log("Large Group passengers", isLargeGroup)
     if (isLargeGroup) {
         requiredFields.push('largeGroupPassengers');
     }
@@ -263,8 +266,12 @@ function CompleteBooking() {
     console.log("Required Fields:", requiredFields);
     const { hasIncompleteFields, missingFieldsMessage } = validateEntries(fields, passengers, requiredFields);
     
-    if (hasIncompleteFields) {
-      setMissingFields(missingFieldsMessage);
+    let updatedMissingFieldsMessage = missingFieldsMessage
+    if (notime) {
+      updatedMissingFieldsMessage += "Time fields required befor proceeding."
+    }
+    if (hasIncompleteFields || notime) {
+      setMissingFields(updatedMissingFieldsMessage);
       setIsRequiredFieldsModalOpen(true);
       return;
     }
@@ -290,7 +297,7 @@ function CompleteBooking() {
       setConfirmModalIsOpen(true);
       
       // Not auto booking, create its own confirmation code
-      const bookingData = { entries: watchEntries, firstName, lastName, email, telephone, questions, bookingsite, requestType, confirmationCode, manualRouteRequest, largeGroupPassengers };
+      const bookingData = { entries: watchEntries, firstName, lastName, email, telephone, questions, bookingsite, requestType, confirmationCode, manualRouteRequest, passengers, largeGroupPassengers };
       console.log("bookingData", bookingData)
       const response = await axios.post(`${API_BASE_URL}/api/submit-booking`, { bookingData });
       console.log("here2")
@@ -372,8 +379,34 @@ function CompleteBooking() {
         onRequestClose={closeBookingConfirmationModal}
         contentLabel="Confirmation Code Entry"
         className="Modal-for-popup"
+        shouldCloseOnOverlayClick={false} // Prevent closing on outside click
         overlayClassName="Overlay-for-popup"
       >
+        <div>
+          <button
+            onClick={closeBookingConfirmationModal}
+            style={{
+              position: 'absolute',
+              top: '10px',
+              right: '10px',
+              background: 'var(--accent)',
+              color: 'var(--text-color)',
+              borderRadius: '50%',
+              height: '25px',
+              width: '25px',
+              border: 'none',
+              fontSize: '20px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transform: 'translateY(0px)',
+            }}
+            aria-label="Close"
+          >
+            <span style={{ transform: 'translateY(1px)' }}>&times;</span>
+          </button>
+        </div>
         {successfulBooking ? (
           // Show "Booking Confirmed!" when successfulBooking is true
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
@@ -425,6 +458,13 @@ function CompleteBooking() {
               style={{ marginTop: '20px' }}
             >
               COMPLETE YOUR BOOKING!
+            </button>
+            <button
+              onClick={closeBookingConfirmationModal}
+              className="book-button"
+              style={{ marginTop: '20px', backgroundColor: 'var(--placeholder-color)' }}
+            >
+              CANCEL
             </button>
             {errorMessage && (
               <button
@@ -716,6 +756,7 @@ function CompleteBooking() {
                       <div className="input-container-light" style={{ width: '200px' }}>
                         <ResponsiveTimePicker
                           value={entry.time || ''}
+                          required
                           onChange={(time) => setValue(`entries.${index}.time`, time)}
                         />
                         <label>

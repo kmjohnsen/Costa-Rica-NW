@@ -6,7 +6,7 @@
   --light-background: #f5f8fa;
   --text-color: #e3e3e3;
   --placeholder-color: #575757;
-  --input-background: rgb(231, 232, 240);
+  --input-background: rgb(248, 248, 250);
   --bright-white: #ffffff;
   --dark-text: rgb(20, 16, 44);
   --accent: #007bff;
@@ -105,7 +105,7 @@ body {
   align-items: center;
   justify-content: center;
   text-align: center;
-  color: white;
+  color: var(--bright-white);
 }
 
 .hero-image {
@@ -153,18 +153,18 @@ body {
 }
 
 .hero-text h1 {
-  top: 20%; /* Adjust vertical positioning */
+  top: 15%; /* Adjust vertical positioning */
   text-align: right; /* Align text to the left */
-  font-size: clamp(2rem, 5vw, 4rem); /* Adjusts between 2rem and 4rem based on screen width */
+  font-size: clamp(2rem, 5vw, 3.5rem); /* Adjusts between 2rem and 4rem based on screen width */
   margin: 5%;
   text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6); /* Dark shadow for contrast */
 
 }
 
 .hero-text h2 {
-  top: 20%; /* Adjust vertical positioning */
+  top: 15%; /* Adjust vertical positioning */
   text-align: right; /* Align text to the left */
-  font-size: clamp(1rem, 3vw, 2rem); /* Adjusts between 1rem and 2rem */
+  font-size: clamp(1rem, 3vw, 1.5rem); /* Adjusts between 1rem and 2rem */
   max-width: 60%;
   margin: 5%;
   text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6); /* Dark shadow for contrast */
@@ -423,7 +423,7 @@ input[type="search"]::-webkit-calendar-picker-indicator {
   top: 50%;
   transform: translate(-175%, -50%); /* Center the checkmark */
   font-size: 1.2rem; /* Adjust size */
-  color: var(--primary-color); /* Color of the checkmark */
+  color: var(--accent); /* Color of the checkmark */
   display: none; /* Hidden by default */
 }
 
@@ -567,7 +567,7 @@ input[type="time"]::-webkit-datetime-edit {
   }
 
   .booking-container{
-    width: 550px;
+    width: 90%;
   }
 
   .flex-container-spaced{
@@ -578,6 +578,7 @@ input[type="time"]::-webkit-datetime-edit {
 /* Media query for even smaller screens (mobile devices) */
 @media (max-width: 480px) {
   .booking-page-container {
+    width: 90%;
     padding-top: 180px; /* Further increase padding for small screens */
   }
 
