@@ -30,15 +30,15 @@ function ResponsiveTimePicker({ value, onChange, label }) {
         {isMobile ? (
           <MobileTimePicker
             label={label}
-            value={value}
-            onChange={onChange}
+            value={value instanceof Date ? value : null} // Ensure value is Date
+            onChange={(newValue) => onChange(newValue || new Date())} // Ensure Date
             renderInput={renderInput}
           />
         ) : (
           <DesktopTimePicker
             label={label}
-            value={value}
-            onChange={onChange}
+            value={value instanceof Date ? value : null} // Ensure Date object
+            onChange={(newValue) => onChange(newValue || new Date())} // Ensure Date
             renderInput={renderInput}
           />
         )}

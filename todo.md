@@ -4,6 +4,7 @@
 - [✓] Modify email to make it more appropriate
 - [✓] Dont allow clicking off the confirm email popup, but put in a cancel button there
 - [✓] Complete booking make sure times are required
+- [ ] make a run local env variable on web server.
 - [ ] Get submit booking working to have into database
 - [ ] Make sure passengers gets in email, and in database
 - [ ] Email lists time with date in it, remove so only the time.

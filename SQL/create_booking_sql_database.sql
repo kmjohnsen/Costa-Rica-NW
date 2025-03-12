@@ -29,9 +29,9 @@ driver ENUM('Aaron', 'Carlos'), questions TEXT NULL DEFAULT NULL, manualbookingi
  CREATE TABLE IF NOT EXISTS pricing_rules (ruleID INT NOT NULL PRIMARY KEY AUTO_INCREMENT, datestart DATE NOT NULL, 
  dateend DATE NOT NULL, percentadjustment DECIMAL(10,0), priceadjustment DECIMAL(10,0), override BOOLEAN DEFAULT FALSE);
  
- CREATE TABLE IF NOT EXISTS admin_information (adminID INT NOT NULL PRIMARY KEY AUTO_INCREMENT, role ENUM('dev', 'admin'), 
+ CREATE TABLE IF NOT EXISTS user_information (userID INT NOT NULL PRIMARY KEY AUTO_INCREMENT, role ENUM('dev', 'admin', 'user', 'driver'), 
  FirstName VARCHAR(255) NOT NULL, LastName VARCHAR(255) NOT NULL, Email VARCHAR(255) NOT NULL, PhoneNumber VARCHAR(255) NOT NULL, 
- UserPassword VARCHAR(255) NOT NULL); 
+ UserPassword VARCHAR(255)); 
  
 CREATE TABLE IF NOT EXISTS blackout_dates (dateID INT NOT NULL PRIMARY KEY AUTO_INCREMENT, blackoutdate DATE NOT NULL);
 
@@ -71,6 +71,7 @@ SELECT * FROM booking_information WHERE booking_date = '2024-09-24';
 SELECT * FROM booking_information ORDER BY booking_date;
 SELECT * FROM booking_information WHERE booking_date = '2024-10-04';
 SELECT * FROM user_information WHERE (Email = 'b.campos@hotmail.com' && (role = 'dev' || role = 'admin'));
+SELECT * FROM route_information;
 
 SELECT b.routeID, b.booking_date, b.pickup_time, b.routecost, b.driver, b.passengers,
             r.routeID, r.startcity, r.endcity

@@ -138,6 +138,7 @@ function BookingForm() {
   const watchEntries = useWatch({ control, name: "entries"});
 
   const fetchRouteAndPrices = useCallback(async () => {
+    console.log("hi")
     await Promise.all(
       watchEntries.map(async (entry, index) => {
         const { pickup, dropoff, routenumber } = entry;
@@ -202,20 +203,23 @@ function BookingForm() {
   
   const previousEntriesRef = useRef(watchEntries); // Track previous state
 
-  const prevEntriesRef = useRef([]);
+  const prevDataRef = useRef({ entries: watchEntries, passengers });
 
   useEffect(() => {
     const allFieldsFilled = watchEntries.every(
       (entry) => entry.pickup && entry.dropoff && entry.date && passengers
     );
-
-    const hasChanged = JSON.stringify(watchEntries) !== JSON.stringify(prevEntriesRef.current);
-    
+  
+    const currentData = { entries: watchEntries, passengers };
+    // Compare the current data object with the previous data object
+    const hasChanged =
+      JSON.stringify(currentData) !== JSON.stringify(prevDataRef.current);
+  
     if (allFieldsFilled && hasChanged) {
-      prevEntriesRef.current = watchEntries;  // ✅ Store previous state to prevent re-fetching
+      prevDataRef.current = currentData; // Update the ref with the latest values
       fetchRouteAndPrices();
     }
-  }, [watchEntries, passengers]);
+  }, [watchEntries, passengers, fetchRouteAndPrices]);
 
   useEffect(() => {
     const calculateTotalPrice = () => {

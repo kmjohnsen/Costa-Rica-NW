@@ -361,7 +361,7 @@ def submit_booking():
         booking_data.get(key) for key in ['firstName', 'lastName', 'email', 'telephone', 'requestType', 'questions', 'bookingsite', 'confirmationCode', 'manualRouteRequest', 'passengers', 'largeGroupPassengers']
         )
     entries = booking_data.get('entries', [])
-    print(f"personal details: {first_name}, {last_name}, {email}, {telephone}, {requestType}, {questions}, {bookingsite} {manualRouteRequest} {largeGroupPassengers}")
+    print(f"personal details: {first_name}, {last_name}, {email}, {telephone}, {requestType}, {questions}, {bookingsite} {manualRouteRequest} {largeGroupPassengers} {passengers}")
 
     # Make sure requestType is valid
     if requestType == 'Auto' or requestType == 'Large Group' or requestType == 'Upcoming' or requestType == 'Invalid Phone' or requestType == 'Alternate Route':
@@ -410,8 +410,8 @@ def submit_booking():
         for entry in entries:
             # Extract details for each trip
             print(f"entry {entry}")
-            routeID, pickup, dropoff, pickup_detailed, dropoff_detailed, date, time, airline, flight_number, passengers = (
-                entry.get(key) for key in ['routenumber', 'pickup', 'dropoff', 'pickupdetailed', 'dropoffdetailed', 'date', 'time', 'airline', 'flightnumber', 'passengers']
+            routeID, pickup, dropoff, pickup_detailed, dropoff_detailed, date, time, airline, flight_number = (
+                entry.get(key) for key in ['routenumber', 'pickup', 'dropoff', 'pickupdetailed', 'dropoffdetailed', 'date', 'time', 'airline', 'flightnumber']
             )
             # if entry.get('passengers') == '11+':
             #     passengers = entry.get('largeGroupPassengers') or None
@@ -781,8 +781,6 @@ def insert_into_booking_database(requestType, dataforbooking, cursor):
     if table_name not in allowed_tables:
         raise ValueError("Invalid table name.")
     
-    print("here5")
-
     # Build the base SQL query
     # Exclude 'tempbookingID' and 'bookingID' from columns and placeholders
     excluded_columns = {'tempbookingID', 'bookingID'}
@@ -808,6 +806,7 @@ def insert_into_booking_database(requestType, dataforbooking, cursor):
         print("Query executed successfully")
     except Exception as e:
         print(f"Error executing query: {e}")
+        raise Exception(f"Error executing query: {e}")
 
 
 def generate_email_confirmation(entries, requestType, passengers, email, first_name, last_name, telephone, confirmationcode):
@@ -906,11 +905,9 @@ def generate_email_confirmation(entries, requestType, passengers, email, first_n
         emailbody.append(" Expect someone to reach out to you soon to confirm your trip!")
         # TODO make a send email for Aaron, and mark URGENT if the date is soon
         if requestType == 'Upcoming':
-            send_email(email, "Urgent: New Upcoming Booking Request", emailbody, confirmationcode)        
-            send_email(costaricanwemail, "Urgent: New Upcoming Booking Request", emailbody, confirmationcode)        
+            send_email([email, costaricanwemail], "Urgent: New Upcoming Booking Request", emailbody, confirmationcode)        
         else:
-            send_email(email, "New Booking Request", emailbody, confirmationcode)        
-            send_email(costaricanwemail, "New Booking Request", emailbody, confirmationcode)        
+            send_email([email, costaricanwemail], "New Booking Request", emailbody, confirmationcode)        
 
     # Send confirmation email
     print(emailbody)

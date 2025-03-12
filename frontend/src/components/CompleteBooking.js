@@ -163,7 +163,7 @@ function CompleteBooking() {
       
       console.log("current Date", currentDate);
       console.log("futureDateMargin", futureDateMargin);
-      console.log("booking Date HERE:", bookingDate, futureDateMargin);
+      console.log("booking Date HERE:", bookingDate);
 
       return bookingDate > futureDateMargin; // Date valid if after margin
     });
@@ -248,7 +248,9 @@ function CompleteBooking() {
     }];
 
     const notime = watchEntries.some((entry) => !entry.time);
-
+    console.log("fields", fields)
+    console.log("time", watchEntries)
+    console.log("passengers", passengers)
 
     // Add `largeGroupPassengers` if `isLargeGroup` is true
     if (isLargeGroup) {
@@ -257,7 +259,7 @@ function CompleteBooking() {
 
     // Define the required fields dynamically
     const requiredFields = ['firstName', 'lastName', 'email', 'telephone'];
-    console.log("Large Group passengers", isLargeGroup)
+    console.log("Large Group passengers", isLargeGroup, largeGroupPassengers)
     if (isLargeGroup) {
         requiredFields.push('largeGroupPassengers');
     }
@@ -275,39 +277,51 @@ function CompleteBooking() {
       setIsRequiredFieldsModalOpen(true);
       return;
     }
-    // let result = generateConfirmationCode()
-    // setConfirmation_Code(result)
-    if (requestType === 'Auto') {
-      // Popup the confirmation code entry
-      setConfirmModalIsOpen(true);
-      setIsCodeEntry(true)
-      // Generate Confirmation code
-      await axios.post(`${API_BASE_URL}/api/send-verification`,{
-        telephone: telephone,
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-    } else { // Not Auto requestType
-      let confirmationCode = generateConfirmationCode()
-      setConfirmationCode(confirmationCode)
-      setLoading(true);
-      setIsCodeEntry(false)
-      setConfirmModalIsOpen(true);
-      
-      // Not auto booking, create its own confirmation code
-      const bookingData = { entries: watchEntries, firstName, lastName, email, telephone, questions, bookingsite, requestType, confirmationCode, manualRouteRequest, passengers, largeGroupPassengers };
-      console.log("bookingData", bookingData)
-      const response = await axios.post(`${API_BASE_URL}/api/submit-booking`, { bookingData });
-      console.log("here2")
+    
+    try {
+        let confirmationCode = generateConfirmationCode();
+        setConfirmationCode(confirmationCode);
+        setLoading(true);
+        setIsCodeEntry(false);
+        setConfirmModalIsOpen(true);
+  
+        const bookingData = { 
+          entries: watchEntries, 
+          firstName, 
+          lastName, 
+          email, 
+          telephone, 
+          questions, 
+          bookingsite, 
+          requestType, 
+          confirmationCode, 
+          manualRouteRequest, 
+          passengers, 
+          largeGroupPassengers 
+        };
+        console.log("bookingData", bookingData);
+  
+        const response = await axios.post(`${API_BASE_URL}/api/submit-booking`, { bookingData });
+        console.log("here2");
+        setLoading(false);
+        if (response.status === 200) {
+          setSuccessfulRequest(true);
+        }
+      // }
+    } catch (error) {
+      // Extract error message from the response and update state to display in the modal
+      console.error("Booking submission error:", error);
+      setErrorMessage(
+        error.response && error.response.data && error.response.data.error
+          ? error.response.data.error
+          : "An unexpected error occurred. Please try again."
+      );
+      // Optionally, set the modal to show the error view
+      setIsCodeEntry(true);
       setLoading(false);
-      if (response.status === 200) {
-        setSuccessfulRequest(true)
-      }
     }
   };
-
+    
   const handleCodeSubmit = async () => {
     setLoading(true);
     setIsCodeEntry(false); // Switch to loading view
@@ -321,6 +335,28 @@ function CompleteBooking() {
           return;
       }
 
+      if (process.env.REACT_APP_RUNNING_LOCAL === "True") {
+        // If running locally, bypass verification and submit booking
+        const bookingData = { 
+          entries: watchEntries, 
+          firstName, 
+          lastName, 
+          email, 
+          telephone, 
+          questions, 
+          bookingsite, 
+          requestType, 
+          confirmationCode, 
+          manualRouteRequest 
+        };
+        const response = await axios.post(`${API_BASE_URL}/api/submit-booking`, { bookingData });
+        setLoading(false);
+        if (response.status === 200) {
+          setSuccessfulBooking(true);
+        }
+        return; // Exit early, so verifyResponse is never referenced
+      }
+      
       const verifyResponse = await axios.post(`${API_BASE_URL}/api/verify-code`, {
           telephone,
           code: confirmationCode,
@@ -513,9 +549,7 @@ function CompleteBooking() {
                 <label>Passengers:</label>
                 <select
                   value={passengers || "1"} 
-                  onChange={(value) => {
-                    setPassengers(value)
-                  }}
+                  onChange={(e) => setPassengers(e.target.value)}
                   required
                   style={{ fontSize: '1.5rem', fontFamily: 'Segoe UI' }}
                   // className={!watchEntries[index]?.passengers ? 'placeholder' : ''} // Apply class if no value is selected
@@ -562,11 +596,11 @@ function CompleteBooking() {
               <p style={{ fontSize:'1.2rem' }}>Thank you for choosing us for your upcoming trip!</p>
             </div>
             <div className="flex-container-completebooking">
-              <p  style={{ width:'90%', maxWidth:'850px', fontSize:'1.2rem', textAlign: 'center', margin: '0 auto' }}><i>Due to the size of your party, we want to ensure that every detail is perfectly arranged. Please complete the form, and a dedicated sales associate will reach out to discuss your specific needs and ensure a seamless, enjoyable experience.</i></p>
+              <p  style={{ width:'90%', maxWidth:'850px', fontSize:'1.2rem', textAlign: 'center', margin: '0 auto', color: 'var(--accent)' }}><i>Due to the size of your party, we want to ensure that every detail is perfectly arranged. Please complete the form, and a dedicated sales associate will reach out to discuss your specific needs and ensure a seamless, enjoyable experience.</i></p>
             </div>
 
             <div className="flex-container-completebooking">
-              <div className="input-container" style={{ width: '300px', margin: '20px 0' }}>        
+              <div className="input-container-light" style={{ width: '300px', margin: '20px 0' }}>        
                 <input
                   type="number"
                   value={largeGroupPassengers}
@@ -755,9 +789,16 @@ function CompleteBooking() {
                     <>
                       <div className="input-container-light" style={{ width: '200px' }}>
                         <ResponsiveTimePicker
-                          value={entry.time || ''}
+                          value={entry.time instanceof Date ? entry.time : null}
+                          onChange={(time) => {
+                            if (time) {
+                              const formattedTime = new Date(time).toLocaleTimeString('en-US', { hour12: false });
+                              setValue(`entries.${index}.time`, formattedTime);
+                            } else {
+                              setValue(`entries.${index}.time`, null);
+                            }
+                          }}
                           required
-                          onChange={(time) => setValue(`entries.${index}.time`, time)}
                         />
                         <label>
                           {airportLocations.includes(entry.pickup)

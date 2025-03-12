@@ -9,7 +9,7 @@ from email.utils import formataddr
 from email import encoders
 import os
 
-def send_email(receiver_email, subject, body, confirmationcode):
+def send_email(receiver_emails, subject, body, confirmationcode):
     # Setup
     smtp_server = "smtp.gmail.com"
     smtp_port = 587  # Gmail uses port 587 for TLS
@@ -17,10 +17,14 @@ def send_email(receiver_email, subject, body, confirmationcode):
     password = "muuz vqct pbtc prcx"  # Your email password or app-specific password
     sender_email = "costalirshuttletest@gmail.com" 
 
+        # Ensure receiver_emails is a list
+    if isinstance(receiver_emails, str):
+        receiver_emails = [receiver_emails]
+
+
     # Create the email message container
     msg = MIMEMultipart('related')  # 'related' is used for including embedded images
     msg['From'] = formataddr(('Aaron Quiros', 'costalirshuttletest@gmail.com'))
-    msg['To'] = receiver_email
     msg['Subject'] = subject
     
     # Create the alternative part to hold both plain text and HTML
@@ -178,7 +182,9 @@ def send_email(receiver_email, subject, body, confirmationcode):
         server.login(login, password)
 
         # Send the email
-        server.sendmail(sender_email, receiver_email, msg.as_string())
+        for email in receiver_emails:
+            msg['To'] = email
+            server.sendmail(sender_email, email, msg.as_string())
 
         print("Email sent successfully!")
     except Exception as e:
