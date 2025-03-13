@@ -9,11 +9,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Set debug mode based on environment
+# Set environment mode
 RUNNING_LOCAL = os.getenv("RUNNING_LOCAL", "True").lower() == "true"
 
+# Define correct static folder based on environment
+if RUNNING_LOCAL:
+    STATIC_FOLDER = '../frontend/build'  # Local React build folder
+else:
+    STATIC_FOLDER = '/var/www/html'  # EC2 production folder
+
 # Initialize the Flask app
-app = Flask(__name__, static_folder='../frontend/build', static_url_path='/')
+app = Flask(__name__, static_folder=STATIC_FOLDER, static_url_path='/')
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'default-secret-key')  # Change this key for production
 app.config["DEBUG"] = RUNNING_LOCAL
 
