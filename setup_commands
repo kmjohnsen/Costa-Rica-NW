@@ -42,11 +42,21 @@ pip install -r requirements.txt
 cd frontend
 NODE_OPTIONS="--max-old-space-size=4096" npm run build
 sudo rm -rf /var/www/html/frontend/build
-sudo cp -r build /var/www/html/frontend
+sudo cp -r build/* /var/www/html
+sudo systemctl restart nginx
 
-#Start gunicorn:
-gunicorn --bind 127.0.0.1:5000 server:app
-nohup gunicorn --bind 0.0.0.0:5000 server:app > gunicorn.log 2>&1 &
+
+#Start gunicorn on venv:
+cd backend
+source venv/bin/activate #start virtual environment
+nohup gunicorn --bind 0.0.0.0:5000 server:app > gunicorn.log 2>&1 & #persistent gunicorn flask serve
+#check gunicorn is working:
+ps aux | grep gunicorn
+
+
+
+
+
 #Start serve
 http-server build -p 3000 --cors --host 0.0.0.0
 nohup http-server build -p 3000 --cors --host 0.0.0.0 > http-server.log 2>&1 &
