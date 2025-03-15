@@ -49,7 +49,8 @@ sudo systemctl restart nginx
 #Start gunicorn on venv:
 cd backend
 source venv/bin/activate #start virtual environment
-nohup gunicorn --bind 0.0.0.0:5000 server:app > gunicorn.log 2>&1 & #persistent gunicorn flask serve
+sudo systemctl restart gunicorn #restart gunicorn 
+sudo systemctl status gunicorn
 #check gunicorn is working:
 ps aux | grep gunicorn
 
