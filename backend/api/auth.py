@@ -8,6 +8,7 @@ from datetime import timedelta
 from google.oauth2 import id_token
 from google.auth.transport import requests
 import os
+from datetime import timedelta
 
 # Define a blueprint for authentication routes
 authorize_bp = Blueprint('authorize', __name__)
@@ -28,6 +29,10 @@ db_config = {
 # Store your CLIENT_ID and CLIENT_SECRET securely
 CLIENT_ID = "1003369992304-lj9062hp21arbnnflisq30rlkes1ce9o.apps.googleusercontent.com"  # Replace with your actual client ID
 CLIENT_SECRET = "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"  # Keep this secret on the server
+JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=7)  # Adjust as needed
+JWT_TOKEN_LOCATION = ["headers"]  # Ensures tokens are only accepted in headers
+JWT_HEADER_NAME = "Authorization"  # Default header for JWT
+JWT_HEADER_TYPE = "Bearer"  # Ensures "Bearer" prefix is required
 
 # Token verification endpoint
 @authorize_bp.route('/api/auth/verify-token', methods=['GET'])
