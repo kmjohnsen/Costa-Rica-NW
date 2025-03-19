@@ -8,7 +8,6 @@ from datetime import timedelta
 from google.oauth2 import id_token
 from google.auth.transport import requests
 import os
-from datetime import timedelta
 
 # Define a blueprint for authentication routes
 authorize_bp = Blueprint('authorize', __name__)

@@ -6,6 +6,7 @@ from flask_cors import CORS
 import os
 from api import locations_bp, prices_bp, authorize_bp, bookings_bp, users_bp, verification_bp
 from dotenv import load_dotenv
+from datetime import timedelta
 
 load_dotenv()
 
