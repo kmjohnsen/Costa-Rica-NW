@@ -48,7 +48,7 @@ sudo systemctl restart nginx
 
 #Start gunicorn on venv:
 cd backend
-source venv/bin/activate #start virtual environment
+source venv/bin/activate
 sudo systemctl restart gunicorn
 sudo systemctl status gunicorn
 #check gunicorn is working:
