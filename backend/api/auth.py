@@ -7,6 +7,7 @@ from flask_cors import CORS
 from datetime import timedelta
 from google.oauth2 import id_token
 from google.auth.transport import requests
+import os
 
 # Define a blueprint for authentication routes
 authorize_bp = Blueprint('authorize', __name__)
@@ -17,11 +18,11 @@ jwt = JWTManager()
 
 # Database configuration
 db_config = {
-    'user': 'root',
-    'password': '76438521',
-    'host': 'localhost',
-    'database': 'booking_database',
-    'port': 3306
+    'user': os.getenv("DB_USER"),
+    'password': os.getenv("DB_PASSWORD"),
+    'host': os.getenv("DB_HOST"),
+    'database': os.getenv("DB_NAME"),
+    'port': int(os.getenv("DB_PORT"))  # Convert port to integer
 }
 
 # Store your CLIENT_ID and CLIENT_SECRET securely

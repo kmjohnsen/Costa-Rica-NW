@@ -49,7 +49,7 @@ sudo systemctl restart nginx
 #Start gunicorn on venv:
 cd backend
 source venv/bin/activate #start virtual environment
-sudo systemctl restart gunicorn #restart gunicorn 
+sudo systemctl restart gunicorn
 sudo systemctl status gunicorn
 #check gunicorn is working:
 ps aux | grep gunicorn
