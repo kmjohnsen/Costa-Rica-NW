@@ -69,16 +69,16 @@ def google_auth():
         if user:
             # User exists, create and return a JWT token
             access_token = create_access_token(identity={'email': user['Email'], 'role': user['role']}, expires_delta=timedelta(days=30))
-            logging.info("Successfully created JWT for user.")
+            logging.info(f"User found in database: {user}")
             return jsonify({'status': 'success', 'access_token': access_token, 'user': {'id': user['userID'], 'email': user['Email'], 'name': user['FirstName']}}), 200
 
         else:
-            logging.error("User not found in database.")
+            logging.warning(f"User {email} not found or does not have admin/dev role.")
             return jsonify({'error': 'User not found'}), 404
 
-    except ValueError as e:
-        logging.exception("Invalid token exception occurred.")
-        return jsonify({'error': 'Invalid token', 'message': str(e)}), 401
+    except mysql.connector.Error as db_err:
+        logging.exception("Database connection or query error occurred.")
+        return jsonify({'error': 'Database error', 'message': str(db_err)}), 500
     except Exception as e:
         logging.exception("Unexpected error in google_auth.")
         return jsonify({'error': 'Unexpected error', 'message': str(e)}), 500
