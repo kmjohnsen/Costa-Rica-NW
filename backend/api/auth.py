@@ -44,48 +44,52 @@ def verify_token():
 @authorize_bp.route('/api/auth/google', methods=['POST'])
 def google_auth():
     token = request.json.get('idToken')
-    logging.debug(f"Full Received Token: {token}")
-    logging.debug(f"Token verified successfully. idinfo: {idinfo}")
+    logging.debug(f"Received token (first 50 chars): {token[:50]}...")
 
     conn = None
     cursor = None
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
+        logging.info("Connected to MySQL successfully.")
 
-        # Verify the token
-        idinfo = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
-        logging.debug(f"Token verified successfully. idinfo: {idinfo}")
-        # user_id = idinfo['sub']
-        email = idinfo['email']
-        logging.debug(f"Extracted email: {email}")
+        # ✅ Verify the Google token safely
+        idinfo = None
+        try:
+            idinfo = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
+            logging.debug(f"Google Token Verified: {idinfo}")
+        except ValueError as e:
+            logging.error(f"Google token verification failed: {e}")
+            return jsonify({'error': 'Invalid Google token', 'message': str(e)}), 401
         
-        # Here, you can check if the user exists in your database
-        cursor.execute("SELECT * FROM booking_database.user_information WHERE (Email = %s && (role = 'dev' || role = 'admin'))", (email,))
+        if not idinfo:
+            return jsonify({'error': 'Google token verification failed'}), 401
+
+        email = idinfo.get('email')
+        logging.info(f"Extracted email from Google token: {email}")
+
+        # ✅ Check if the user exists in the database
+        cursor.execute("SELECT * FROM booking_database.user_information WHERE Email = %s AND (role = 'dev' OR role = 'admin')", (email,))
         user = cursor.fetchone()
-        print(f"user data: {user}")
-        logging.debug(f"User data from database: {user}")
 
         if user:
-            # User exists, create and return a JWT token
-            access_token = create_access_token(identity={'email': user['Email'], 'role': user['role']}, expires_delta=timedelta(days=30))
             logging.info(f"User found in database: {user}")
+            access_token = create_access_token(identity={'email': user['Email'], 'role': user['role']}, expires_delta=timedelta(days=30))
             return jsonify({'status': 'success', 'access_token': access_token, 'user': {'id': user['userID'], 'email': user['Email'], 'name': user['FirstName']}}), 200
-
         else:
             logging.warning(f"User {email} not found or does not have admin/dev role.")
             return jsonify({'error': 'User not found'}), 404
 
     except mysql.connector.Error as db_err:
-        logging.exception("Database connection or query error occurred.")
+        logging.exception(f"Database error: {db_err}")
         return jsonify({'error': 'Database error', 'message': str(db_err)}), 500
     except Exception as e:
-        logging.exception("Unexpected error in google_auth.")
+        logging.exception(f"Unexpected error: {e}")
         return jsonify({'error': 'Unexpected error', 'message': str(e)}), 500
     finally:
-        if cursor is not None:
+        if cursor:
             cursor.close()
-        if conn is not None:
+        if conn:
             conn.close()
 
 # Google Authorization
