@@ -68,7 +68,9 @@ function AdminPage() {
   // Check for token on mount
   useEffect(() => {
     const token = localStorage.getItem('access_token');
+    console.log("Stored Token:", token);  // ✅ Debugging
     if (!token) {
+      console.error("No access token found, redirecting to login.");
       // If no token, redirect to login
       navigate('/login');
     } else {
