@@ -8,8 +8,10 @@ from datetime import timedelta
 from google.oauth2 import id_token
 from google.auth.transport import requests
 import os
+import logging
 
 app = Flask(__name__)
+logging.basicConfig(level=logging.DEBUG)
 # Define a blueprint for authentication routes
 authorize_bp = Blueprint('authorize', __name__)
 
@@ -20,25 +22,22 @@ jwt = JWTManager()
 # Add this near where you initialize jwt
 @jwt.invalid_token_loader
 def invalid_token_callback(error_msg):
-    # This callback is called when an invalid token is encountered.
-    print(f"Invalid token: {error_msg}")
+    logging.error(f"Invalid token callback: {error_msg}")
     return jsonify({"error": "Invalid token", "message": error_msg}), 422
 
 @jwt.unauthorized_loader
 def missing_token_callback(error_msg):
-    # This callback is called when no token is provided.
-    print(f"Missing token: {error_msg}")
+    logging.error(f"Missing token callback: {error_msg}")
     return jsonify({"error": "Authorization required", "message": error_msg}), 401
 
 @jwt.expired_token_loader
 def expired_token_callback(jwt_header, jwt_payload):
-    # This callback is called when an expired token is encountered.
-    print(f"Expired token: header: {jwt_header}, payload: {jwt_payload}")
+    logging.error(f"Expired token: header: {jwt_header}, payload: {jwt_payload}")
     return jsonify({"error": "Token has expired"}), 401
 
 @jwt.revoked_token_loader
 def revoked_token_callback(jwt_header, jwt_payload):
-    print(f"Revoked token: header: {jwt_header}, payload: {jwt_payload}")
+    logging.error(f"Revoked token: header: {jwt_header}, payload: {jwt_payload}")
     return jsonify({"error": "Token has been revoked"}), 401
 
 
@@ -59,16 +58,17 @@ CLIENT_SECRET = "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"  # Keep this secret on the
 @authorize_bp.route('/api/auth/verify-token', methods=['GET'])
 @jwt_required()  # This decorator ensures that a valid token is required
 def verify_token():
-    # Print the headers to check if the Authorization header is present and correct
-    print("Request headers:", dict(request.headers))
+    auth_header = request.headers.get("Authorization")
+    logging.debug(f"Authorization header: {auth_header}")
     current_user = get_jwt_identity()
-    print("Decoded JWT identity:", current_user)
+    logging.debug(f"Decoded JWT identity: {current_user}")
     return jsonify(logged_in_as=current_user), 200
 
 # Google Authorization
 @authorize_bp.route('/api/auth/google', methods=['POST'])
 def google_auth():
     token = request.json.get('idToken')
+    logging.debug(f"Received token (first 20 chars): {token[:20]}...")
 
     conn = None
     cursor = None
@@ -78,24 +78,38 @@ def google_auth():
 
         # Verify the token
         idinfo = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
+        logging.debug(f"Token verified successfully. idinfo: {idinfo}")
         # user_id = idinfo['sub']
         email = idinfo['email']
+        logging.debug(f"Extracted email: {email}")
         
         # Here, you can check if the user exists in your database
         cursor.execute("SELECT * FROM booking_database.user_information WHERE (Email = %s && (role = 'dev' || role = 'admin'))", (email,))
         user = cursor.fetchone()
         print(f"user data: {user}")
+        logging.debug(f"User data from database: {user}")
 
         if user:
             # User exists, create and return a JWT token
             access_token = create_access_token(identity={'email': user['Email'], 'role': user['role']}, expires_delta=timedelta(days=30))
+            logging.info("Successfully created JWT for user.")
             return jsonify({'status': 'success', 'access_token': access_token, 'user': {'id': user['userID'], 'email': user['Email'], 'name': user['FirstName']}}), 200
 
         else:
+            logging.error("User not found in database.")
             return jsonify({'error': 'User not found'}), 404
 
-    except ValueError:
-        return jsonify({'error': 'Invalid token'}), 401
+    except ValueError as e:
+        logging.exception("Invalid token exception occurred.")
+        return jsonify({'error': 'Invalid token', 'message': str(e)}), 401
+    except Exception as e:
+        logging.exception("Unexpected error in google_auth.")
+        return jsonify({'error': 'Unexpected error', 'message': str(e)}), 500
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if conn is not None:
+            conn.close()
 
 # Google Authorization
 # @authorize_bp.route('/api/auth/google/callback', methods=['POST'])
