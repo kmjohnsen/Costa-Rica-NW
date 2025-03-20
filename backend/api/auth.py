@@ -53,7 +53,7 @@ def google_auth():
         email = idinfo['email']
         
         # Here, you can check if the user exists in your database
-        cursor.execute("SELECT * FROM user_information WHERE (Email = %s && (role = 'dev' || role = 'admin'))", (email,))
+        cursor.execute("SELECT * FROM booking_database.user_information WHERE (Email = %s && (role = 'dev' || role = 'admin'))", (email,))
         user = cursor.fetchone()
         print(f"user data: {user}")
 
@@ -69,36 +69,36 @@ def google_auth():
         return jsonify({'error': 'Invalid token'}), 401
 
 # Google Authorization
-@authorize_bp.route('/api/auth/google/callback', methods=['POST'])
-def google_callback():
-    # Get the token from the request parameters (Google redirects back to this endpoint)
-    token = request.json.get('id_token')
+# @authorize_bp.route('/api/auth/google/callback', methods=['POST'])
+# def google_callback():
+#     # Get the token from the request parameters (Google redirects back to this endpoint)
+#     token = request.json.get('id_token')
 
-    conn = None
-    cursor = None
-    try:
-        conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor(dictionary=True)
+#     conn = None
+#     cursor = None
+#     try:
+#         conn = mysql.connector.connect(**db_config)
+#         cursor = conn.cursor(dictionary=True)
 
-        # Verify the token
-        idinfo = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
+#         # Verify the token
+#         idinfo = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
 
-        # Extract user information from the verified token
-        user_email = idinfo['email']
-        user_name = idinfo['name']
-        user_id = idinfo['sub']  # Google user ID
+#         # Extract user information from the verified token
+#         user_email = idinfo['email']
+#         user_name = idinfo['name']
+#         user_id = idinfo['sub']  # Google user ID
 
-        # Check if the user already exists in the database
-        cursor.execute("SELECT * FROM user_information WHERE (Email = %s && (role = 'dev' || role = 'admin'))", (user_email,))
-        user = cursor.fetchone()
+#         # Check if the user already exists in the database
+#         cursor.execute("SELECT * FROM user_information WHERE (Email = %s && (role = 'dev' || role = 'admin'))", (user_email,))
+#         user = cursor.fetchone()
 
-        if user:
-            # User exists, create a session for them
-            session['user_id'] = user['id']  # Store user ID in session
-            return jsonify({'status': 'success', 'user_id': user['userID'], 'email': user['Email'], 'name': user['FirstName']}), 200
+#         if user:
+#             # User exists, create a session for them
+#             session['user_id'] = user['id']  # Store user ID in session
+#             return jsonify({'status': 'success', 'user_id': user['userID'], 'email': user['Email'], 'name': user['FirstName']}), 200
 
-    except ValueError:
-        return jsonify({'error': 'Invalid token'}), 401
+#     except ValueError:
+#         return jsonify({'error': 'Invalid token'}), 401
 
 
 # Register route
