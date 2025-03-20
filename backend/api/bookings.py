@@ -144,7 +144,7 @@ def get_bookings_for_day():
 
     try:
         conn, cursor = get_database_connection_dictionary()
-        query = ("SELECT * FROM booking_database.booking_information RIGHT JOIN route_information ON booking_information.routeID = route_information.routeID WHERE DATE(booking_date) = %s")
+        query = ("SELECT * FROM booking_database.booking_information RIGHT JOIN route_information ON booking_database.booking_information.routeID = booking_database.route_information.routeID WHERE DATE(booking_date) = %s")
         print(f"query: {query} date: {date}")
         cursor.execute(query, (date,))
         try:
@@ -371,7 +371,7 @@ def submit_booking():
     
     # Make sure phone number is in valid phone list
     if requestType == 'Auto':
-        query = "SELECT 1 FROM booking_database.booking_database.valid_phone_numbers WHERE phone_number=(%s) LIMIT 1;"
+        query = "SELECT 1 FROM booking_database.valid_phone_numbers WHERE phone_number=(%s) LIMIT 1;"
         try:
         ## Database operation
             conn = mysql.connector.connect(**db_config)
@@ -726,7 +726,7 @@ def call_dataforbooking(bookingtable, bookingIDvariable, bookingID):
         cursor = conn.cursor(dictionary=True)
         query =(f"""
                 SELECT *
-                FROM {bookingtable}
+                FROM booking_database.{bookingtable}
                 WHERE {bookingIDvariable} = %s
                 ORDER BY booking_date ASC;""")
         print(f"query call data: {query}, bookingID {bookingID}")
