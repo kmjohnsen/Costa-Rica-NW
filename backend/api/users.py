@@ -29,7 +29,7 @@ def get_all_users():
     cursor = conn.cursor(dictionary=True)
     print("made it here")
     query =("""
-            SELECT userID, FirstName, LastName, Email, PhoneNumber, role FROM user_information 
+            SELECT userID, FirstName, LastName, Email, PhoneNumber, role FROM booking_database.user_information 
             ORDER BY 
               CASE role
                 WHEN 'Admin' THEN 1

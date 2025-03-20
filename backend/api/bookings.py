@@ -71,9 +71,9 @@ def get_all_bookings():
         query =("""
                 SELECT b.bookingID, b.userID, b.routeID, b.startcity, b.endcity, u.FirstName, u.LastName, u.email, u.PhoneNumber, b.booking_date, b.pickup_time, b.routecost, b.driver, b.passengers, 
                         b.flight_airline, b.flight_number, b.questions, b.startcity, b.endcity, b.pickup_location, b.dropoff_location, b.manualbookinginfo
-                FROM booking_information b
+                FROM booking_database.booking_information b
                 INNER JOIN 
-                    user_information u ON b.userID = u.userID  
+                    booking_database.user_information u ON b.userID = u.userID  
                 ORDER BY b.booking_date ASC;""")
         print(f"query: {query}")
         cursor.execute(query)  
@@ -105,9 +105,9 @@ def get_completed_bookings():
         query =("""
                 SELECT b.bookingID, b.userID, b.routeID, b.startcity, b.endcity, u.FirstName, u.LastName, u.email, u.PhoneNumber, b.booking_date, b.pickup_time, b.routecost, b.driver, b.passengers, 
                         b.flight_airline, b.flight_number, b.questions, b.startcity, b.endcity, b.pickup_location, b.dropoff_location, b.manualbookinginfo
-                FROM completed_bookings b
+                FROM booking_database.completed_bookings b
                 INNER JOIN 
-                    user_information u ON b.userID = u.userID  
+                    booking_database.user_information u ON b.userID = u.userID  
                 ORDER BY b.booking_date ASC;""")
         print(f"query: {query}")
         cursor.execute(query)  
@@ -144,7 +144,7 @@ def get_bookings_for_day():
 
     try:
         conn, cursor = get_database_connection_dictionary()
-        query = ("SELECT * FROM booking_information RIGHT JOIN route_information ON booking_information.routeID = route_information.routeID WHERE DATE(booking_date) = %s")
+        query = ("SELECT * FROM booking_database.booking_information RIGHT JOIN route_information ON booking_information.routeID = route_information.routeID WHERE DATE(booking_date) = %s")
         print(f"query: {query} date: {date}")
         cursor.execute(query, (date,))
         try:
@@ -174,7 +174,7 @@ def get_monthly_summary():
     conn, cursor = get_database_connection_dictionary()
     cursor.execute("""
         SELECT COUNT(*) as trips, SUM(routecost) as money_collected
-        FROM booking_information
+        FROM booking_database.booking_information
         WHERE booking_date LIKE %s
     """, (f"{month}%",))
     summary = cursor.fetchone()
@@ -189,7 +189,7 @@ def get_driver_monthly_summary():
     conn, cursor = get_database_connection_dictionary()
     cursor.execute("""
         SELECT driver_name, COUNT(*) as trips, SUM(routecost) as money_collected
-        FROM booking_information
+        FROM booking_database.booking_information
         WHERE booking_date LIKE %s
         GROUP BY driver
     """, (f"{month}%",))
@@ -288,9 +288,9 @@ def get_pending_bookings():
         query =("""
                 SELECT b.tempbookingID, b.userID, b.routeID, b.startcity, b.endcity, u.FirstName, u.LastName, u.email, u.PhoneNumber, b.booking_date, b.pickup_time, b.routecost, b.driver, b.passengers, 
                         b.flight_airline, b.flight_number, b.questions, b.startcity, b.endcity, b.pickup_location, b.dropoff_location, b.manualbookinginfo, b.confirmation_number
-                FROM temp_booking b
+                FROM booking_database.temp_booking b
                 INNER JOIN 
-                    user_information u ON b.userID = u.userID  ORDER BY b.booking_date ASC;""")
+                    booking_database.user_information u ON b.userID = u.userID  ORDER BY b.booking_date ASC;""")
         cursor.execute(query)  
         bookings = cursor.fetchall()
         # print(f"bookings: {bookings}")
@@ -320,7 +320,7 @@ def assign_driver():
     booking_id = data.get('booking_id')
     driver_name = data.get('driver_name')
     conn, cursor = get_database_connection()
-    cursor.execute("UPDATE booking_information SET driver = %s WHERE booking_id = %s", (driver_name, booking_id))
+    cursor.execute("UPDATE booking_database.booking_information SET driver = %s WHERE booking_id = %s", (driver_name, booking_id))
     conn.commit()
     cursor.close()
     conn.close()
@@ -371,7 +371,7 @@ def submit_booking():
     
     # Make sure phone number is in valid phone list
     if requestType == 'Auto':
-        query = "SELECT 1 FROM booking_database.valid_phone_numbers WHERE phone_number=(%s) LIMIT 1;"
+        query = "SELECT 1 FROM booking_database.booking_database.valid_phone_numbers WHERE phone_number=(%s) LIMIT 1;"
         try:
         ## Database operation
             conn = mysql.connector.connect(**db_config)
@@ -791,7 +791,7 @@ def insert_into_booking_database(requestType, dataforbooking, cursor):
     placeholders = ", ".join(["%s"] * len(filtered_data))
 
     # Safely construct the SQL query
-    query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
+    query = f"INSERT INTO booking_database.{table_name} ({columns}) VALUES ({placeholders})"
     print(f"query for insert into database")
 
     # Prepare the values to insert

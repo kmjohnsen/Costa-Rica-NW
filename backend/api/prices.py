@@ -106,7 +106,7 @@ def calculate_route_prices(routenumber, passengers, start_date_str, end_date_str
         blackoutdates_list = [date_tuple[0] for date_tuple in blackoutdates]
         
         # Find the number of bookins by date
-        query = ("SELECT booking_date, COUNT(*) AS number_of_bookings FROM booking_information WHERE booking_date >= CURDATE() GROUP BY booking_date ORDER BY booking_date")
+        query = ("SELECT booking_date, COUNT(*) AS number_of_bookings FROM booking_database.booking_information WHERE booking_date >= CURDATE() GROUP BY booking_date ORDER BY booking_date")
         cursor.execute(query)
         bookingsbydate = cursor.fetchall()
         booking_number_dict = {date.strftime('%Y-%m-%d'): value for date, value in bookingsbydate}
@@ -367,7 +367,7 @@ def get_route_price_day():
         # print(f"dictionary: {list_of_pricing_rules_dicts}")
 
         # Find the number of bookins by date
-        query = ("SELECT booking_date, COUNT(*) AS number_of_bookings FROM booking_information WHERE booking_date = %s")
+        query = ("SELECT booking_date, COUNT(*) AS number_of_bookings FROM booking_database.booking_information WHERE booking_date = %s")
         cursor.execute(query, (date,))
         booking_number = cursor.fetchone()
         booking_num = booking_number[1]

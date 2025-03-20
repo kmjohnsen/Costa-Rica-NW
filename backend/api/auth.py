@@ -122,7 +122,7 @@ def register():
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor()
         query = """
-            INSERT INTO user_information (Email, FirstName, LastName, UserPassword, PhoneNumber) 
+            INSERT INTO booking_database.user_information (Email, FirstName, LastName, UserPassword, PhoneNumber) 
             VALUES (%s, %s, %s, %s, %s)
             ON DUPLICATE KEY UPDATE 
                 UserPassword = VALUES(UserPassword), 
@@ -160,7 +160,7 @@ def login():
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM user_information WHERE Email = %s", (email,))
+        cursor.execute("SELECT * FROM booking_database.user_information WHERE Email = %s", (email,))
         user = cursor.fetchone()
 
         if user and bcrypt.check_password_hash(user['UserPassword'], password):
