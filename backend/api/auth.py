@@ -15,6 +15,30 @@ authorize_bp = Blueprint('authorize', __name__)
 # Initialize Bcrypt and JWTManager here instead of importing from server.py
 bcrypt = Bcrypt()
 jwt = JWTManager()
+# Add this near where you initialize jwt
+@jwt.invalid_token_loader
+def invalid_token_callback(error_msg):
+    # This callback is called when an invalid token is encountered.
+    print(f"Invalid token: {error_msg}")
+    return jsonify({"error": "Invalid token", "message": error_msg}), 422
+
+@jwt.unauthorized_loader
+def missing_token_callback(error_msg):
+    # This callback is called when no token is provided.
+    print(f"Missing token: {error_msg}")
+    return jsonify({"error": "Authorization required", "message": error_msg}), 401
+
+@jwt.expired_token_loader
+def expired_token_callback(jwt_header, jwt_payload):
+    # This callback is called when an expired token is encountered.
+    print(f"Expired token: header: {jwt_header}, payload: {jwt_payload}")
+    return jsonify({"error": "Token has expired"}), 401
+
+@jwt.revoked_token_loader
+def revoked_token_callback(jwt_header, jwt_payload):
+    print(f"Revoked token: header: {jwt_header}, payload: {jwt_payload}")
+    return jsonify({"error": "Token has been revoked"}), 401
+
 
 # Database configuration
 db_config = {
