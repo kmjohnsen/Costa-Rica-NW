@@ -95,7 +95,8 @@ def google_auth():
         if user:
             print(f"User found in database: {user}")
             identity_data = json.dumps({'email': user['Email'], 'role': user['role']})  # Convert to string
-            access_token = create_access_token(identity=identity_data, expires_delta=timedelta(days=30))            return jsonify({'status': 'success', 'access_token': access_token, 'user': {'id': user['userID'], 'email': user['Email'], 'name': user['FirstName']}}), 200
+            access_token = create_access_token(identity=identity_data, expires_delta=timedelta(days=30))            
+            return jsonify({'status': 'success', 'access_token': access_token, 'user': {'id': user['userID'], 'email': user['Email'], 'name': user['FirstName']}}), 200
         else:
             print(f"User {email} not found or does not have admin/dev role.")
             return jsonify({'error': 'User not found'}), 404
