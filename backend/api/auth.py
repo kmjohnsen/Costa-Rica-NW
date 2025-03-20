@@ -46,13 +46,14 @@ def verify_token():
             print("Missing or malformed Authorization header")
             return jsonify({"error": "Missing or malformed Authorization header"}), 400
 
-        current_user = get_jwt_identity()
-        print(f"Extracted User Data: {current_user}")  # ✅ Debug here
+        current_email = get_jwt_identity()  # ✅ Extract email as a string
+        current_role = get_jwt()["role"]  # ✅ Extract role from claims
 
-        # Check if user is in the expected format
-        if not isinstance(current_user, dict) or "email" not in current_user:
-            print(f"Invalid JWT Payload: {current_user}")  # ✅ Debugging
+        if not isinstance(current_email, str):
+            print(f"Invalid JWT Payload: {current_email}")  # ✅ Debugging
             return jsonify({"error": "Invalid JWT format"}), 422
+
+        current_user = {"email": current_email, "role": current_role}
 
         return jsonify(logged_in_as=current_user), 200
 
@@ -94,8 +95,10 @@ def google_auth():
 
         if user:
             print(f"User found in database: {user}")
-            identity_data = json.dumps({'email': user['Email'], 'role': user['role']})  # Convert to string
-            access_token = create_access_token(identity=identity_data, expires_delta=timedelta(days=30))            
+            access_token = create_access_token(
+                identity=user['Email'],  # ✅ Store only the email as a string
+                additional_claims={'role': user['role']}  # ✅ Store role separately
+            )
             return jsonify({'status': 'success', 'access_token': access_token, 'user': {'id': user['userID'], 'email': user['Email'], 'name': user['FirstName']}}), 200
         else:
             print(f"User {email} not found or does not have admin/dev role.")
