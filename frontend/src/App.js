@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Routes, Link, useNavigate } from 'react-router-dom';
+import { Route, Routes, useNavigate } from 'react-router-dom';
 import Home from './components/Home';
 import AdminPage from './components/AdminPage';
 import CompleteBooking from './components/CompleteBooking';
@@ -64,7 +64,6 @@ function App() {
         </Routes>
       </div>
       <div className='footer-links'>
-        <Link to="/">Home</Link> | <Link to="/login">Login</Link>
         <div className="google-login">
           <GoogleLogin
             onSuccess={handleLoginSuccess}
