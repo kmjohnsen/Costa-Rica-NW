@@ -25,7 +25,18 @@ function App() {
 
     try {
       // Send the token to your Flask backend for verification
-      const response = await axios.post(`${API_BASE_URL}/api/auth/google`, { idToken: credential });
+      const response = await axios.post(`${API_BASE_URL}/api/auth/google`, 
+        { idToken: credential }, 
+        { withCredentials: true } // Important for cookies and CORS!
+      )
+      .then(response => {
+        console.log("Google Login Response:", response.data);
+        localStorage.setItem('access_token', response.data.access_token);
+        navigate('/admin');
+      })
+      .catch(error => {
+        console.error("Google Login Error:", error);
+      });
 
       if (response.data.status === 'success') {
         // Save the token to local storage or state management

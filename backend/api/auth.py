@@ -1,7 +1,7 @@
 # auth.py - Flask authentication routes
 from flask import Blueprint, jsonify, request, session
 from flask_bcrypt import Bcrypt
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import mysql.connector
 from flask_cors import CORS
 from datetime import timedelta
@@ -44,7 +44,8 @@ def verify_token():
 @authorize_bp.route('/api/auth/google', methods=['POST'])
 def google_auth():
     token = request.json.get('idToken')
-    logging.debug(f"Received token (first 20 chars): {token[:20]}...")
+    logging.debug(f"Full Received Token: {token}")
+    logging.debug(f"Token verified successfully. idinfo: {idinfo}")
 
     conn = None
     cursor = None

@@ -38,7 +38,7 @@ ALLOWED_ORIGINS = [
     "http://3.94.61.214:3000",      # EC2 public IP
     "https://costaricanorthwest.com"   # Domain
 ]
-CORS(app, origins=ALLOWED_ORIGINS, supports_credentials=True)
+CORS(app, resources={r"/api/*": {"origins": ALLOWED_ORIGINS, "supports_credentials": True}})
 
 # CORS(app, resources={r"/api/*": {"origins": ALLOWED_ORIGINS}})
 # CORS(app)
