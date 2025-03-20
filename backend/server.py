@@ -30,6 +30,21 @@ app.config["JWT_HEADER_NAME"] = "Authorization"
 app.config["JWT_HEADER_TYPE"] = "Bearer"
 app.config["DEBUG"] = RUNNING_LOCAL
 
+@app.errorhandler(NoAuthorizationError)
+def handle_auth_error(e):
+    print(f"JWT Error: {e}")  # ✅ Debugging JWT errors
+    return jsonify({'error': 'Unauthorized, missing, or invalid token'}), 401
+
+@app.errorhandler(InvalidHeaderError)
+def handle_invalid_header(e):
+    print(f"Invalid JWT Header: {e}")  # ✅ Debugging invalid headers
+    return jsonify({'error': 'Invalid JWT header format'}), 401
+
+@app.errorhandler(HTTPException)
+def handle_exception(e):
+    print(f"HTTP Exception: {e}")  # ✅ Debugging general HTTP errors
+    return jsonify({'error': str(e)}), e.code
+
 # Initialize extensions
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
