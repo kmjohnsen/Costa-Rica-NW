@@ -9,6 +9,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 import os
 import logging
+import json
 
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
 gunicorn_logger = logging.getLogger("gunicorn.error")
@@ -93,8 +94,8 @@ def google_auth():
 
         if user:
             print(f"User found in database: {user}")
-            access_token = create_access_token(identity={'email': user['Email'], 'role': user['role']}, expires_delta=timedelta(days=30))
-            return jsonify({'status': 'success', 'access_token': access_token, 'user': {'id': user['userID'], 'email': user['Email'], 'name': user['FirstName']}}), 200
+            identity_data = json.dumps({'email': user['Email'], 'role': user['role']})  # Convert to string
+            access_token = create_access_token(identity=identity_data, expires_delta=timedelta(days=30))            return jsonify({'status': 'success', 'access_token': access_token, 'user': {'id': user['userID'], 'email': user['Email'], 'name': user['FirstName']}}), 200
         else:
             print(f"User {email} not found or does not have admin/dev role.")
             return jsonify({'error': 'User not found'}), 404
