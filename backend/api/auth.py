@@ -10,7 +10,9 @@ from google.auth.transport import requests
 import os
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
+gunicorn_logger = logging.getLogger("gunicorn.error")
+
 # Define a blueprint for authentication routes
 authorize_bp = Blueprint('authorize', __name__)
 
@@ -34,74 +36,74 @@ CLIENT_SECRET = "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"  # Keep this secret on the
 @authorize_bp.route('/api/auth/verify-token', methods=['GET'])
 @jwt_required()
 def verify_token():
-    logging.debug("LOOOOOOOOOK HERE || in verify_token step")
+    print("LOOOOOOOOOK HERE || in verify_token step")
     try:
         auth_header = request.headers.get("Authorization")
-        logging.debug(f"Authorization header received: {auth_header}")
+        print(f"Authorization header received: {auth_header}")
 
         if not auth_header or not auth_header.startswith("Bearer "):
-            logging.warning("Missing or malformed Authorization header")
+            print("Missing or malformed Authorization header")
             return jsonify({"error": "Missing or malformed Authorization header"}), 400
 
         current_user = get_jwt_identity()
-        logging.info(f"Extracted User Data: {current_user}")  # ✅ Debug here
+        print(f"Extracted User Data: {current_user}")  # ✅ Debug here
 
         # Check if user is in the expected format
         if not isinstance(current_user, dict) or "email" not in current_user:
-            logging.error(f"Invalid JWT Payload: {current_user}")  # ✅ Debugging
+            print(f"Invalid JWT Payload: {current_user}")  # ✅ Debugging
             return jsonify({"error": "Invalid JWT format"}), 422
 
         return jsonify(logged_in_as=current_user), 200
 
     except Exception as e:
-        logging.exception(f"JWT verification error: {e}")
+        print(f"JWT verification error: {e}")
         return jsonify({'error': 'Token verification failed', 'message': str(e)}), 500
 
 # Google Authorization
 @authorize_bp.route('/api/auth/google', methods=['POST'])
 def google_auth():
     token = request.json.get('idToken')
-    logging.debug(f"Received token (first 50 chars): {token[:50]}...")
+    print(f"Received token (first 50 chars): {token[:50]}...")
 
     conn = None
     cursor = None
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
-        logging.info("Connected to MySQL successfully.")
+        print("Connected to MySQL successfully.")
 
         # ✅ Verify the Google token safely
         idinfo = None
         try:
             idinfo = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
-            logging.debug(f"Google Token Verified: {idinfo}")
+            print(f"Google Token Verified: {idinfo}")
         except ValueError as e:
-            logging.error(f"Google token verification failed: {e}")
+            print(f"Google token verification failed: {e}")
             return jsonify({'error': 'Invalid Google token', 'message': str(e)}), 401
         
         if not idinfo:
             return jsonify({'error': 'Google token verification failed'}), 401
 
         email = idinfo.get('email')
-        logging.info(f"Extracted email from Google token: {email}")
+        print(f"Extracted email from Google token: {email}")
 
         # ✅ Check if the user exists in the database
         cursor.execute("SELECT * FROM booking_database.user_information WHERE Email = %s AND (role = 'dev' OR role = 'admin')", (email,))
         user = cursor.fetchone()
 
         if user:
-            logging.info(f"User found in database: {user}")
+            print(f"User found in database: {user}")
             access_token = create_access_token(identity={'email': user['Email'], 'role': user['role']}, expires_delta=timedelta(days=30))
             return jsonify({'status': 'success', 'access_token': access_token, 'user': {'id': user['userID'], 'email': user['Email'], 'name': user['FirstName']}}), 200
         else:
-            logging.warning(f"User {email} not found or does not have admin/dev role.")
+            print(f"User {email} not found or does not have admin/dev role.")
             return jsonify({'error': 'User not found'}), 404
 
     except mysql.connector.Error as db_err:
-        logging.exception(f"Database error: {db_err}")
+        print(f"Database error: {db_err}")
         return jsonify({'error': 'Database error', 'message': str(db_err)}), 500
     except Exception as e:
-        logging.exception(f"Unexpected error: {e}")
+        print(f"Unexpected error: {e}")
         return jsonify({'error': 'Unexpected error', 'message': str(e)}), 500
     finally:
         if cursor:
