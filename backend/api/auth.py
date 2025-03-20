@@ -32,13 +32,23 @@ CLIENT_SECRET = "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"  # Keep this secret on the
 
 # Token verification endpoint
 @authorize_bp.route('/api/auth/verify-token', methods=['GET'])
-@jwt_required()  # This decorator ensures that a valid token is required
+@jwt_required()  # Requires a valid JWT
 def verify_token():
-    auth_header = request.headers.get("Authorization")
-    logging.debug(f"Authorization header: {auth_header}")
-    current_user = get_jwt_identity()
-    logging.debug(f"Decoded JWT identity: {current_user}")
-    return jsonify(logged_in_as=current_user), 200
+    try:
+        auth_header = request.headers.get("Authorization")
+        logging.debug(f"Authorization header received: {auth_header}")
+
+        if not auth_header or not auth_header.startswith("Bearer "):
+            logging.warning("Missing or malformed Authorization header")
+            return jsonify({"error": "Missing or malformed Authorization header"}), 400
+
+        current_user = get_jwt_identity()
+        logging.info(f"Token verified successfully for user: {current_user}")
+        return jsonify(logged_in_as=current_user), 200
+
+    except Exception as e:
+        logging.exception("Unexpected error verifying token")
+        return jsonify({'error': 'Token verification failed', 'message': str(e)}), 500
 
 # Google Authorization
 @authorize_bp.route('/api/auth/google', methods=['POST'])

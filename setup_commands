@@ -54,6 +54,10 @@ sudo systemctl status gunicorn
 #check gunicorn is working:
 ps aux | grep gunicorn
 
+#error check
+sudo journalctl -u gunicorn.service --no-pager -n 50
+
+
 #FYI - ssh files here:
 Certificate is saved at: /etc/letsencrypt/live/costaricanorthwest.com/fullchain.pem
 Key is saved at:         /etc/letsencrypt/live/costaricanorthwest.com/privkey.pem
