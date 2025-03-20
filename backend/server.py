@@ -7,6 +7,23 @@ import os
 from api import locations_bp, prices_bp, authorize_bp, bookings_bp, users_bp, verification_bp
 from dotenv import load_dotenv
 from datetime import timedelta
+from flask_jwt_extended.exceptions import NoAuthorizationError, InvalidHeaderError
+from werkzeug.exceptions import HTTPException
+
+@app.errorhandler(NoAuthorizationError)
+def handle_auth_error(e):
+    print(f"JWT Error: {e}")  # ✅ Print errors to terminal
+    return jsonify({'error': 'Unauthorized, missing or invalid token'}), 401
+
+@app.errorhandler(InvalidHeaderError)
+def handle_invalid_header(e):
+    print(f"Invalid JWT Header: {e}")  # ✅ Print errors to terminal
+    return jsonify({'error': 'Invalid JWT header format'}), 401
+
+@app.errorhandler(HTTPException)
+def handle_exception(e):
+    print(f"HTTP Exception: {e}")  # ✅ Print all HTTP errors
+    return jsonify({'error': str(e)}), e.code
 
 load_dotenv()
 

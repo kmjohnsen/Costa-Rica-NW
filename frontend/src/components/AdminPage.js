@@ -75,6 +75,17 @@ function AdminPage() {
       navigate('/login');
     } else {
       // Verify the token with your backend
+      fetch("/api/auth/verify-token", {
+        method: "GET",
+        headers: {
+          "Authorization": "Bearer " + localStorage.getItem("access_token"),
+          "Content-Type": "application/json"
+        }
+      })
+      .then(response => response.json())
+      .then(data => console.log("Token verification response:", data))
+      .catch(err => console.error("Error verifying token:", err));
+      
       axios.get(`${API_BASE_URL}/api/auth/verify-token`, {
         headers: {
           Authorization: `Bearer ${token}`, // Include the token in the headers
