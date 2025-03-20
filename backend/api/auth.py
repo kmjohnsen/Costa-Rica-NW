@@ -34,6 +34,7 @@ CLIENT_SECRET = "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"  # Keep this secret on the
 @authorize_bp.route('/api/auth/verify-token', methods=['GET'])
 @jwt_required()
 def verify_token():
+    logging.debug("LOOOOOOOOOK HERE || in verify_token step")
     try:
         auth_header = request.headers.get("Authorization")
         logging.debug(f"Authorization header received: {auth_header}")
