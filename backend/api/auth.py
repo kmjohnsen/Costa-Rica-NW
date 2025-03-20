@@ -1,5 +1,5 @@
 # auth.py - Flask authentication routes
-from flask import Blueprint, jsonify, request, session
+from flask import Flask, Blueprint, jsonify, request, session
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 import mysql.connector
@@ -9,11 +9,13 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 import os
 
+app = Flask(__name__)
 # Define a blueprint for authentication routes
 authorize_bp = Blueprint('authorize', __name__)
 
 # Initialize Bcrypt and JWTManager here instead of importing from server.py
 bcrypt = Bcrypt()
+app.config['JWT_SECRET_KEY'] = os.getenv("JWT_SECRET_KEY")
 jwt = JWTManager()
 # Add this near where you initialize jwt
 @jwt.invalid_token_loader
@@ -57,7 +59,10 @@ CLIENT_SECRET = "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"  # Keep this secret on the
 @authorize_bp.route('/api/auth/verify-token', methods=['GET'])
 @jwt_required()  # This decorator ensures that a valid token is required
 def verify_token():
-    current_user = get_jwt_identity()  # Get the current user's identity
+    # Print the headers to check if the Authorization header is present and correct
+    print("Request headers:", dict(request.headers))
+    current_user = get_jwt_identity()
+    print("Decoded JWT identity:", current_user)
     return jsonify(logged_in_as=current_user), 200
 
 # Google Authorization
