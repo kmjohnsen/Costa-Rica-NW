@@ -21,24 +21,35 @@ function App() {
   const CLIENTID = "1003369992304-lj9062hp21arbnnflisq30rlkes1ce9o.apps.googleusercontent.com"
 
   const handleLoginSuccess = async (credentialResponse) => {
-    console.log("Google Credential Response:", credentialResponse);
-    
-    const { credential } = credentialResponse; 
-    console.log("Extracted Credential:", credential);
+    const { credential } = credentialResponse; // This is the token we need
 
     try {
-        const response = await axios.post(`${API_BASE_URL}/api/auth/google`, 
-            { idToken: credential }, 
-            { headers: { "Content-Type": "application/json" } } // Ensure proper headers
-        );
-
+      // Send the token to your Flask backend for verification
+      const response = await axios.post(`${API_BASE_URL}/api/auth/google`, 
+        { idToken: credential }, 
+        { withCredentials: true } // Important for cookies and CORS!
+      )
+      .then(response => {
         console.log("Google Login Response:", response.data);
-
         localStorage.setItem('access_token', response.data.access_token);
         navigate('/admin');
-    } catch (error) {
+      })
+      .catch(error => {
         console.error("Google Login Error:", error);
-        console.error("Error Response Data:", error.response?.data);
+      });
+
+      if (response.data.status === 'success') {
+        // Save the token to local storage or state management
+        localStorage.setItem('access_token', response.data.access_token);
+        console.log('User info:', response.data.user); // Optional: handle user data if needed
+
+        // Redirect to /admin page
+        navigate('/admin');
+      } else {
+        console.error('Login failed:', response.data.error);
+      }
+    } catch (error) {
+      console.error('Error during login:', error);
     }
   };
 
