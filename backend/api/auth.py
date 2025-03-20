@@ -32,7 +32,7 @@ CLIENT_SECRET = "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"  # Keep this secret on the
 
 # Token verification endpoint
 @authorize_bp.route('/api/auth/verify-token', methods=['GET'])
-@jwt_required()  # Requires a valid JWT
+@jwt_required()
 def verify_token():
     try:
         auth_header = request.headers.get("Authorization")
@@ -43,7 +43,13 @@ def verify_token():
             return jsonify({"error": "Missing or malformed Authorization header"}), 400
 
         current_user = get_jwt_identity()
-        logging.info(f"Token verified successfully for user: {current_user}")
+        logging.info(f"Extracted User Data: {current_user}")  # ✅ Debug here
+
+        # Check if user is in the expected format
+        if not isinstance(current_user, dict) or "email" not in current_user:
+            logging.error(f"Invalid JWT Payload: {current_user}")  # ✅ Debugging
+            return jsonify({"error": "Invalid JWT format"}), 422
+
         return jsonify(logged_in_as=current_user), 200
 
     except Exception as e:
