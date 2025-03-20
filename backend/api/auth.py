@@ -1,5 +1,5 @@
 # auth.py - Flask authentication routes
-from flask import Flask, Blueprint, jsonify, request, session
+from flask import Blueprint, jsonify, request, session
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 import mysql.connector
@@ -10,36 +10,12 @@ from google.auth.transport import requests
 import os
 import logging
 
-app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG)
 # Define a blueprint for authentication routes
 authorize_bp = Blueprint('authorize', __name__)
 
 # Initialize Bcrypt and JWTManager here instead of importing from server.py
 bcrypt = Bcrypt()
-app.config['JWT_SECRET_KEY'] = os.getenv("JWT_SECRET_KEY")
-jwt = JWTManager()
-# Add this near where you initialize jwt
-@jwt.invalid_token_loader
-def invalid_token_callback(error_msg):
-    logging.error(f"Invalid token callback: {error_msg}")
-    return jsonify({"error": "Invalid token", "message": error_msg}), 422
-
-@jwt.unauthorized_loader
-def missing_token_callback(error_msg):
-    logging.error(f"Missing token callback: {error_msg}")
-    return jsonify({"error": "Authorization required", "message": error_msg}), 401
-
-@jwt.expired_token_loader
-def expired_token_callback(jwt_header, jwt_payload):
-    logging.error(f"Expired token: header: {jwt_header}, payload: {jwt_payload}")
-    return jsonify({"error": "Token has expired"}), 401
-
-@jwt.revoked_token_loader
-def revoked_token_callback(jwt_header, jwt_payload):
-    logging.error(f"Revoked token: header: {jwt_header}, payload: {jwt_payload}")
-    return jsonify({"error": "Token has been revoked"}), 401
-
 
 # Database configuration
 db_config = {
