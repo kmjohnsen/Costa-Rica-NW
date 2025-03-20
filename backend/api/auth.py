@@ -1,7 +1,7 @@
 # auth.py - Flask authentication routes
 from flask import Blueprint, jsonify, request, session
 from flask_bcrypt import Bcrypt
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
 import mysql.connector
 from flask_cors import CORS
 from datetime import timedelta
