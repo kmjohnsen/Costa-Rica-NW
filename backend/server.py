@@ -40,8 +40,16 @@ ALLOWED_ORIGINS = [
 ]
 CORS(app, resources={r"/api/*": {"origins": ALLOWED_ORIGINS, "supports_credentials": True}})
 
-# CORS(app, resources={r"/api/*": {"origins": ALLOWED_ORIGINS}})
-# CORS(app)
+# Ensure the response includes Cross-Origin headers
+@app.after_request
+def add_cors_headers(response):
+    response.headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups"
+    response.headers["Cross-Origin-Embedder-Policy"] = "require-corp"
+    response.headers["Access-Control-Allow-Origin"] = "https://costaricanorthwest.com"
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    return response
 
 # Register blueprints directly
 app.register_blueprint(locations_bp)
