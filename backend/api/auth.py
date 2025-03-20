@@ -47,7 +47,7 @@ def verify_token():
         return jsonify(logged_in_as=current_user), 200
 
     except Exception as e:
-        logging.exception("Unexpected error verifying token")
+        logging.exception(f"JWT verification error: {e}")
         return jsonify({'error': 'Token verification failed', 'message': str(e)}), 500
 
 # Google Authorization

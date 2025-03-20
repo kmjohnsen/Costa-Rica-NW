@@ -22,10 +22,10 @@ else:
 # Initialize the Flask app
 app = Flask(__name__, static_folder=STATIC_FOLDER, static_url_path='/')
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
-JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=7)  # Adjust as needed
-JWT_TOKEN_LOCATION = ["headers"]  # Ensures tokens are only accepted in headers
-JWT_HEADER_NAME = "Authorization"  # Default header for JWT
-JWT_HEADER_TYPE = "Bearer"  # Ensures "Bearer" prefix is required
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=7)  # Adjust as needed
+app.config["JWT_TOKEN_LOCATION"] = ["headers"]
+app.config["JWT_HEADER_NAME"] = "Authorization"
+app.config["JWT_HEADER_TYPE"] = "Bearer"
 app.config["DEBUG"] = RUNNING_LOCAL
 
 # Initialize extensions
