@@ -30,8 +30,8 @@ db_config = {
 }
 
 # Store your CLIENT_ID and CLIENT_SECRET securely
-CLIENT_ID = "1003369992304-lj9062hp21arbnnflisq30rlkes1ce9o.apps.googleusercontent.com"  # Replace with your actual client ID
-CLIENT_SECRET = "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"  # Keep this secret on the server
+CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")  
+CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")  
 
 # Token verification endpoint
 @authorize_bp.route('/api/auth/verify-token', methods=['GET'])
