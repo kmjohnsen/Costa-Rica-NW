@@ -413,12 +413,7 @@ def submit_booking():
             routeID, pickup, dropoff, pickup_detailed, dropoff_detailed, date, time, airline, flight_number = (
                 entry.get(key) for key in ['routenumber', 'pickup', 'dropoff', 'pickupdetailed', 'dropoffdetailed', 'date', 'time', 'airline', 'flightnumber']
             )
-            # if entry.get('passengers') == '11+':
-            #     passengers = entry.get('largeGroupPassengers') or None
-            # else:
-            #     passengers = entry.get('passengers') or None
-            # prices_data = {'pickup': pickup, 'dropoff': dropoff, 'passengers': passengers, 'startdate': date, 'enddate': date}
-            # print(f"prices data {prices_data}")
+            
             if requestType == 'Large Group':
                 passengers = largeGroupPassengers
                 prices = None
@@ -435,12 +430,6 @@ def submit_booking():
             print(f"prices: {prices}")
                                         
             routeID = fetch_route_number(pickup, dropoff, cursor)
-            # print(f"route idIDID: {routeID}")
-            # print(f"user id: {user_id}, route id {routeID}, prices {prices}")
-            # print(f"confirmationcode {confirmationcode}, date {date}, time {time}")
-            # print(f"airline {airline}, flight {flight_number}, site {bookingsite}")
-            # print(f"passengers {passengers}")
-            # print(f"questions {questions}, pickup {pickup_detailed}, dropoff {dropoff_detailed}")
             
             # Create data to use in booking_information insertion
             print(f"Into Booking Information: user id: {user_id}, route id {routeID}, prices {prices}, confirmationcode {confirmation_code}, date {date}, time {time}, airline {airline}, flight {flight_number}, site {bookingsite}, passengers {passengers}, questions {questions}, pickup {pickup_detailed}, dropoff {dropoff_detailed}, manual booking {manualRouteRequest}")
@@ -502,76 +491,6 @@ def approve_booking():
         print(f"done")
         cursor.close()
         conn.close()
-
-    # data = request.json
-    # booking_data = data.get('bookingData', {})
-    # print(f"data: {data}")
-
-    # # Extract personal details
-    # first_name, last_name, email, telephone, requestType, questions, bookingsite, confirmationcode, manualRouteRequest = (
-    #     booking_data.get(key) for key in ['firstName', 'lastName', 'email', 'telephone', 'requestType', 'questions', 'bookingsite', 'confirmation_code', 'manualRouteRequest']
-    #     )
-    # entries = booking_data.get('entries', [])
-    # print(f"personal details: {first_name}, {last_name}, {email}, {telephone}, {requestType}, {questions}, {bookingsite} {manualRouteRequest}")
-
-    # # Enter data into database
-    # try:
-    #     # Start database connection
-    #     conn, cursor = get_database_connection()
-        
-    #     user_id = fetch_or_create_user(cursor, first_name, last_name, email, telephone)
-        
-    #     print("here")        
-    #     for entry in entries:
-    #         # Extract details for each trip
-    #         print("here2")
-    #         pickup, dropoff, pickup_detailed, dropoff_detailed, date, time, airline, flight_number = (
-    #             entry.get(key) for key in ['pickup', 'dropoff', 'pickupdetailed', 'dropoffdetailed', 'date', 'time', 'airline', 'flightnumber']
-    #         )
-    #         print("here3")
-    #         if entry.get('passengers') == '11+':
-    #             passengers = entry.get('largeGroupPassengers') or None
-    #         else:
-    #             passengers = entry.get('passengers') or None
-    #         # prices_data = {'pickup': pickup, 'dropoff': dropoff, 'passengers': passengers, 'startdate': date, 'enddate': date}
-    #         # print(f"prices data {prices_data}")
-
-    #         prices = entry.get('prices') or None
-    #         print(f"price1: {prices}")
-                            
-    #         print(f" pickup dropoff {pickup}, {dropoff}")
-            
-    #         routeID = fetch_route_number(pickup, dropoff, cursor)
-    #         print(f"routeID {routeID}")
-    #         if not confirmationcode:
-    #             confirmationcode = generate_confirmation_code()
-    #             print(f"confirmation code: {confirmationcode}")
-
-    #         # Create data to use in booking_information insertion
-    #         print(f"Into Booking Information: user id: {user_id}, route id {routeID}, prices {prices}, confirmationcode {confirmationcode}, date {date}, time {time}, airline {airline}, flight {flight_number}, site {bookingsite}, passengers {passengers}, questions {questions}, pickup {pickup_detailed}, dropoff {dropoff_detailed}, manual booking {manualRouteRequest}")
-    #         dataforbooking = compile_dataforbooking(user_id, routeID, pickup, dropoff, prices, confirmationcode, date, time, airline, flight_number, bookingsite, passengers, questions, pickup_detailed, dropoff_detailed, manualRouteRequest)
-    #         print(f"dataforbooking {dataforbooking}")
-    #         try:
-    #             insert_into_booking_database(requestType, dataforbooking, cursor)
-    #         except Exception as e:
-    #             return jsonify({'error': str(e)}), 500
-
-    #     conn.commit()       
-
-    #     print("did the execute")
-        
-    #     generate_email_confirmation(entries, requestType, passengers, email, confirmationcode)
-    #     print("did the email")
-
-    #     return jsonify({'message': 'Confirmed!'}), 200
-    # except Exception as e:
-    #     print(f"exception")
-    #     return jsonify({'error': str(e)}), 500
-    # finally:
-    #     print(f"done")
-    #     cursor.close()
-    #     conn.close()
-
 
 @bookings_bp.route('/api/completed-booking', methods=['POST'])
 def completed_booking():
@@ -733,23 +652,7 @@ def call_dataforbooking(bookingtable, bookingIDvariable, bookingID):
         cursor.execute(query, (bookingID,))
         data = cursor.fetchall()
         print(f"data from call3: {data}")
-        # dataforbooking = {
-        # "userID": data.userID if data.userID else None,
-        # "routeID": data.routeID if data.routeID else None,
-        # "startcity": data.startcity if data.startcity else None,
-        # "endcity": data.endcity if data.endcity else None,
-        # "confirmation_number": data.confirmation_number if data.confirmation_number else None,
-        # "booking_date": data.booking_date if data.booking_date else None,
-        # "pickup_time": data.pickup_time if data.pickup_time else None,
-        # "flight_airline": data.flight_airline if data.flight_airline else None,
-        # "flight_number": int(data.flight_number) if data.flight_number else None,  
-        # "booking_site": data.booking_site if data.booking_site else None,
-        # "passengers": int(data.passengers) if data.passengers else None, 
-        # "questions": data.questions if data.questions else None,
-        # "pickup_location": data.pickup_location if data.pickup_location else None,
-        # "dropoff_location": data.dropoff_location if data.dropoff_location else None,
-        # "manualbookinginfo": data.manualbookinginfo if data.manualbookinginfo else None,
-        # }
+    
 
         dataforbooking = {key: convert_to_serializable(value) for key, value in data[0].items()}
         print(f"data for booking:: {dataforbooking}")

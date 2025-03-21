@@ -334,28 +334,6 @@ function CompleteBooking() {
           setLoading(false);
           return;
       }
-
-      if (process.env.REACT_APP_RUNNING_LOCAL === "True") {
-        // If running locally, bypass verification and submit booking
-        const bookingData = { 
-          entries: watchEntries, 
-          firstName, 
-          lastName, 
-          email, 
-          telephone, 
-          questions, 
-          bookingsite, 
-          requestType, 
-          confirmationCode, 
-          manualRouteRequest 
-        };
-        const response = await axios.post(`${API_BASE_URL}/api/submit-booking`, { bookingData });
-        setLoading(false);
-        if (response.status === 200) {
-          setSuccessfulBooking(true);
-        }
-        return; // Exit early, so verifyResponse is never referenced
-      }
       
       const verifyResponse = await axios.post(`${API_BASE_URL}/api/verify-code`, {
           telephone,
@@ -751,8 +729,6 @@ function CompleteBooking() {
                     </p>
                   </div>
                 )}
-
-                
 
                 <div className='flex-container-completebooking'>
                   {/* <div className="input-container" style={{ width: '400px' }}>
