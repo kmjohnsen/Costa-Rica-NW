@@ -7,11 +7,10 @@ from api.emailconfirmation import send_email
 from api.prices import calculate_route_prices
 import random
 import string
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 import os
 from dotenv import load_dotenv
-
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 app = Flask(__name__)
 limiter = Limiter(
@@ -34,12 +33,6 @@ db_config = {
     'database': os.getenv("DB_NAME"),
     'port': int(os.getenv("DB_PORT"))  # Convert port to integer
 }
-
-# Test route with a custom rate limit
-@app.route("/api/test", methods=["GET"])
-@limiter.limit("5/minute")  # Custom rate limit
-def test_route():
-    return jsonify({"message": "This route is rate-limited to 5 requests per minute!"})
 
 # Define a blueprint for locations
 bookings_bp = Blueprint('bookings', __name__)
@@ -98,6 +91,7 @@ def get_all_bookings():
         return jsonify({'error': str(e)}), 500
 
 @bookings_bp.route('/api/get_completed_bookings', methods=['GET'])
+@limiter.limit("10/minute") 
 def get_completed_bookings():
     try:
         conn = mysql.connector.connect(**db_config)
@@ -133,6 +127,7 @@ def get_completed_bookings():
 
 # Endpoint to get bookings for a specific date
 @bookings_bp.route('/api/bookings/day', methods=['GET'])
+@limiter.limit("10/minute") 
 def get_bookings_for_day():
     date = request.args.get('date')
     # date = request.args.get('date', datetime.now().strftime('%Y-%m-%d'))
@@ -350,7 +345,7 @@ def get_route_number():
 
 
 @bookings_bp.route('/api/submit-booking', methods=['POST'])
-@limiter.limit("10/minute")
+@limiter.limit("5/minute")
 def submit_booking():
     data = request.json
     booking_data = data.get('bookingData', {})
@@ -493,6 +488,7 @@ def approve_booking():
         conn.close()
 
 @bookings_bp.route('/api/completed-booking', methods=['POST'])
+@limiter.limit("10/minute") 
 def completed_booking():
 
     data = request.json
