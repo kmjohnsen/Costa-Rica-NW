@@ -49,12 +49,16 @@ def handle_exception(e):
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 # ✅ Allow CORS for both localhost (dev) and EC2 (prod)
-ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # Local React frontend
-    "http://3.94.61.214",      # EC2 public IP
-    "http://3.94.61.214:3000",      # EC2 public IP
-    "https://costaricanorthwest.com"   # Domain
-]
+
+RUNNING_LOCAL = os.getenv("RUNNING_LOCAL", "False") == "True"
+
+ALLOWED_ORIGINS = ["https://costaricanorthwest.com"]
+if RUNNING_LOCAL:
+    ALLOWED_ORIGINS.extend([
+        "http://localhost:3000",
+        "http://127.0.0.1:3000"
+    ])
+    
 CORS(app, resources={r"/*": {"origins": ALLOWED_ORIGINS, "supports_credentials": True}})
 
 # Ensure the response includes Cross-Origin headers
