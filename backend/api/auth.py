@@ -3,13 +3,14 @@ from flask import Blueprint, jsonify, request, session
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
 import mysql.connector
-from flask_cors import CORS
-from datetime import timedelta
+import datetime
 from google.oauth2 import id_token
 from google.auth.transport import requests
 import os
 import logging
-import json
+import jwt
+from functools import wraps
+
 
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
 gunicorn_logger = logging.getLogger("gunicorn.error")
@@ -32,6 +33,33 @@ db_config = {
 # Store your CLIENT_ID and CLIENT_SECRET securely
 CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")  
 CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")  
+
+def decode_token(token):
+    try:
+        return jwt.decode(token, os.getenv("JWT_SECRET"), algorithms=["HS256"])
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None
+    
+def generate_token(user_id):
+    payload = {
+        "user_id": user_id,
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=12)
+    }
+    return jwt.encode(payload, os.getenv("JWT_SECRET"), algorithm="HS256")
+
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        if token:
+            token = token.replace("Bearer ", "")
+            user_data = decode_token(token)
+            if user_data:
+                return f(*args, **kwargs)
+        return jsonify({'error': 'Unauthorized'}), 401
+    return decorated
 
 # Token verification endpoint
 @authorize_bp.route('/api/auth/verify-token', methods=['GET'])

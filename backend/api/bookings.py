@@ -10,6 +10,7 @@ import os
 from dotenv import load_dotenv
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_jwt_extended import jwt_required
 import bleach
 
 app = Flask(__name__)
@@ -57,6 +58,7 @@ def convert_to_serializable(obj):
 # Endpoint to get all bookings in date order
 @bookings_bp.route('/api/bookings', methods=['GET'])
 @limiter.limit("10/minute")
+@jwt_required()
 def get_all_bookings():
     try:
         conn = mysql.connector.connect(**db_config)
@@ -92,6 +94,7 @@ def get_all_bookings():
 
 @bookings_bp.route('/api/get_completed_bookings', methods=['GET'])
 @limiter.limit("10/minute") 
+@jwt_required()
 def get_completed_bookings():
     try:
         conn = mysql.connector.connect(**db_config)
@@ -127,6 +130,7 @@ def get_completed_bookings():
 
 # Endpoint to get bookings for a specific date
 @bookings_bp.route('/api/bookings/day', methods=['GET'])
+@jwt_required()
 @limiter.limit("10/minute") 
 def get_bookings_for_day():
     date = request.args.get('date')
@@ -164,6 +168,7 @@ def get_bookings_for_day():
 
 # Endpoint to get a monthly summary
 @bookings_bp.route('/api/bookings/monthly-summary', methods=['GET'])
+@jwt_required()
 def get_monthly_summary():
     month = request.args.get('month', datetime.now().strftime('%Y-%m'))
     conn, cursor = get_database_connection_dictionary()
@@ -179,6 +184,7 @@ def get_monthly_summary():
 
 # Endpoint to get monthly summary for each driver
 @bookings_bp.route('/api/drivers/monthly-summary', methods=['GET'])
+@jwt_required()
 def get_driver_monthly_summary():
     month = request.args.get('month', datetime.now().strftime('%Y-%m'))
     conn, cursor = get_database_connection_dictionary()
@@ -196,6 +202,7 @@ def get_driver_monthly_summary():
 # Endpoint to modify a booking
 @bookings_bp.route('/api/bookings/modify', methods=['PUT'])
 @limiter.limit("10/minute")
+@jwt_required()
 def modify_booking():
         # Get the updated fields from the request body
     data = request.json
@@ -277,6 +284,7 @@ def modify_booking():
 
 # Endpoint to get all bookings in date order
 @bookings_bp.route('/api/pendingbookings', methods=['GET'])
+@jwt_required()
 def get_pending_bookings():
     try:
         conn, cursor = get_database_connection_dictionary()
@@ -310,6 +318,7 @@ def get_pending_bookings():
 
 # Endpoint to assign/change driver
 @bookings_bp.route('/api/bookings/assign-driver', methods=['POST'])
+@jwt_required()
 def assign_driver():
     data = request.json
     booking_id = data.get('booking_id')
@@ -461,6 +470,7 @@ def submit_booking():
 
 @bookings_bp.route('/api/approve-booking', methods=['POST'])
 @limiter.limit("10/minute")
+@jwt_required()
 def approve_booking():
     print("approving booking")
 
@@ -500,6 +510,7 @@ def approve_booking():
 
 @bookings_bp.route('/api/completed-booking', methods=['POST'])
 @limiter.limit("10/minute") 
+@jwt_required()
 def completed_booking():
 
     data = request.json
@@ -842,6 +853,7 @@ def generate_email_confirmation(entries, requestType, passengers, email, first_n
         print(f"Error during email sending")
 
 @bookings_bp.route('/api/bookings/remove-booking', methods=['DELETE'])
+@jwt_required()
 def remove_booking():
     print("here")
     data = request.json
@@ -899,6 +911,7 @@ def get_blackout_dates():
 
 # Submit new blackout dates
 @bookings_bp.route('/api/postblackoutdates', methods=['POST'])
+@jwt_required()
 def post_blackout_dates():
     data = request.json
     print(f"Received data: {data}")  # Print to console for debugging
@@ -930,6 +943,7 @@ def post_blackout_dates():
 
 # Remove blackout date
 @bookings_bp.route('/api/removeblackoutdates', methods=['POST'])
+@jwt_required()
 def remove_blackout_dates():
     data = request.json
     blackout_date = data.get('newDate')  # Extract the date from the request
