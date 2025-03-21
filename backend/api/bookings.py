@@ -10,7 +10,7 @@ import os
 from dotenv import load_dotenv
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt
 import bleach
 
 app = Flask(__name__)
@@ -60,6 +60,10 @@ def convert_to_serializable(obj):
 @limiter.limit("10/minute")
 @jwt_required()
 def get_all_bookings():
+    claims = get_jwt()
+    role = claims.get('role')
+    if role not in ['admin', 'dev']:
+        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
@@ -96,6 +100,10 @@ def get_all_bookings():
 @limiter.limit("10/minute") 
 @jwt_required()
 def get_completed_bookings():
+    claims = get_jwt()
+    role = claims.get('role')
+    if role not in ['admin', 'dev']:
+        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
@@ -133,6 +141,11 @@ def get_completed_bookings():
 @jwt_required()
 @limiter.limit("10/minute") 
 def get_bookings_for_day():
+    claims = get_jwt()
+    role = claims.get('role')
+    if role not in ['admin', 'dev']:
+        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
+
     date = request.args.get('date')
     # date = request.args.get('date', datetime.now().strftime('%Y-%m-%d'))
 
@@ -170,6 +183,11 @@ def get_bookings_for_day():
 @bookings_bp.route('/api/bookings/monthly-summary', methods=['GET'])
 @jwt_required()
 def get_monthly_summary():
+    claims = get_jwt()
+    role = claims.get('role')
+    if role not in ['admin', 'dev']:
+        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
+
     month = request.args.get('month', datetime.now().strftime('%Y-%m'))
     conn, cursor = get_database_connection_dictionary()
     cursor.execute("""
@@ -186,6 +204,11 @@ def get_monthly_summary():
 @bookings_bp.route('/api/drivers/monthly-summary', methods=['GET'])
 @jwt_required()
 def get_driver_monthly_summary():
+    claims = get_jwt()
+    role = claims.get('role')
+    if role not in ['admin', 'dev']:
+        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
+
     month = request.args.get('month', datetime.now().strftime('%Y-%m'))
     conn, cursor = get_database_connection_dictionary()
     cursor.execute("""
@@ -204,7 +227,12 @@ def get_driver_monthly_summary():
 @limiter.limit("10/minute")
 @jwt_required()
 def modify_booking():
-        # Get the updated fields from the request body
+    claims = get_jwt()
+    role = claims.get('role')
+    if role not in ['admin', 'dev']:
+        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
+
+    # Get the updated fields from the request body
     data = request.json
     print(f"data: {request.json}")
     updated_fields = data.get('updatedFields')
@@ -286,6 +314,11 @@ def modify_booking():
 @bookings_bp.route('/api/pendingbookings', methods=['GET'])
 @jwt_required()
 def get_pending_bookings():
+    claims = get_jwt()
+    role = claims.get('role')
+    if role not in ['admin', 'dev']:
+        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
+
     try:
         conn, cursor = get_database_connection_dictionary()
         query =("""
@@ -320,6 +353,11 @@ def get_pending_bookings():
 @bookings_bp.route('/api/bookings/assign-driver', methods=['POST'])
 @jwt_required()
 def assign_driver():
+    claims = get_jwt()
+    role = claims.get('role')
+    if role not in ['admin', 'dev']:
+        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
+
     data = request.json
     booking_id = data.get('booking_id')
     driver_name = data.get('driver_name')
@@ -472,6 +510,11 @@ def submit_booking():
 @limiter.limit("10/minute")
 @jwt_required()
 def approve_booking():
+    claims = get_jwt()
+    role = claims.get('role')
+    if role not in ['admin', 'dev']:
+        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
+
     print("approving booking")
 
     data = request.json
@@ -512,6 +555,10 @@ def approve_booking():
 @limiter.limit("10/minute") 
 @jwt_required()
 def completed_booking():
+    claims = get_jwt()
+    role = claims.get('role')
+    if role not in ['admin', 'dev']:
+        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
 
     data = request.json
     bookingID = data.get('bookingID')
@@ -855,6 +902,11 @@ def generate_email_confirmation(entries, requestType, passengers, email, first_n
 @bookings_bp.route('/api/bookings/remove-booking', methods=['DELETE'])
 @jwt_required()
 def remove_booking():
+    claims = get_jwt()
+    role = claims.get('role')
+    if role not in ['admin', 'dev']:
+        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
+
     print("here")
     data = request.json
     bookingID = data.get('bookingID')
@@ -913,6 +965,11 @@ def get_blackout_dates():
 @bookings_bp.route('/api/postblackoutdates', methods=['POST'])
 @jwt_required()
 def post_blackout_dates():
+    claims = get_jwt()
+    role = claims.get('role')
+    if role not in ['admin', 'dev']:
+        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
+
     data = request.json
     print(f"Received data: {data}")  # Print to console for debugging
     blackout_date = data.get('newDate', {})
@@ -945,6 +1002,11 @@ def post_blackout_dates():
 @bookings_bp.route('/api/removeblackoutdates', methods=['POST'])
 @jwt_required()
 def remove_blackout_dates():
+    claims = get_jwt()
+    role = claims.get('role')
+    if role not in ['admin', 'dev']:
+        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
+
     data = request.json
     blackout_date = data.get('newDate')  # Extract the date from the request
     # blackout_datetime_obj = datetime.strptime(blackout_date, '%a, %d %b %Y %H:%M:%S %Z')
