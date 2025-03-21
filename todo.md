@@ -3,6 +3,7 @@
 ## Important
 - [ ] Add Sentry for logging of errors
 - [ ] bleach
+- [ ] Use https://developer.mozilla.org/en-US/observatory for securtiy
 - [✓] Modify email to make it more appropriate
 - [✓] Dont allow clicking off the confirm email popup, but put in a cancel button there
 - [✓] Complete booking make sure times are required

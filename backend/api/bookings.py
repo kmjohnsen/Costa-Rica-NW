@@ -3,7 +3,6 @@ import mysql.connector
 from datetime import datetime, timedelta, date
 from decimal import Decimal
 from api.emailconfirmation import send_email
-# import pytz
 from api.prices import calculate_route_prices
 import random
 import string
@@ -11,6 +10,7 @@ import os
 from dotenv import load_dotenv
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+import bleach
 
 app = Flask(__name__)
 limiter = Limiter(
@@ -356,6 +356,15 @@ def submit_booking():
         booking_data.get(key) for key in ['firstName', 'lastName', 'email', 'telephone', 'requestType', 'questions', 'bookingsite', 'confirmationCode', 'manualRouteRequest', 'passengers', 'largeGroupPassengers']
         )
     entries = booking_data.get('entries', [])
+
+    #Sanitize before saving
+    first_name = bleach.clean(booking_data.get('firstName', ''))
+    last_name = bleach.clean(booking_data.get('lastName', ''))
+    email = bleach.clean(booking_data.get('email', ''))
+    telephone = bleach.clean(booking_data.get('telephone', ''))
+    questions = bleach.clean(booking_data.get('questions', ''))
+    manualRouteRequest = bleach.clean(booking_data.get('manualRouteRequest', ''))
+
     print(f"personal details: {first_name}, {last_name}, {email}, {telephone}, {requestType}, {questions}, {bookingsite} {manualRouteRequest} {largeGroupPassengers} {passengers}")
 
     # Make sure requestType is valid
@@ -408,7 +417,9 @@ def submit_booking():
             routeID, pickup, dropoff, pickup_detailed, dropoff_detailed, date, time, airline, flight_number = (
                 entry.get(key) for key in ['routenumber', 'pickup', 'dropoff', 'pickupdetailed', 'dropoffdetailed', 'date', 'time', 'airline', 'flightnumber']
             )
-            
+            pickup_detailed = bleach.clean(entry.get('pickupdetailed', ''))
+            dropoff_detailed = bleach.clean(entry.get('dropoffdetailed', ''))
+
             if requestType == 'Large Group':
                 passengers = largeGroupPassengers
                 prices = None
@@ -602,6 +613,14 @@ def fetch_route_number(pickup, dropoff, cursor):
 
 def compile_dataforbooking(user_id, routeID, pickup, dropoff, prices, confirmationcode, date, time, airline, flight_number, bookingsite, passengers, questions, pickup_detailed, dropoff_detailed, manualbookinginfo):
     print(f"Calling compile_dataforbooking with: {user_id}, {routeID}, {pickup}, {dropoff}, {prices}, {confirmationcode}, {date}, {time}, {airline}, {flight_number}, {bookingsite}, {passengers}, {questions}, {pickup_detailed}, {dropoff_detailed}, {manualbookinginfo}")
+    questions = bleach.clean(questions)
+    pickup = bleach.clean(pickup)
+    dropoff = bleach.clean(dropoff)
+    airline = bleach.clean(airline)
+    pickup_detailed = bleach.clean(pickup_detailed)
+    dropoff_detailed = bleach.clean(dropoff_detailed)
+    manualbookinginfo = bleach.clean(manualbookinginfo)
+    
     dataforbooking = {
         "userID": user_id if user_id else None,
         "routeID": routeID if routeID else None,
@@ -683,7 +702,11 @@ def insert_into_booking_database(requestType, dataforbooking, cursor):
     # Build the base SQL query
     # Exclude 'tempbookingID' and 'bookingID' from columns and placeholders
     excluded_columns = {'tempbookingID', 'bookingID'}
-    filtered_data = {key: value for key, value in dataforbooking.items() if key not in excluded_columns and value is not None}
+    filtered_data = {
+        key: bleach.clean(value) if isinstance(value, str) else value
+        for key, value in dataforbooking.items()
+        if key not in excluded_columns and value is not None
+    }
     print(f"filtered data: {filtered_data}")
     # Build columns and placeholders
     columns = ", ".join(filtered_data.keys())
