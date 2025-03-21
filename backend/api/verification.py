@@ -27,10 +27,11 @@ approved_country_codes = ['+1', '+44', '+31', '+33', '+34', '+45', '+46', '+47',
 # Example codes for USA/Canada, UK, Netherlands, France, Spain, Denmark, Sweden, Norway, Australia, New Zealand Germany, Switzerland, Austria, South Africa, Portugal, Ireland, Iceland
 
 # Twilio credentials
-account_sid = 'AC946ce976ec67e98370b84713517f227a'  # Replace with your Twilio Account SID
-auth_token = '31003514782bbb707c50fca8e5a94705'    # Replace with your Twilio Auth Token
-twilio_phone_number = '+15673161644'  # Replace with your Twilio phone number
-verify_sid = 'VA33d1b6066570fb193caaaf746379ea30'
+account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+auth_token = os.getenv("TWILIO_AUTH_TOKEN")   
+twilio_phone_number = os.getenv("TWILIO_PHONE_NUMBER")
+verify_sid = os.getenv("TWILIO_VERIFY_SID")
+
 
 @verification_bp.route('/api/valid-phone', methods=['GET'])
 def check_country_code():
