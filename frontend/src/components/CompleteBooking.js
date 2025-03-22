@@ -277,48 +277,62 @@ function CompleteBooking() {
       setIsRequiredFieldsModalOpen(true);
       return;
     }
+
+    if (requestType === 'Auto') {
+      // Popup the confirmation code entry
+      setConfirmModalIsOpen(true);
+      setIsCodeEntry(true)
+      // Generate Confirmation code
+      await axios.post(`${API_BASE_URL}/api/send-verification`,{
+        telephone: telephone,
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+    } else {
+      try {
+          let confirmationCode = generateConfirmationCode();
+          setConfirmationCode(confirmationCode);
+          setLoading(true);
+          setIsCodeEntry(false);
+          setConfirmModalIsOpen(true);
     
-    try {
-        let confirmationCode = generateConfirmationCode();
-        setConfirmationCode(confirmationCode);
-        setLoading(true);
-        setIsCodeEntry(false);
-        setConfirmModalIsOpen(true);
-  
-        const bookingData = { 
-          entries: watchEntries, 
-          firstName, 
-          lastName, 
-          email, 
-          telephone, 
-          questions, 
-          bookingsite, 
-          requestType, 
-          confirmationCode, 
-          manualRouteRequest, 
-          passengers, 
-          largeGroupPassengers 
-        };
-        console.log("bookingData", bookingData);
-  
-        const response = await axios.post(`${API_BASE_URL}/api/submit-booking`, { bookingData });
-        console.log("here2");
+          const bookingData = { 
+            entries: watchEntries, 
+            firstName, 
+            lastName, 
+            email, 
+            telephone, 
+            questions, 
+            bookingsite, 
+            requestType, 
+            confirmationCode, 
+            manualRouteRequest, 
+            passengers, 
+            largeGroupPassengers 
+          };
+          console.log("bookingData", bookingData);
+    
+          const response = await axios.post(`${API_BASE_URL}/api/submit-booking`, { bookingData });
+          console.log("here2");
+          setLoading(false);
+          if (response.status === 200) {
+            setSuccessfulRequest(true);
+          }
+        // }
+      } catch (error) {
+        // Extract error message from the response and update state to display in the modal
+        console.error("Booking submission error:", error);
+        setErrorMessage(
+          error.response && error.response.data && error.response.data.error
+            ? error.response.data.error
+            : "An unexpected error occurred. Please try again."
+        );
+        // Optionally, set the modal to show the error view
+        setIsCodeEntry(true);
         setLoading(false);
-        if (response.status === 200) {
-          setSuccessfulRequest(true);
-        }
-      // }
-    } catch (error) {
-      // Extract error message from the response and update state to display in the modal
-      console.error("Booking submission error:", error);
-      setErrorMessage(
-        error.response && error.response.data && error.response.data.error
-          ? error.response.data.error
-          : "An unexpected error occurred. Please try again."
-      );
-      // Optionally, set the modal to show the error view
-      setIsCodeEntry(true);
-      setLoading(false);
+      }
     }
   };
     
@@ -342,7 +356,7 @@ function CompleteBooking() {
 
       if (verifyResponse.status === 200 && verifyResponse.data.success) {
           // Proceed to submit the booking
-          const bookingData = { entries: watchEntries, firstName, lastName, email, telephone, questions, bookingsite, requestType, confirmationCode, manualRouteRequest };
+          const bookingData = { entries: watchEntries, firstName, lastName, email, telephone, questions, bookingsite, requestType, confirmationCode, manualRouteRequest, passengers };
           const response = await axios.post(`${API_BASE_URL}/api/submit-booking`, { bookingData });
 
           setLoading(false);

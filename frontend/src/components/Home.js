@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from './NavBar'; // Import the top navigation bar
 import RequiredFieldsModal from './RequiredFieldsModal';
-import { validateEntries } from './HelperFunctions';
+import { validateEntries, formatDateYYYYMMDD } from './HelperFunctions';
 import API_BASE_URL from '../config';
 import PassengersDropdown from './PassengersDropdown'; 
 import LocationDropdown from './LocationDropdown'; 
@@ -271,11 +271,14 @@ function BookingForm() {
   }, [watchEntries, fetchRouteAndPrices, setValue]);
 
   const handleDateChangeRoundTrip = (departureDate, returnDate) => {
-    const formattedDeparture = new Date(departureDate).toISOString().split('T')[0];
-    const formattedReturn = new Date(returnDate).toISOString().split('T')[0];
+    const formattedDeparture = formatDateYYYYMMDD(departureDate);
+    const formattedReturn = formatDateYYYYMMDD(returnDate);
     setValue("entries.0.date", formattedDeparture);
     setValue("entries.1.date", formattedReturn);
-    console.log("entires", formattedReturn)
+    console.log("return date set as:", formattedReturn);
+    console.log("Raw returnDate:", returnDate);
+  console.log("Local returnDate:", returnDate.toString());
+  console.log("UTC returnDate:", returnDate.toISOString());
   };
   
   const handleTripTypeChange = (value) => {

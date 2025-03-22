@@ -1167,6 +1167,7 @@ const handleRemove = async (booking) => {
               booking={selectedBooking}
               isPending={isPending}
               isCompleted={isCompleted}
+              handleRemove={handleRemove}
               onClose={handleCloseModal}
               onModify={handleModify}    
       />
