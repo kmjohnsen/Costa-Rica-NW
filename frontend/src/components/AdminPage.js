@@ -86,11 +86,7 @@ function AdminPage() {
       .then(data => console.log("Token verification response:", data))
       .catch(err => console.error("Error verifying token:", err));
       
-      axios.get(`${API_BASE_URL}/api/auth/verify-token`, {
-        headers: {
-          Authorization: `Bearer ${token}`, // Include the token in the headers
-        },
-      })
+      axios.get(`${API_BASE_URL}/api/auth/verify-token`, {headers: getAuthHeaders()})
       .then(response => {
         // Token is valid, proceed as needed
         console.log('Token verified:', response.data);
@@ -124,6 +120,13 @@ function AdminPage() {
         .catch((error) => console.error("Error fetching prices: ", error));
     }
   }, [pickup, dropoff, passengers, date]); // Add passengers to the dependency array
+
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('access_token');
+    return {
+      Authorization: `Bearer ${token}`,
+    };
+  };
 
   const handlePickupChange = (e) => {
     setPickup(e.target.value);  // Update pickup state
@@ -174,7 +177,7 @@ const handleApprove = async (groupedBookings) => {
       try {
         const response = await axios.post(`${API_BASE_URL}/api/approve-booking`, {
           bookingID: booking.tempbookingID,
-        });
+        }, { headers: getAuthHeaders() });
 
         if (response.status === 200) {
           console.log(`Booking ${booking.tempbookingID} approved successfully.`);
@@ -199,14 +202,40 @@ const handleApprove = async (groupedBookings) => {
   }
 };
 
+
+const handleCompletedTrip = async (booking) => {
+  const confirmCompleted = window.confirm(
+    "Are you sure you want to mark this trip as complete? This action will move it to the completed bookings."
+  );
+
+  if (!confirmCompleted) return;
+
+  try {
+    const response = await axios.post(`${API_BASE_URL}/api/completed-booking`, {
+      bookingID: booking.bookingID,
+    }, { headers: getAuthHeaders() });
+
+    if (response.status === 200) {
+      alert('Trip marked as complete successfully!');
+      handleRemove()
+    } else {
+      console.error('Failed to complete the trip:', response.data);
+    }
+  } catch (error) {
+    console.error('Error completing the trip:', error);
+    alert('An error occurred while marking the trip as completed. Please try again.');
+  }
+}
+
 const handleRemove = async (booking) => {
   try {
     await axios.delete(`${API_BASE_URL}/api/bookings/remove-booking`, {
-      data: { 
+      headers: getAuthHeaders(),
+      data: {
         bookingID: isPending ? booking.tempbookingID : booking.bookingID,
         type: isPending ? 'temp' : 'confirmed'
       }
-    });
+    });    
   } catch {
     console.error('Error removing temporary booking')
   }
@@ -215,20 +244,25 @@ const handleRemove = async (booking) => {
   // Fetch all bookings
   const fetchBookings = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/bookings`);
+      const response = await axios.get(`${API_BASE_URL}/api/bookings`, { headers: getAuthHeaders() });
       setBookings(response.data);
       console.log('all bookings:', response.data);
       setIsPending(false);
       setIsCompleted(false);
     } catch (error) {
       console.error('Error fetching bookings:', error);
+      if (error.response && error.response.status === 401) {
+        console.warn("Token likely expired or invalid, redirecting to login.");
+        navigate('/login');
+      }
     }
   };
+
 
   // Fetch completed bookings
   const fetchCompletedBookings = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/get_completed_bookings`);
+      const response = await axios.get(`${API_BASE_URL}/api/get_completed_bookings`, { headers: getAuthHeaders() });
       setBookings(response.data);
       setIsCompleted(true);
       console.log('Completed bookings:', response.data);
@@ -241,7 +275,7 @@ const handleRemove = async (booking) => {
   // Function to add a new blackout date
   const addBlackoutDate = async (newDate) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/postblackoutdates`, {newDate});
+      const response = await axios.post(`${API_BASE_URL}/api/postblackoutdates`, {newDate}, { headers: getAuthHeaders() });
       
       if (response.status === 200) {
         fetchBlackoutDates(); // Refresh the list after adding a new date
@@ -256,7 +290,7 @@ const handleRemove = async (booking) => {
   // Function to remove a new blackout date
   const removeBlackoutDate = async (dateToRemove) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/removeblackoutdates`, {newDate: dateToRemove});
+      const response = await axios.post(`${API_BASE_URL}/api/removeblackoutdates`, {newDate: dateToRemove}, { headers: getAuthHeaders() });
       
       if (response.status === 200) {
         fetchBlackoutDates(); // Refresh the list after adding a new date
@@ -277,7 +311,7 @@ const handleRemove = async (booking) => {
   // Fetch bookings for a specific day
   const fetchDailyBookings = async (day) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/bookings/day`, { params: { date: day } });
+      const response = await axios.get(`${API_BASE_URL}/api/bookings/day`, { params: { date: day } }, { headers: getAuthHeaders() });
       setBookings(response.data);
       setIsPending(false);
       setIsCompleted(false);
@@ -289,7 +323,7 @@ const handleRemove = async (booking) => {
   // Fetch monthly summary
   const fetchMonthlySummary = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/bookings/monthly-summary`);
+      const response = await axios.get(`${API_BASE_URL}/api/bookings/monthly-summary`, { headers: getAuthHeaders() });
       setSummary(response.data);
       setIsPending(false);
     } catch (error) {
@@ -300,7 +334,7 @@ const handleRemove = async (booking) => {
   // Fetch monthly summary for drivers
   const fetchDriverSummaries = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/drivers/monthly-summary`);
+      const response = await axios.get(`${API_BASE_URL}/api/drivers/monthly-summary`, { headers: getAuthHeaders() });
       setDriverSummaries(response.data);
       setIsPending(false);
     } catch (error) {
@@ -311,7 +345,7 @@ const handleRemove = async (booking) => {
   // Fetch pending bookings
   const fetchPendingBookings = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/pendingbookings`);
+      const response = await axios.get(`${API_BASE_URL}/api/pendingbookings`, { headers: getAuthHeaders() });
       setBookings(response.data);
       console.log('pending bookings:', response.data);
       setIsPending(true);
@@ -346,7 +380,7 @@ const handleRemove = async (booking) => {
    // Function to add a new blackout date
    const addPricingRule = async () => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/postpricingrule`, {newPricingRule});
+      const response = await axios.post(`${API_BASE_URL}/api/postpricingrule`, {newPricingRule}, { headers: getAuthHeaders() });
       
       if (response.status === 200) {
         fetchPricingRules(); // Refresh the list after adding a new date
@@ -362,7 +396,7 @@ const handleRemove = async (booking) => {
   // Function to remove a new blackout date
   const removePricingRule = async (ruleID) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/removepricingrule`, {ruleID});
+      const response = await axios.post(`${API_BASE_URL}/api/removepricingrule`, {ruleID}, { headers: getAuthHeaders() });
       
       if (response.status === 200) {
         fetchPricingRules(); // Refresh the list after adding a new date
@@ -535,7 +569,7 @@ const handleRemove = async (booking) => {
                         <td>{booking.routecost}</td>
                         <td>{booking.driver}</td>
                         <td>{booking.passengers}</td>
-                        <td><button onClick={() => handleOpenModal(booking)}>View</button></td>
+                        <td><button onClick={() => handleOpenModal(booking)}>View</button><button className="complete-button" onClick={() => handleCompletedTrip(booking)}>Complete</button></td>
                       </tr>
                     ))}
                 </tbody>

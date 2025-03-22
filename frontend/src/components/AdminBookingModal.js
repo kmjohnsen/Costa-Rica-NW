@@ -19,7 +19,14 @@ function AdminBookingModal({ show, booking, isPending, onClose, onModify, isComp
 
   console.log("Booking Date:", bookingDate)
   console.log("Current Date", currentDate)
-  
+
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('access_token');
+    return {
+      Authorization: `Bearer ${token}`,
+    };
+  };
+
   // Fetch the list of pickup locations from the Flask API when the component mounts
   useEffect(() => {
     axios.get(`${API_BASE_URL}/api/pickup_locations`)
@@ -208,7 +215,7 @@ const handleSave = async () => {
       const response = await axios.put(`${API_BASE_URL}/api/bookings/modify`, {
         updatedFields, 
         isPending
-    });
+    }, { headers: getAuthHeaders() });
 
       if (response.status === 200) {
         // Successfully updated the booking, you might want to update the UI accordingly
@@ -226,7 +233,6 @@ const handleSave = async () => {
 };
 
 
-
 const handleCompletedTrip = async () => {
   const confirmCompleted = window.confirm(
     "Are you sure you want to mark this trip as complete? This action will move it to the completed bookings."
@@ -237,7 +243,7 @@ const handleCompletedTrip = async () => {
   try {
     const response = await axios.post(`${API_BASE_URL}/api/completed-booking`, {
       bookingID: booking.bookingID,
-    });
+    }, { headers: getAuthHeaders() });
 
     if (response.status === 200) {
       alert('Trip marked as complete successfully!');
@@ -258,11 +264,12 @@ const handleRemove = async () => {
   // put what was in "entries" from Home.js into the same entries format:
   try {
     await axios.delete(`${API_BASE_URL}/api/bookings/remove-booking`, {
-      data: { 
+      headers: getAuthHeaders(),
+      data: {
         bookingID: isPending ? booking.tempbookingID : booking.bookingID,
         type: isPending ? 'temp' : 'confirmed'
       }
-    });
+    });    
   } catch {
     console.error('Error removing temporary booking')
   }
