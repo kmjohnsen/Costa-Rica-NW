@@ -12,6 +12,7 @@ import Navbar from './NavBar'; // Import the top navigation bar
 import Calendar from 'react-calendar'; // Calendar component for selecting dates
 import 'react-calendar/dist/Calendar.css'; // Import calendar styles
 import API_BASE_URL from '../config';
+import { formatDateYYYYMMDD } from './HelperFunctions';
 
 function AdminPage() {
   const [view, setView] = useState('allBookings');
@@ -140,12 +141,7 @@ function AdminPage() {
 
   // Handler for date selection from the calendar
   const handleDateChange = (selectedDate) => {
-    // Extract only the date part (YYYY-MM-DD) from the selectedDate object
-    const year = selectedDate.getFullYear();
-    const month = String(selectedDate.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-    const day = String(selectedDate.getDate()).padStart(2, '0');
-    
-    const formattedDate = `${year}-${month}-${day}`; // Format as 'YYYY-MM-DD'
+    const formattedDate =  formatDateYYYYMMDD(selectedDate); // Format as 'YYYY-MM-DD'
     
     addBlackoutDate(formattedDate); // Call function to post the new date
     setShowCalendar(false); // Hide the calendar after selecting a date
@@ -645,7 +641,7 @@ const handleRemove = async (booking) => {
                 const adjustedDate = new Date(Date.UTC(newDate.getUTCFullYear(), newDate.getUTCMonth(), newDate.getUTCDate()));
                 adjustedDate.setHours(0, 0, 0, 0);  // Set time to midnight in local timezone (avoids date shifts)
 
-                const formattedDate = adjustedDate.toISOString().split('T')[0];
+                const formattedDate = formatDateYYYYMMDD(adjustedDate)
                 
                 // Log the values for troubleshooting
                 console.log('Selected Date:', newDate);
