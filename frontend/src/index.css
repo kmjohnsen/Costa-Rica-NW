@@ -115,14 +115,14 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover; /* Ensures the image covers the area */
-  animation: kenBurns 10s infinite alternate ease-in-out;
-
+  /* animation: kenBurns 10s infinite alternate ease-in-out; */
+  animation: zoomIn 10s infinite ease-in;
 }
 
 /* 🔥 Zoom IN effect */
-.ken-burns-zoom-in {
+/* .ken-burns-zoom-in {
   animation: zoomIn 10s infinite alternate ease-in-out;
-}
+} */
 
 @keyframes zoomIn {
   0% { transform: scale(1.0) translate(0, 0); }
@@ -130,14 +130,14 @@ body {
 }
 
 /* 🔥 Zoom OUT effect */
-.ken-burns-zoom-out {
+/* .ken-burns-zoom-out {
   animation: zoomOut 10s infinite alternate ease-in-out;
 }
 
 @keyframes zoomOut {
   0% { transform: scale(1.1) translate(0, 0); }
   100% { transform: scale(1.0) translate(-2%, -2%); }
-}
+} */
 
 .hero-text {
   position: relative; /* Keep text above the moving image */
