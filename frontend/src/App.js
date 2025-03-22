@@ -61,18 +61,23 @@ function App() {
     <GoogleOAuthProvider clientId={CLIENTID}>
     {/* <div className="background-container"> */}
       <div className="content">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/admin" element={<AdminPage />} />
-          <Route path="/aboutus" element={<AboutUs />} />
-          <Route path="/terms" element={<TermsConditions />} />
-          <Route path="/faqs" element={<FAQs />} />
-          <Route path="/completebooking" element={<CompleteBooking />} />
-          <Route path="/requestbooking" element={<RequestBooking />} />
-          {/* <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} /> */}
-          <Route path="/admin/modifyuser" element={<ProtectedRoute><ModifyUser /></ProtectedRoute>} />
-          {/* <Route path="/admin/modifyuser" element={<ModifyUser />} /> */}
-        </Routes>
+      <Routes>
+        <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
+        <Route path="/aboutus" element={<ProtectedRoute><AboutUs /></ProtectedRoute>} />
+        <Route path="/terms" element={<ProtectedRoute><TermsConditions /></ProtectedRoute>} />
+        <Route path="/faqs" element={<ProtectedRoute><FAQs /></ProtectedRoute>} />
+        <Route path="/completebooking" element={<ProtectedRoute><CompleteBooking /></ProtectedRoute>} />
+        <Route path="/requestbooking" element={<ProtectedRoute><RequestBooking /></ProtectedRoute>} />
+        <Route path="/admin/modifyuser" element={<ProtectedRoute><ModifyUser /></ProtectedRoute>} />
+        <Route path="/login" element={
+          <div className="login-page" style={{ textAlign: 'center', marginTop: '100px' }}>
+            <h2>Please sign in to continue</h2>
+            <GoogleLogin onSuccess={handleLoginSuccess} onError={handleLoginError} />
+          </div>
+        } />
+      </Routes>
+
       </div>
       <div className='footer-links'>
         <div className="google-login">
