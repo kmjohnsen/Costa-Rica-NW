@@ -12,14 +12,14 @@ import Navbar from './NavBar'; // Import the top navigation bar
 import Calendar from 'react-calendar'; // Calendar component for selecting dates
 import 'react-calendar/dist/Calendar.css'; // Import calendar styles
 import API_BASE_URL from '../config';
-import { formatDateYYYYMMDD } from './HelperFunctions';
+import { formatDateYYYYMMDD, parseDateYYYYMMDD } from './HelperFunctions';
 
 function AdminPage() {
   const [view, setView] = useState('allBookings');
   const [bookings, setBookings] = useState([]);
   const [summary, setSummary] = useState({});
   const [driverSummaries, setDriverSummaries] = useState([]);
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]); // Default to today's date in 'YYYY-MM-DD' format
+  const [date, setDate] = useState(formatDateYYYYMMDD(new Date())); // Today by default
   
   console.log("initialized date:", date)
   const [selectedBooking, setSelectedBooking] = useState(null);
@@ -307,7 +307,10 @@ const handleRemove = async (booking) => {
   // Fetch bookings for a specific day
   const fetchDailyBookings = async (day) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/bookings/day`, { params: { date: day } }, { headers: getAuthHeaders() });
+      const response = await axios.get(`${API_BASE_URL}/api/bookings/day`, {
+        params: { date: day },
+        headers: getAuthHeaders(),  // ✅ Merge headers into the same config object
+      });
       setBookings(response.data);
       setIsPending(false);
       setIsCompleted(false);
@@ -315,6 +318,7 @@ const handleRemove = async (booking) => {
       console.error('Error fetching bookings for the day:', error);
     }
   };
+  
 
   // Fetch monthly summary
   const fetchMonthlySummary = async () => {
@@ -615,12 +619,14 @@ const handleRemove = async (booking) => {
         
             {/* Date Navigation Buttons */}
             <DateNavigation
-              selectedDate={date}  // Pass the current selected date
+              selectedDate={parseDateYYYYMMDD(date)}  // Use the parser here
               onDateChange={(newDate) => {
-                const adjustedDate = new Date(newDate);
-                adjustedDate.setHours(0,0,0,);
-                setDate(adjustedDate.toISOString().split('T')[0]);  // Set the selected date
-                fetchDailyBookings(newDate.toISOString().split('T')[0]);  // Fetch bookings for the new date
+                newDate.setHours(0, 0, 0, 0); // Ensure time is reset to midnight
+                const formattedDate = formatDateYYYYMMDD(newDate);
+                console.log('New Date (local):', newDate);
+                console.log('Formatted Date:', formattedDate);
+                setDate(formattedDate);
+                fetchDailyBookings(formattedDate);
               }}
             />
             {/* Timeline showing bookings for the selected day */}
@@ -630,32 +636,17 @@ const handleRemove = async (booking) => {
 
         {view === 'dailyBookings' && (
           <div>
-            <h2>All Bookings</h2>
+            <h2>All Bookings by Date</h2>
 
             {/* Date Navigation Buttons */}
             <DateNavigation
-              selectedDate={new Date(date)}  // Pass the current selected date as a Date object
+              selectedDate={parseDateYYYYMMDD(date)}
               
               onDateChange={(newDate) => {
-                // const adjustedDate = new Date(newDate);
-                const adjustedDate = new Date(Date.UTC(newDate.getUTCFullYear(), newDate.getUTCMonth(), newDate.getUTCDate()));
-                adjustedDate.setHours(0, 0, 0, 0);  // Set time to midnight in local timezone (avoids date shifts)
-
-                const formattedDate = formatDateYYYYMMDD(adjustedDate)
-                
-                // Log the values for troubleshooting
-                console.log('Selected Date:', newDate);
-                console.log('Adjusted Date:', adjustedDate);
-                console.log('Formatted Date:', formattedDate);
-                console.log('State Date before update:', date);
-
-                setDate(formattedDate);  // Update the state with the formatted date
-                fetchDailyBookings(formattedDate);  // Fetch bookings for the new date
-
-                // Log after state update
-                setTimeout(() => {
-                  console.log('State Date after update:', date);
-                }, 0);  // This will show the value after state is updated (state update is asynchronous)
+                newDate.setHours(0, 0, 0, 0);  // good
+                const formattedDate = formatDateYYYYMMDD(newDate);  // good
+                setDate(formattedDate);
+                fetchDailyBookings(formattedDate);
               }}
             />
 
