@@ -52,13 +52,23 @@
   border-radius: 5px;
 }
 
-/* .complete-button-disabled {
-  background-color: gray;
-  color: white;
+.view-button {
+  background-color: #a09e9e;
+  color: black;
   border: none;
-  padding: 10px 20px;
-  cursor: not-allowed;
-} */
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.remove-button {
+  background-color: #a09e9e;
+  color: black;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+}
 
 .cancel-button {
   background-color: #a09e9e;

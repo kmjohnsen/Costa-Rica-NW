@@ -569,7 +569,7 @@ const handleRemove = async (booking) => {
                         <td>{booking.routecost}</td>
                         <td>{booking.driver}</td>
                         <td>{booking.passengers}</td>
-                        <td><button onClick={() => handleOpenModal(booking)}>View</button><button className="complete-button" onClick={() => handleCompletedTrip(booking)}>Complete</button></td>
+                        <td><button className="view-button" onClick={() => handleOpenModal(booking)}>View</button><button className="complete-button" onClick={() => handleCompletedTrip(booking)}>Complete</button></td>
                       </tr>
                     ))}
                 </tbody>
@@ -603,7 +603,7 @@ const handleRemove = async (booking) => {
                         <td>{booking.routecost}</td>
                         <td>{booking.driver}</td>
                         <td>{booking.passengers}</td>
-                        <td><button onClick={() => handleOpenModal(booking)}>View</button></td>
+                        <td><button className="view-button" onClick={() => handleOpenModal(booking)}>View</button></td>
                       </tr>
                     ))}
                 </tbody>
@@ -707,7 +707,7 @@ const handleRemove = async (booking) => {
                           {booking.passengers}
                         </td>
                         <td data-label="Action">
-                          <button onClick={() => handleOpenModal(booking)}>View</button>
+                          <button className="view-button" onClick={() => handleOpenModal(booking)}>View</button>
                         </td>
                       </tr>
                     ))}
@@ -961,7 +961,7 @@ const handleRemove = async (booking) => {
                             {booking.passengers}
                           </td>
                           <td data-label="Actions">
-                            <button onClick={() => handleOpenModal(booking)}>View</button>
+                            <button className="view-button" onClick={() => handleOpenModal(booking)}>View</button>
                           </td>
                         </tr>
                       ))}
@@ -1061,7 +1061,7 @@ const handleRemove = async (booking) => {
                       {booking.passengers}
                     </td>
                     <td data-label="Actions">
-                      <button onClick={() => handleOpenModal(booking)}>View</button>
+                      <button className="view-button" onClick={() => handleOpenModal(booking)}>View</button>
                     </td>
                   </tr>
                 ))}
