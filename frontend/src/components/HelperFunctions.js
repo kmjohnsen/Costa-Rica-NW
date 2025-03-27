@@ -1,4 +1,4 @@
-export function validateEntries(entries, passengers, fields) {
+export function validateEntries(entries, fields) {
   const capitalizeFirstLetter = (string) => 
     `${string.charAt(0).toUpperCase()}${string.slice(1)}`;
 
@@ -28,10 +28,10 @@ export function validateEntries(entries, passengers, fields) {
   });
 
   // Check if passengers is missing
-  if (!passengers || (typeof passengers === "string" && passengers.trim() === "")) {
-    hasIncompleteFields = true;
-    missingFieldsMessage += "Passengers field is required. ";
-  }
+  // if (!passengers || (typeof passengers === "string" && passengers.trim() === "")) {
+  //   hasIncompleteFields = true;
+  //   missingFieldsMessage += "Passengers field is required. ";
+  // }
 
   // Append final message if there are any missing fields
   if (hasIncompleteFields) {

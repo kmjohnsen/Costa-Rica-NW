@@ -196,6 +196,18 @@ body {
   z-index: 10;
 }
 
+/* Booking Form Box */
+.text-container-completebooking {
+  background: var(--bright-white);
+  padding: 0px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 800px;
+  margin: -50px auto 20px; /* Move it up slightly */
+  position: relative;
+  z-index: 10;
+}
+
 .flex-container-spaced {
   display: flex;
   flex-wrap: wrap; /* Ensures wrapping on smaller screens */
@@ -232,20 +244,15 @@ body {
 
 .flex-container-completebooking {
   display: flex;
-  gap: 0px 10px; /* Space between the two inputs */
-  flex-wrap: wrap; /* Allows wrapping on smaller screens */
+  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   width: 100%;
+  padding: 5px 10px;
   max-width: 800px;
   margin: 0 auto; 
   background-color: var(--bright-white);
-  color: var(--dark-text);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0px;
 }
-
 
 .input-container, 
 .input-container-bottom,
@@ -663,9 +670,14 @@ input[type="time"]::-webkit-datetime-edit {
 
 /* Targets the dropdown list of the flag */
 .custom-phone-input .country-list {
-  background-color: var(--dark-background) !important; /* Ensures custom background */
-  color: var(--text-color); /* Ensures text color */
+  background-color: var(--light-background) !important; /* Ensures custom background */
+  color: var(--dark-text); /* Ensures text color */
   border-radius: 8px; /* Matches rounded style */
+}
+
+.custom-phone-input input::placeholder {
+  color: var(--placeholder-color);
+  opacity: 1 !important;
 }
 
 .custom-phone-input .flag {

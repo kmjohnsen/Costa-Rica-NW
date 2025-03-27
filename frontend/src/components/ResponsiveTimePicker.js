@@ -5,22 +5,18 @@ import { LocalizationProvider, DesktopTimePicker, MobileTimePicker } from '@mui/
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import './ResponsiveTimePicker.css';
 
-function ResponsiveTimePicker({ value, onChange, label }) {
+// function ResponsiveTimePicker({ value, onChange }) {
+  function ResponsiveTimePicker({ value, onChange, label }) {
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const renderInput = (params) => (
     <TextField
       {...params}
-      placeholder="hh:mm aa"
+      label={label}
       error={false}
       fullWidth
-      sx={{
-        '& .MuiInputBase-input::placeholder': {
-          color: 'grey',
-          opacity: 1,
-        },
-      }}
     />
   );
 

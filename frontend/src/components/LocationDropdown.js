@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faChevronDown } from "@fortawesome/free-solid-svg-icons";
 import "./ButtonDropdown.css";
 
+
 const LocationDropdown = ({ 
   label, 
   value, 
@@ -94,7 +95,7 @@ const LocationDropdown = ({
             <FontAwesomeIcon icon={faSearch} className="search-icon" />
             <input
               type="text"
-              placeholder="Search location..."
+              placeholder="Search..."
               ref={searchRef}
               onChange={handleInputChange}
               className="dropdown-search-input"
@@ -116,7 +117,7 @@ const LocationDropdown = ({
               </li>
             ))
           ) : (
-            <li className="dropdown-item no-results">No locations found</li>
+            <li className="dropdown-item no-results">Not found</li>
           )}
         </ul>
       )}

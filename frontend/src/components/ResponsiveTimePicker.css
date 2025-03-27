@@ -3,46 +3,58 @@
   margin: 0px 0;
   padding: 0px;
   border: none;
+  outline: none;
 }
 
 /* Remove any red error border by overriding error and focus states */
 .responsive-time-picker .MuiOutlinedInput-root {
-  /* Default border color */
-  fieldset {
-    border: 1px solid var(--placeholder-color); /* Set solid border */
-    border-radius: 8px;
-  }
+  background-color: var(--bright-white);
+  box-shadow: 0px 2px 5px var(--shadow-for-box);
+  border-radius: 8px;
+  font-family: "Helvetica", Arial, sans-serif;
+  padding-left: 10px;
+  outline: none;
+}
+
+/* Focused Input */
+.responsive-time-picker:focus {
+  border-color: var(--accent);
+  background-color: white;
+  box-shadow: 0 0 10px var(--accent);
 }
 
 /* Remove error border if somehow error classes are applied */
 .responsive-time-picker .MuiOutlinedInput-root.Mui-error fieldset {
-  border: 1px solid var(--placeholder-color); /* Set solid border */
+  border: 1px solid var(--bright-white); /* Set solid border */
 }
 
 /* Override focused state border color to match normal state */
 .responsive-time-picker .MuiOutlinedInput-root.Mui-focused fieldset {
-  border: 1px solid var(--placeholder-color); /* Set solid border */
+  border: 1px solid var(--bright-white); /* Set solid border */
 }
 
 /* Style the placeholder text to be grey */
 .responsive-time-picker .MuiInputBase-input::placeholder {
-  color: grey !important;
+  color: var(--dark-text) !important;
   opacity: 1; /* Ensure full opacity */
-  font-size: 1.2rem; /* Match your design */
+  font-size: 1.0rem; /* Match your design */
 }
 
 .responsive-time-picker input::placeholder {
-  color: grey !important;
+  color: var(--dark-text) !important;
   opacity: 1;
 }
 
 /* Adjust the TextField input font size */
 .responsive-time-picker .MuiInputBase-input {
-  font-size: 1.2rem; 
-  border: none;
+  text-align: left;
+  font-family: "Helvetica", Arial, sans-serif;
+  padding: 12px 14px;
+  font-size: 1rem;
+  color: var(--dark-text);
 }
 
 /* Optionally adjust the label font size */
 .responsive-time-picker .MuiInputLabel-root {
-  font-size: 1.2rem;
+  font-family: "Helvetica", Arial, sans-serif;
 }

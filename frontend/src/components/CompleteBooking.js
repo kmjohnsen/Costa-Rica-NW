@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Modal from 'react-modal';
 import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 import { useForm, useWatch } from 'react-hook-form';
 import airlineOptions from './airlineOptions'; // Import your airline options
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -11,6 +12,9 @@ import { validateEntries } from './HelperFunctions';
 import { useDebounce } from 'use-debounce';
 import API_BASE_URL from '../config';
 import ResponsiveTimePicker from './ResponsiveTimePicker';
+import "./ButtonDropdown.css";
+import LocationDropdown from './LocationDropdown'; 
+
 
 
 function CompleteBooking() {
@@ -61,7 +65,7 @@ function CompleteBooking() {
   // const [confirmation_code, setConfirmation_Code] = useState('');
 
   // Initialize useForm and useFieldArray
-  const { register, control, setValue } = useForm({
+  const { control, setValue } = useForm({
     defaultValues: { entries: initialEntries, passengers: passengers }
   });
 
@@ -207,11 +211,11 @@ function CompleteBooking() {
     setQuestions(value);
   };
 
-  const openEditModal = (index) => {
-    setCurrentEditIndex(index);
-    setTempEdit({ ...watchEntries[index], routenumber: watchEntries[index?.routenumber] }); // Copy current trip values
-    setEditModalOpen(true);
-  };
+  // const openEditModal = (index) => {
+  //   setCurrentEditIndex(index);
+  //   setTempEdit({ ...watchEntries[index], routenumber: watchEntries[index?.routenumber] }); // Copy current trip values
+  //   setEditModalOpen(true);
+  // };
 
   const closeEditModal = () => {
     setEditModalOpen(false);
@@ -247,33 +251,40 @@ function CompleteBooking() {
       telephone: telephone || '',
     }];
 
-    const notime = watchEntries.some((entry) => !entry.time);
     console.log("fields", fields)
     console.log("time", watchEntries)
     console.log("passengers", passengers)
 
     // Add `largeGroupPassengers` if `isLargeGroup` is true
     if (isLargeGroup) {
-        fields.largeGroupPassengers = largeGroupPassengers;
+        fields[0].largeGroupPassengers = largeGroupPassengers;
     }
 
     // Define the required fields dynamically
-    const requiredFields = ['firstName', 'lastName', 'email', 'telephone'];
-    console.log("Large Group passengers", isLargeGroup, largeGroupPassengers)
-    if (isLargeGroup) {
-        requiredFields.push('largeGroupPassengers');
-    }
+    const requiredFields = ['firstName', 'lastName', 'email', 'telephone', 'airline', 'flightnumber'];
+    
+    const passengerData = [{
+      passengers: isLargeGroup ? largeGroupPassengers : passengers
+    }];
+    
+    const { hasIncompleteFields: missingPassenger, missingFieldsMessage: passengerMsg } =
+      validateEntries(passengerData, ['passengers']);
     
     console.log("Fields before validation:", fields);
     console.log("Required Fields:", requiredFields);
-    const { hasIncompleteFields, missingFieldsMessage } = validateEntries(fields, passengers, requiredFields);
-    
-    let updatedMissingFieldsMessage = missingFieldsMessage
-    if (notime) {
-      updatedMissingFieldsMessage += "Time fields required befor proceeding."
-    }
-    if (hasIncompleteFields || notime) {
-      setMissingFields(updatedMissingFieldsMessage);
+    const { hasIncompleteFields: hasMissingContactInfo, missingFieldsMessage: contactMissingMsg } =
+      validateEntries(fields, ['firstName', 'lastName', 'email', 'telephone']);
+
+    const { hasIncompleteFields: hasMissingFlightInfo, missingFieldsMessage: flightMissingMsg } =
+      validateEntries(watchEntries, ['airline', 'flightnumber', 'time']);
+
+    let combinedMissing = '';
+    if (hasMissingContactInfo) combinedMissing += contactMissingMsg;
+    if (hasMissingFlightInfo) combinedMissing += flightMissingMsg;
+    if (missingPassenger) combinedMissing += passengerMsg;
+
+    if (combinedMissing) {
+      setMissingFields(combinedMissing);
       setIsRequiredFieldsModalOpen(true);
       return;
     }
@@ -578,7 +589,7 @@ function CompleteBooking() {
         )}
       </Modal>
 
-      <div className='text-container' style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
+      <div className='text-container-completebooking' style={{ margin: '0 auto' }}>
         {requestType === 'Large Group' && (
           <>
             <div className="flex-container-completebooking">
@@ -591,7 +602,7 @@ function CompleteBooking() {
               <p  style={{ width:'90%', maxWidth:'850px', fontSize:'1.2rem', textAlign: 'center', margin: '0 auto', color: 'var(--accent)' }}><i>Due to the size of your party, we want to ensure that every detail is perfectly arranged. Please complete the form, and a dedicated sales associate will reach out to discuss your specific needs and ensure a seamless, enjoyable experience.</i></p>
             </div>
 
-            <div className="flex-container-completebooking">
+            <div className="flex-container-centered">
               <div className="input-container-light" style={{ width: '300px', margin: '20px 0' }}>        
                 <input
                   type="number"
@@ -639,54 +650,100 @@ function CompleteBooking() {
           <h2>Add Personal Information</h2>
         </div>
 
-        <div className='flex-container-completebooking' >
-          <div className="input-container-light" style={{ width: '300px' }}>        
-            <input type="text" value={firstName}  style={{ fontSize: '1.5rem', width: '100%', justifyContent: 'center' }} onChange={(e) => setFirstName(e.target.value)} 
-            placeholder='First Name'
-            required />
-            <label>FIRST NAME</label>
+        <div className="flex-container-completebooking">
+          <div className="location-input-container" style={{ width: '300px' }}>
+            <label className={`floating-label ${firstName ? "label-active" : ""}`}>
+              First Name
+            </label>
+            <input
+              type="text"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              className="location-input"
+              onFocus={(e) => e.target.select()}
+            />
           </div>
-          <div className="input-container-light" style={{ width: '300px' }}>        
-            <input className='input' style={{ fontSize: '1.5rem', width: '100%' }} type="text" value={lastName} onChange={(e) => setLastName(e.target.value)}
-            placeholder='Last Name'
-            required />
-            <label>LAST NAME</label>
+        </div>        
+
+        <div className="flex-container-completebooking">
+          <div className="location-input-container" style={{ width: '300px' }}>
+            <label className={`floating-label ${lastName ? "label-active" : ""}`}>
+              Last Name
+            </label>
+            <input
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              className="location-input"
+              onFocus={(e) => e.target.select()}
+            />
+          </div>
+          {/* <div className='flex-container-completebooking' >
+            <div className="dropdown-button" style={{ width: '300px' }}>        
+              <input className='input' style={{ fontSize: '1.5rem', width: '100%' }} type="text" value={lastName} onChange={(e) => setLastName(e.target.value)}
+              placeholder='Last Name'
+              required />
+              <label>LAST NAME</label>
+            </div>
+          </div> */}
+        </div>        
+
+        <div className="flex-container-completebooking">
+          <div className="location-input-container" style={{ width: '300px' }}>
+            <label className={`floating-label ${email ? "label-active" : ""}`}>
+              Email
+            </label>
+            <input
+              type="text"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="location-input"
+              onFocus={(e) => e.target.select()}
+            />
           </div>
         </div>
+
         <div className='flex-container-completebooking' >
-          <div className="input-container-light" style={{ width: '400px' }}>
-            <input type="email" style={{ fontSize: '1.5rem', width: '100%' }} value={email} onChange={(e) => setEmail(e.target.value)} 
-            placeholder='email@domain.com'
-            required />
-            <label>EMAIL</label>
-          </div>
-          <div className="input-container-light" style={{ width: '280px' }}>
+          <div  style={{ width: '300px' }}>
+            {/* <label className={`floating-label ${email ? "label-active" : ""}`}>
+              Email
+            </label> */}
             <PhoneInput
               country="us"
               value={telephone}
               onChange={(phone) => setTelephone(phone)}
+              autoFormat={true}
+              placeholder='e.g. 123 456 7890'
+              inputProps={{ 
+                name: 'phone',
+                required: true,
+              }}
+              enableAreaCodes={true}
+              disableCountryCode={false}
+              disableDropdown={false}
               required
               inputStyle={{
-                fontSize: '1.1rem',
+                fontSize: '1.0rem',
                 padding: '12px',
                 width: '100%',
                 height: 'auto',
-                backgroundColor: 'var(--input-background)', // Sets custom background color
+                backgroundColor: 'var(--bright-white)', // Sets custom background color
                 color: 'var(--dark-text)', // Sets text color
-                border: '1px solid var(--placeholder-color)',
+                border: '1px solid var(--bright-white)',
                 borderRadius: '8px', // Matches your desired styling
-                placeholder: 'var(--placeholder-text)',
+                boxShadow: '0px 2px 5px var(--shadow-for-box)',
+                textAlign: 'left',
+                paddingLeft: '65px',
             }}
               buttonStyle={{
-                backgroundColor: 'var(--input-background)', // Custom background color for flag dropdown
+                backgroundColor: 'var(--bright-white)', // Custom background color for flag dropdown
                 borderRadius: '8px',
-                border: '1px solid var(--placeholder-color)',
+                border: '1px solid var(--accent)',
                 padding: '5px', // Adjusts padding if needed
             }}
-            inputProps={{ required: true }}
+            
             containerClass="custom-phone-input" // Adds a custom class for easier styling
             />
-            <label>PHONE NUMBER</label>
           </div>
         </div>
         <div  className="flex-container-completebooking">
@@ -708,27 +765,33 @@ function CompleteBooking() {
                 <p style={{ fontSize: '1.5rem', margin: '0' }}><u>Trip {index + 1}</u></p>
               </div>
               <div className="flex-container-completebooking" key={index}>
-                <div style={{ margin: '2px 20px' }}>
-                  <p style={{ fontSize: '1.5rem', margin: '0' }}><b>{entry.date}</b></p>
-                </div>
+                
 
                 <div style={{ minWidth: '350px', maxWidth: '90%', display: 'flex', alignItems: 'center' }}>
-                  <p>
-                    <span style={{ fontSize: '1.5rem' }}>{entry.pickup}</span>
-                    <span style={{ fontSize: '1.5rem', margin: '0 5px', color: 'var(--accent)' }}>
-                      <b>&#8594;</b>
-                    </span>
-                    <span style={{ fontSize: '1.5rem' }}>{entry.dropoff}</span>
-                    <span style={{ fontSize: '1.5rem' }}>, pickup at </span>
-                    <span style={{ fontSize: '1.5rem' }}> for </span>
-                    <span style={{ fontSize: '1.5rem' }}>
-                      {requestType === 'Large Group' ? (
-                        `${largeGroupPassengers} Passengers`
-                      ) : 
-                        `${passengers} Passenger${passengers > 1 ? 's' : ''}`
-                      }
-                    </span>
-                  </p>
+                  <table style={{ width: '100%', margin: '10px 0', borderCollapse: 'collapse', border: 'none' }}>
+                    <tr>
+                    <td style={{ fontSize: '1.5rem', whiteSpace: 'nowrap', paddingRight: '10px', verticalAlign: 'top', border: 'none' }}>
+                      <b>{entry.date}:</b>
+                    </td>
+
+                      
+                      <td style={{fontSize: '1.4rem', border: 'none'}}>
+                        <span style={{  }}>{entry.pickup}</span>
+                        <span style={{ margin: '0 5px', color: 'var(--accent)' }}>
+                          <b>&#8594;</b>
+                        </span>
+                        <span>{entry.dropoff}</span>
+                        <span>, pickup for </span>
+                        <span>
+                          {requestType === 'Large Group' ? (
+                            `${largeGroupPassengers} Passengers.`
+                          ) : 
+                            `${passengers} Passenger${passengers > 1 ? 's.' : '.'}`
+                          }
+                        </span>
+                      </td>
+                    </tr>
+                  </table>
                 </div>
 
                 {/* Display price of the trip */}
@@ -736,9 +799,9 @@ function CompleteBooking() {
                   <div style={{ minWidth: '100px', maxWidth: '100%', display: 'flex', alignItems: 'center' }}>
                     <p>
                       {tripPrices[index]?.[entry.date] ? (
-                        <span style={{ fontSize: '1.5rem' }}> ${tripPrices[index][entry.date]} - cash due on dropoff </span>
+                        <span style={{ fontSize: '1.4rem' }}><b>${tripPrices[index][entry.date]}</b> - cash due on trip completion </span>
                       ) : (
-                        <span style={{ fontSize: '1.5rem', color: 'gray' }}>Fetching price...</span>
+                        <span style={{ fontSize: '1.4rem', color: 'gray' }}>Fetching price...</span>
                       )}
                     </p>
                   </div>
@@ -774,54 +837,96 @@ function CompleteBooking() {
                   </div> */}
 
                   
-
                   {(airportLocations.includes(entry.pickup) || airportLocations.includes(entry.dropoff)) && (
                     <>
-                      <div className="input-container-light" style={{ width: '200px' }}>
-                        <ResponsiveTimePicker
-                          value={entry.time instanceof Date ? entry.time : null}
-                          onChange={(time) => {
-                            if (time) {
-                              const formattedTime = new Date(time).toLocaleTimeString('en-US', { hour12: false });
-                              setValue(`entries.${index}.time`, formattedTime);
-                            } else {
-                              setValue(`entries.${index}.time`, null);
-                            }
+                      <div  className="flex-container-completebooking" style={{ width: '300px' }}>
+                        <div className="location-input-container" style={{ width: '200px' }}>
+                          <label className={`floating-label-time ${entry.time ? 'label-active' : ''}`}>
+                            {airportLocations.includes(entry.pickup)
+                              ? "Flight Arrival Time"
+                              : airportLocations.includes(entry.dropoff)
+                                ? "Flight Departure Time"
+                                : "Shuttle Pickup Time"}
+                          </label>
+                          <ResponsiveTimePicker
+                            label={airportLocations.includes(entry.pickup)
+                              ? "Flight Arrival Time"
+                              : airportLocations.includes(entry.dropoff)
+                                ? "Flight Departure Time"
+                                : "Shuttle Pickup Time"
+                              }
+                            value={entry.time instanceof Date ? entry.time : null}
+                            onChange={(time) => {
+                              if (time) {
+                                const formattedTime = new Date(time).toLocaleTimeString('en-US', { hour12: false });
+                                setValue(`entries.${index}.time`, formattedTime);
+                              } else {
+                                setValue(`entries.${index}.time`, null);
+                              }
+                            }}
+                            required
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="flex-container-completebooking" style={{ width: '300px' }}>
+                        <LocationDropdown
+                          label="Airline"
+                          value={watchEntries[index]?.airline || ""}
+                          locations={airlineOptions}
+                          onChange={(value) => {
+                            setValue(`entries.${index}.airline`, value);
                           }}
-                          required
                         />
-                        <label>
-                          {airportLocations.includes(entry.pickup)
-                            ? "FLIGHT ARRIVAL TIME"
-                            : airportLocations.includes(entry.dropoff)
-                              ? "FLIGHT DEPARTURE TIME"
-                              : "SHUTTLE PICKUP TIME"}
-                        </label>
                       </div>
-                      <div className="input-container-light" style={{ width: '400px' }}>
-                        <input
-                          style={{ fontSize: '1.5rem' }}
-                          type="text"
-                          defaultValue={watchEntries[index]?.airline || ''} // Default to the existing value or an empty string
-                          {...register(`entries.${index}.airline`)}
-                          list="airline-options"
-                          placeholder='Airline Name'
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setValue(`entries.${index}.airline`, value); // Update the form value
-                          }}                      />
-                        <datalist id="airline-options">
-                            {airlineOptions
-                              .filter(option => option.toLowerCase().includes(watchEntries[index]?.airline.toLowerCase()))
-                              .map((option, index) => (
-                                <option key={index} value={option} />
-                              ))}
-                          </datalist>
-                        <label>AIRLINE (OPTIONAL)</label>
+
+                      {/* <div className="flex-container-completebooking" style={{ width: '400px' }}>
+                        <div className="location-input-container" style={{ width: '300px' }}>
+                          <label className={`floating-label ${entry.airline ? "label-active" : ""}`}>
+                            Airline
+                          </label>
+                          <input
+                            style={{ fontSize: '1.5rem' }}
+                            type="text"
+                            defaultValue={watchEntries[index]?.airline || ''} // Default to the existing value or an empty string
+                            {...register(`entries.${index}.airline`)}
+                            list="airline-options"
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setValue(`entries.${index}.airline`, value); // Update the form value
+                            }}                      />
+                          <datalist id="airline-options">
+                              {airlineOptions
+                                .filter(option => option.toLowerCase().includes(watchEntries[index]?.airline.toLowerCase()))
+                                .map((option, index) => (
+                                  <option key={index} value={option} />
+                                ))}
+                            </datalist>
+                          <label>AIRLINE (OPTIONAL)</label>
+                        </div>
+                      </div> */}
+                      
+                      <div className="flex-container-completebooking">
+                        <div className="location-input-container" style={{ width: '300px' }}>
+                          <label className={`floating-label ${entry.flightnumber ? "label-active" : ""}`}>
+                            Flight Number
+                          </label>
+                          <input
+                            type="number"
+                            value={entry.flightnumber}
+                            required
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setValue(`entries.${index}.flightnumber`, value); // Update the form value
+                            }} 
+                            className="location-input"
+                            onFocus={(e) => e.target.select()}
+                          />
+                        </div>
                       </div>
-                      <div className="input-container-light" style={{ width: '400px' }}>
+                      {/* <div className="input-container-light" style={{ width: '400px' }}>
                         <input 
-                          placeholder="Flight Number"
+                          placeholder="Flight Number (required)"
                           type="number"
                           style={{ fontSize: '1.5rem' }}
                           defaultValue={entry.flightnumber || ''}
@@ -831,21 +936,32 @@ function CompleteBooking() {
                           }}   
                         />
                         <label>FLIGHT NUMBER (OPTIONAL)</label>
-                      </div>
+                      </div> */}
                     </>
                   )}
-                  <div className="input-container-light" style={{ width: '500px' }}>
+                  
+                  <div className="flex-container-completebooking">
+                    <div className="location-input-container" style={{ width: '300px' }}>
+                      <label className={`floating-label ${questions ? "label-active" : ""}`}>
+                        Questions / Comments (optional)
+                      </label>
+                      <textarea 
+                        style={{ fontSize: '1.5rem', fontFamily: 'Helvetica, Arial, sans-serif', height:'100px', alignContent: 'center' }}
+                        className='location-input'
+                        onChange={handleQuestionsChange} // No need for an inline function
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* <div className="input-container-light" style={{ width: '500px' }}>
                     <textarea 
-                      style={{ fontSize: '1.5rem', width: '300px', alignContent: 'center' }}
-                      placeholder="Add questions or comments"
+                      style={{ fontSize: '1.5rem', width: '400px', alignContent: 'center' }}
+                      placeholder="Questions / Comments (optional)"
                       className='large-textarea'
                       onChange={handleQuestionsChange} // No need for an inline function
                     />
                     <label>QUESTIONS / COMMENTS (OPTIONAL)</label>
-                  </div>
-                  <div>
-                    <button className="book-button" type="button-right" style = {{ marginLeft: '40px', display: 'none' }} onClick={() => openEditModal(index)}>MODIFY TRIP {index + 1}</button>
-                  </div>
+                  </div> */}
 
                 </div>
               </div>

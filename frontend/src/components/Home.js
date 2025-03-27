@@ -417,7 +417,7 @@ function BookingForm() {
 
   const handleCompleteBooking = async () => {
     const entries = getValues('entries'); // get the entries from form state
-    const { hasIncompleteFields, missingFieldsMessage } = validateEntries(entries, passengers, ['pickup', 
+    const { hasIncompleteFields, missingFieldsMessage } = validateEntries(entries, ['pickup', 
       'dropoff', 'date'
     ]);
     
