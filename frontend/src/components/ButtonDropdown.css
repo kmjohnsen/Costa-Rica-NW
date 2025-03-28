@@ -1,7 +1,7 @@
 /* Container */
 .location-dropdown {
   position: relative;
-  width: 285px;
+  width: 300px;
   display: flex;
 }
 
@@ -26,7 +26,7 @@
   transition: all 0.3s ease-in-out;
   background-color: var(--bright-white);
   box-shadow: 0px 2px 5px var(--shadow-for-box);
-  border: none;
+  border: var(--bright-white);
 }
 
 /* Focused Input */
@@ -56,7 +56,7 @@
   top: 50%;
   left: 14px;
   transform: translateY(-50%);
-  color: var(--dark-text);
+  color: var(--placeholder-color);
   font-size: 16px;
   transition: all 0.3s ease-in-out;
   pointer-events: none;
@@ -65,10 +65,10 @@
 /* Move Label Up When Active */
 .location-input:focus + .floating-label,
 .label-active {
-  top: 8px;
+  top: 20px;
   font-size: 11px;
   font-weight: bold;
-  color: var(--accent);
+  color: var(--placeholder-color);
 }
 
 /* Floating Label */
@@ -76,13 +76,11 @@
   position: absolute;
   left: 10px;
   transform: translateY(-50%);
-  color: var(--dark-text);
+  color: var(--accent);
   font-size: 16px;
   pointer-events: none;
   top: 8px;
   font-size: 11px;
-  font-weight: bold;
-  color: var(--accent);
   z-index: 998;
 }
 

@@ -589,7 +589,7 @@ function CompleteBooking() {
         )}
       </Modal>
 
-      <div className='text-container-completebooking' style={{ margin: '0 auto' }}>
+      <div className='booking-container' style={{ margin: '0 auto', padding: '0px' }}>
         {requestType === 'Large Group' && (
           <>
             <div className="flex-container-completebooking">
@@ -765,33 +765,14 @@ function CompleteBooking() {
                 <p style={{ fontSize: '1.5rem', margin: '0' }}><u>Trip {index + 1}</u></p>
               </div>
               <div className="flex-container-completebooking" key={index}>
-                
-
-                <div style={{ minWidth: '350px', maxWidth: '90%', display: 'flex', alignItems: 'center' }}>
-                  <table style={{ width: '100%', margin: '10px 0', borderCollapse: 'collapse', border: 'none' }}>
-                    <tr>
-                    <td style={{ fontSize: '1.5rem', whiteSpace: 'nowrap', paddingRight: '10px', verticalAlign: 'top', border: 'none' }}>
-                      <b>{entry.date}:</b>
-                    </td>
-
-                      
-                      <td style={{fontSize: '1.4rem', border: 'none'}}>
-                        <span style={{  }}>{entry.pickup}</span>
-                        <span style={{ margin: '0 5px', color: 'var(--accent)' }}>
-                          <b>&#8594;</b>
-                        </span>
-                        <span>{entry.dropoff}</span>
-                        <span>, pickup for </span>
-                        <span>
-                          {requestType === 'Large Group' ? (
-                            `${largeGroupPassengers} Passengers.`
-                          ) : 
-                            `${passengers} Passenger${passengers > 1 ? 's.' : '.'}`
-                          }
-                        </span>
-                      </td>
-                    </tr>
-                  </table>
+                <div className="trip-summary">
+                  <span><strong>{entry.date}:</strong>&nbsp;
+                  {entry.pickup}
+                  <span className="arrow"> → </span>{entry.dropoff}, pickup for  
+                    {requestType === 'Large Group'
+                      ? ` ${largeGroupPassengers} Passengers.`
+                      : ` ${passengers} Passenger${passengers > 1 ? 's.' : '.'}`}
+                  </span>
                 </div>
 
                 {/* Display price of the trip */}
@@ -806,165 +787,84 @@ function CompleteBooking() {
                     </p>
                   </div>
                 )}
+                </div>
 
-                <div className='flex-container-completebooking'>
-                  {/* <div className="input-container" style={{ width: '400px' }}>
-                    <input 
-                      style={{ fontSize: '1.5rem', width: '400px' }}
-                      placeholder="Address, Hotel Name, or Map Pin"
-                      type="text"
-                      defaultValue={entry.pickupdetailed || ''}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setValue(`entries.${index}.pickupdetailed`, value); // Update the form value
-                      }}
-                    />
-                    <label>{entry.pickup.toUpperCase()} PICKUP DETAILS (OPTIONAL)</label>
-                  </div> */}
-                  
-                  {/* <div className="input-container" style={{ width: '400px' }}>
-                    <input 
-                      style={{ fontSize: '1.5rem', width: '400px' }}
-                      placeholder="Address, Hotel Name, or Map Pin"
-                      type="text"
-                      defaultValue={entry.dropoffdetailed || ''}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setValue(`entries.${index}.dropoffdetailed`, value); // Update the form value
-                      }}
-                    />
-                    <label>{entry.dropoff.toUpperCase()} DROPOFF DETAILS (OPTIONAL)</label>
-                  </div> */}
-
-                  
-                  {(airportLocations.includes(entry.pickup) || airportLocations.includes(entry.dropoff)) && (
-                    <>
-                      <div  className="flex-container-completebooking" style={{ width: '300px' }}>
-                        <div className="location-input-container" style={{ width: '200px' }}>
-                          <label className={`floating-label-time ${entry.time ? 'label-active' : ''}`}>
-                            {airportLocations.includes(entry.pickup)
-                              ? "Flight Arrival Time"
-                              : airportLocations.includes(entry.dropoff)
-                                ? "Flight Departure Time"
-                                : "Shuttle Pickup Time"}
-                          </label>
-                          <ResponsiveTimePicker
-                            label={airportLocations.includes(entry.pickup)
-                              ? "Flight Arrival Time"
-                              : airportLocations.includes(entry.dropoff)
-                                ? "Flight Departure Time"
-                                : "Shuttle Pickup Time"
-                              }
-                            value={entry.time instanceof Date ? entry.time : null}
-                            onChange={(time) => {
-                              if (time) {
-                                const formattedTime = new Date(time).toLocaleTimeString('en-US', { hour12: false });
-                                setValue(`entries.${index}.time`, formattedTime);
-                              } else {
-                                setValue(`entries.${index}.time`, null);
-                              }
-                            }}
-                            required
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="flex-container-completebooking" style={{ width: '300px' }}>
-                        <LocationDropdown
-                          label="Airline"
-                          value={watchEntries[index]?.airline || ""}
-                          locations={airlineOptions}
-                          onChange={(value) => {
-                            setValue(`entries.${index}.airline`, value);
+                {(airportLocations.includes(entry.pickup) || airportLocations.includes(entry.dropoff)) && (
+                  <>
+                    <div  className="flex-container-completebooking" style={{ width: '300px' }}>
+                      <div className="location-input-container">
+                        <label className={`floating-label-time ${entry.time ? 'label-active' : ''}`}>
+                          {airportLocations.includes(entry.pickup)
+                            ? "Flight Arrival Time"
+                            : airportLocations.includes(entry.dropoff)
+                              ? "Flight Departure Time"
+                              : "Shuttle Pickup Time"}
+                        </label>
+                        <ResponsiveTimePicker
+                          // label={airportLocations.includes(entry.pickup)
+                          //   ? "Flight Arrival Time"
+                          //   : airportLocations.includes(entry.dropoff)
+                          //     ? "Flight Departure Time"
+                          //     : "Shuttle Pickup Time"
+                          //   }
+                          value={entry?.time instanceof Date ? entry?.time : null}
+                          onChange={(time) => {
+                            if (time) {
+                              const formattedTime = new Date(time).toLocaleTimeString('en-US', { hour12: false });
+                              setValue(`entries.${index}.time`, formattedTime);
+                            } else {
+                              setValue(`entries.${index}.time`, null);
+                            }
                           }}
+                          required
                         />
                       </div>
-
-                      {/* <div className="flex-container-completebooking" style={{ width: '400px' }}>
-                        <div className="location-input-container" style={{ width: '300px' }}>
-                          <label className={`floating-label ${entry.airline ? "label-active" : ""}`}>
-                            Airline
-                          </label>
-                          <input
-                            style={{ fontSize: '1.5rem' }}
-                            type="text"
-                            defaultValue={watchEntries[index]?.airline || ''} // Default to the existing value or an empty string
-                            {...register(`entries.${index}.airline`)}
-                            list="airline-options"
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              setValue(`entries.${index}.airline`, value); // Update the form value
-                            }}                      />
-                          <datalist id="airline-options">
-                              {airlineOptions
-                                .filter(option => option.toLowerCase().includes(watchEntries[index]?.airline.toLowerCase()))
-                                .map((option, index) => (
-                                  <option key={index} value={option} />
-                                ))}
-                            </datalist>
-                          <label>AIRLINE (OPTIONAL)</label>
-                        </div>
-                      </div> */}
-                      
-                      <div className="flex-container-completebooking">
-                        <div className="location-input-container" style={{ width: '300px' }}>
-                          <label className={`floating-label ${entry.flightnumber ? "label-active" : ""}`}>
-                            Flight Number
-                          </label>
-                          <input
-                            type="number"
-                            value={entry.flightnumber}
-                            required
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              setValue(`entries.${index}.flightnumber`, value); // Update the form value
-                            }} 
-                            className="location-input"
-                            onFocus={(e) => e.target.select()}
-                          />
-                        </div>
-                      </div>
-                      {/* <div className="input-container-light" style={{ width: '400px' }}>
-                        <input 
-                          placeholder="Flight Number (required)"
+                    </div>
+                    
+                    <div className="flex-container-completebooking" style={{ width: '300px' }}>
+                      <LocationDropdown
+                        label="Airline"
+                        value={entry.airline || ""}
+                        locations={airlineOptions}
+                        onChange={(value) => {
+                          setValue(`entries.${index}.airline`, value);
+                        }}
+                      />
+                    </div>
+                                          
+                    <div className="flex-container-completebooking">
+                      <div className="location-input-container" style={{ width: '300px' }}>
+                        <label className={`floating-label ${entry.flightnumber ? "label-active" : ""}`}>
+                          Flight Number
+                        </label>
+                        <input
                           type="number"
-                          style={{ fontSize: '1.5rem' }}
-                          defaultValue={entry.flightnumber || ''}
+                          value={entry.flightnumber}
+                          required
                           onChange={(e) => {
                             const value = e.target.value;
                             setValue(`entries.${index}.flightnumber`, value); // Update the form value
-                          }}   
+                          }} 
+                          className="location-input"
+                          onFocus={(e) => e.target.select()}
                         />
-                        <label>FLIGHT NUMBER (OPTIONAL)</label>
-                      </div> */}
-                    </>
-                  )}
-                  
-                  <div className="flex-container-completebooking">
-                    <div className="location-input-container" style={{ width: '300px' }}>
-                      <label className={`floating-label ${questions ? "label-active" : ""}`}>
-                        Questions / Comments (optional)
-                      </label>
-                      <textarea 
-                        style={{ fontSize: '1.5rem', fontFamily: 'Helvetica, Arial, sans-serif', height:'100px', alignContent: 'center' }}
-                        className='location-input'
-                        onChange={handleQuestionsChange} // No need for an inline function
-                      />
+                      </div>
                     </div>
-                  </div>
+                  </>
+                )}
                   
-                  {/* <div className="input-container-light" style={{ width: '500px' }}>
+                <div className="flex-container-completebooking">
+                  <div className="location-input-container" style={{ width: '300px' }}>
+                    <label className={`floating-label ${questions ? "label-active" : ""}`}>
+                      Questions / Comments (optional)
+                    </label>
                     <textarea 
-                      style={{ fontSize: '1.5rem', width: '400px', alignContent: 'center' }}
-                      placeholder="Questions / Comments (optional)"
-                      className='large-textarea'
+                      style={{ fontSize: '1.5rem', fontFamily: 'Helvetica, Arial, sans-serif', height:'100px', alignContent: 'center' }}
+                      className='location-input'
                       onChange={handleQuestionsChange} // No need for an inline function
                     />
-                    <label>QUESTIONS / COMMENTS (OPTIONAL)</label>
-                  </div> */}
-
+                  </div>
                 </div>
-              </div>
             </React.Fragment>
           )
         ))}

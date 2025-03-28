@@ -21,7 +21,7 @@ import './ResponsiveTimePicker.css';
   );
 
   return (
-    <div className="responsive-time-picker">
+    <div className="responsive-time-picker" >
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         {isMobile ? (
           <MobileTimePicker
