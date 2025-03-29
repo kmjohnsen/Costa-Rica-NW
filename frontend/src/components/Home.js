@@ -708,8 +708,8 @@ function BookingForm() {
         ) : (
           
           
-          <div className="booking-container">
-            <form onSubmit={handleOtherRequestSubmit} style={{ margin:'20px'}}>
+          <div className="booking-container" style={{ marginTop: '10px'}}>
+            <form onSubmit={handleOtherRequestSubmit} style={{ margin:'20px', marginTop: '10px'}}>
               <div className="location-input-container" style={{ width: '100%', marginBottom: '10px' }}>
                 <label className={`floating-label ${otherName ? "label-active" : ""}`}>
                   Name
@@ -750,22 +750,23 @@ function BookingForm() {
               </div>
 
               <div className="flex-container-spacing">
-                  <div className="location-input-container" style={{ width: '100%', marginBottom: '10px' }}>
-                    <label className={`floating-label ${otherDetails ? "label-active" : ""}`}>
-                      Requested Trip Details
-                    </label>
-                    <textarea 
-                      style={{ fontSize: '1.5rem', fontFamily: 'Helvetica, Arial, sans-serif', height:'100px', alignContent: 'center' }}
-                      className='location-input'
-                      onChange={(e) => setOtherDetails(e.target.value)}
-                      />
-                  </div>
+                <div className="location-input-container" style={{ width: '100%', marginBottom: '10px' }}>
+                  <label className={`floating-label ${otherDetails ? "label-active" : ""}`}>
+                    Requested Trip Details
+                  </label>
+                  <textarea 
+                    style={{ fontSize: '1.5rem', fontFamily: 'Helvetica, Arial, sans-serif', height:'100px', alignContent: 'center' }}
+                    className='location-input'
+                    onChange={(e) => setOtherDetails(e.target.value)}
+                    />
                 </div>
+              </div>
 
-              
-              <button type="submit" className="book-button" style={{ justifyContent: 'center', alignItems: 'center'}}>
-                Submit Request
-              </button>
+              <div className='flex-container-centered'>
+                <button type="button-right" className="book-button">
+                  <b>SUBMIT REQUEST</b>
+                </button>
+              </div>
             </form>
           </div>
         )}
