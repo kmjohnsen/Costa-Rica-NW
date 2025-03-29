@@ -589,7 +589,7 @@ function CompleteBooking() {
         )}
       </Modal>
 
-      <div className='booking-container' style={{ margin: '0 auto', padding: '0px' }}>
+      <div className='booking-container' style={{ margin: '0 auto', padding: '0px', borderTopLeftRadius: '0px', borderTopRightRadius: '0px' }}>
         {requestType === 'Large Group' && (
           <>
             <div className="flex-container-completebooking">

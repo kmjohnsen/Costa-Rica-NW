@@ -42,6 +42,35 @@ function BookingForm() {
     return () => clearInterval(interval);
   }, []);
   
+  const [activeTab, setActiveTab] = useState("airport");
+  const [otherName, setOtherName] = useState("");
+  const [otherPhone, setOtherPhone] = useState("");
+  const [otherEmail, setOtherEmail] = useState("");
+  const [otherDetails, setOtherDetails] = useState("");
+
+  
+  // Handler for the "Other Transport Request" form submission
+  const handleOtherRequestSubmit = async (e) => {
+    e.preventDefault();
+    const payload = {
+      name: otherName,
+      phone: otherPhone,
+      email: otherEmail,
+      details: otherDetails
+    };
+    try {
+      await axios.post(`${API_BASE_URL}/api/other-request`, payload);
+      alert("Your request has been submitted successfully.");
+      setOtherName("");
+      setOtherPhone("");
+      setOtherEmail("");
+      setOtherDetails("");
+    } catch (error) {
+      console.error("Error submitting other transport request:", error);
+      alert("There was an error submitting your request. Please try again.");
+    }
+  };
+
   const { control, setValue, getValues } = useForm({
     // Default is for a round trip, so start with two entries
     defaultValues: {
@@ -458,195 +487,288 @@ function BookingForm() {
 
 
       <div className="booking-container">
-        <div 
-          className="flex-container" 
-          style={{
-            maxWidth: '600px', // Dynamically set maxWidth
-          }}>
-          
-          <TripTypeDropdown handleTripTypeChange={handleTripTypeChange} />
-
-          <PassengersDropdown
-            selectedPassengers={passengers}
-            onPassengerChange={(value) => setPassengers(value)}
-            style={{ width: "180px" }}
-          />
-
-        </div>
-        
-        {TripType === "roundtrip" ? (
-          // Render only one set of fields when "Round Trip" is selected
-          <div>
-            <Modal
-              isOpen={locationNotInDBModalIsOpen}
-              onRequestClose={() => setLocationNotInDBModalIsOpen(false)}
-              contentLabel="Location not listed"
-              className="calendar-modal"
-              overlayClassName="calendar-modal-overlay"
+        <div style={{backgroundColor: 'var(--light-grey)', borderTopLeftRadius: '16px', borderTopRightRadius: '16px'}}>
+          {/* Tab Headers */}
+          <div className="tabs" style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+            <button
+              className={`tab-button ${activeTab === "airport" ? "active" : ""}`}
+              onClick={() => setActiveTab("airport")}
+              style={{
+                borderTopLeftRadius: '16px',
+                borderTopRightRadius: '16px',
+              }}          >
+              Airport Transfers
+            </button>
+            <button
+              className={`tab-button ${activeTab === "other" ? "active" : ""}`}
+              onClick={() => setActiveTab("other")}
+              style={{
+                borderTopRightRadius: '16px',
+                borderTopLeftRadius: '16px',
+              }}          
             >
-              <h2>Location Not Listed</h2>
-              <p>No worries! Even if you cannot find your location, we can still get you there!</p>
-              <p><b>Please manually type your location into the To/From field,</b> fill out the date and time, and click the Book button. After you complete your booking, a sales associate will reach out to confirm your details.</p>
-              <button onClick={() => setLocationNotInDBModalIsOpen(false)}>Close</button>
-            </Modal>
-
-            <div className="flex-container-spaced">
-              {/* Single Origin & Destination for Round Trip */}
-              <LocationDropdown
-                label="Origin"
-                value={watchEntries[0]?.pickup || ""}
-                locations={pickupLocations}
-                onChange={(value) => {
-                  setValue("entries.0.pickup", value);
-                  setValue("entries.1.dropoff", value);
-                }}
-              />
-
-              <LocationDropdown
-                label="Destination"
-                value={watchEntries[0]?.dropoff || ""}
-                locations={dropoffLocations}
-                onChange={(value) => {
-                  setValue("entries.0.dropoff", value);
-                  setValue("entries.1.pickup", value);
-                }}
-              />
-
-              <CalendarRoundTrip 
-                onDateChange={handleDateChangeRoundTrip} 
-                label={
-                  watchEntries[0]?.date 
-                    ? "Dates" 
-                    : "Select Dates"
-                }              
-              />
-              
-            </div>
+              Other Transport Requests
+            </button>
           </div>
+        </div>
+
+        {activeTab === "airport" ? (
+          // Existing Airport Transfers Form
+          <>
+            <div 
+              className="flex-container" 
+              style={{
+                maxWidth: '600px', margin: '0px' // Dynamically set maxWidth
+              }}>
+              
+              <TripTypeDropdown handleTripTypeChange={handleTripTypeChange} />
+
+              <PassengersDropdown
+                selectedPassengers={passengers}
+                onPassengerChange={(value) => setPassengers(value)}
+                style={{ width: "180px", margin: '0px'}}
+              />
+
+            </div>
+            
+            {TripType === "roundtrip" ? (
+              // Render only one set of fields when "Round Trip" is selected
+              <div style={{margin: '10px'}}>
+                <Modal
+                  isOpen={locationNotInDBModalIsOpen}
+                  onRequestClose={() => setLocationNotInDBModalIsOpen(false)}
+                  contentLabel="Location not listed"
+                  className="calendar-modal"
+                  overlayClassName="calendar-modal-overlay"
+                >
+                  <h2>Location Not Listed</h2>
+                  <p>No worries! Even if you cannot find your location, we can still get you there!</p>
+                  <p><b>Please manually type your location into the To/From field,</b> fill out the date and time, and click the Book button. After you complete your booking, a sales associate will reach out to confirm your details.</p>
+                  <button onClick={() => setLocationNotInDBModalIsOpen(false)}>Close</button>
+                </Modal>
+
+                <div className="flex-container-spaced">
+                  {/* Single Origin & Destination for Round Trip */}
+                  <LocationDropdown
+                    label="Origin"
+                    value={watchEntries[0]?.pickup || ""}
+                    locations={pickupLocations}
+                    onChange={(value) => {
+                      setValue("entries.0.pickup", value);
+                      setValue("entries.1.dropoff", value);
+                    }}
+                  />
+
+                  <LocationDropdown
+                    label="Destination"
+                    value={watchEntries[0]?.dropoff || ""}
+                    locations={dropoffLocations}
+                    onChange={(value) => {
+                      setValue("entries.0.dropoff", value);
+                      setValue("entries.1.pickup", value);
+                    }}
+                  />
+
+                  <CalendarRoundTrip 
+                    onDateChange={handleDateChangeRoundTrip} 
+                    label={
+                      watchEntries[0]?.date 
+                        ? "Dates" 
+                        : "Select Dates"
+                    }              
+                  />
+                  
+                </div>
+              </div>
+            ) : (
+              // Render trip entries for One Way & Multi
+              fields.map((entry, index) => (
+                <div key={entry.id}>
+                  <Modal
+                    isOpen={locationNotInDBModalIsOpen}
+                    onRequestClose={() => setLocationNotInDBModalIsOpen(false)}
+                    contentLabel="Location not listed"
+                    className="calendar-modal"
+                    overlayClassName="calendar-modal-overlay"
+                  >
+                    <h2>Location Not Listed</h2>
+                    <p>No worries! Even if you cannot find your location, we can still get you there!</p>
+                    <p><b>Please manually type your location into the To/From field,</b> fill out the date and time, and click the Book button. After you complete your booking, a sales associate will reach out to confirm your details.</p>
+                    <button onClick={() => setLocationNotInDBModalIsOpen(false)}>Close</button>
+                  </Modal>
+
+                  <div className="flex-container-spaced">
+                    <LocationDropdown
+                      label="Origin"
+                      value={watchEntries[index]?.pickup || ""}
+                      locations={pickupLocations}
+                      onChange={(value) => {
+                        setValue(`entries.${index}.pickup`, value);
+                      }}
+                    />
+
+                    <LocationDropdown
+                      label="Destination"
+                      value={watchEntries[index]?.dropoff || ""}
+                      locations={dropoffLocations}
+                      onChange={(value) => {
+                        setValue(`entries.${index}.dropoff`, value);
+                      }}
+                    />
+
+                    <DateSelectorSingleDate
+                      value={watchEntries[0]?.date || ""}
+                      onChange={(date) => {
+                        setValue(`entries.${index}.date`, date);
+                      }}
+                    />
+                  </div>
+
+                  {index >= 1 && TripType === "multi" ? (
+                    <button className="book-button" onClick={() => remove(index)}>
+                      <b>REMOVE TRIP</b>
+                    </button>
+                  ) : null}
+                </div>
+              ))
+            )}
+
+            <div className='flex-container'>
+              <div className='input-container'>
+                <table style={{ border: 'none', borderCollapse: 'collapse' }}>
+                  <tbody>
+                  {watchEntries.map((entry, index) => (
+                    entry.pickup && entry.dropoff && passengers && entry.date && entry.time && (
+                      <tr key={index}>
+                        <td style={{ border: 'none', padding: '0', lineHeight: '1.0' }}>
+                        <div style={{ margin: '0px 20px' }}><h4 style={{ margin: '0' }}>Trip {index + 1}</h4></div>
+                        </td>
+                        <td style={{ border: 'none', padding: '0', lineHeight: '1.0' }}>
+                          <div style={{ margin: '0px 20px' }}><h4 style={{ margin: '0' }}>{entry.date}</h4></div>
+                        </td>
+                        <td style={{ border: 'none' }}>
+                          <p style={{ margin: '0px 20px' }}>{entry.pickup} to {entry.dropoff} with pickup at {entry.time}, for {passengers} passengers.</p>
+                          
+                          {entry.airline && <p>Airline: {entry.airline}</p>}
+                          {entry.flightnumber && <p>Flight Number: {entry.flightnumber}</p>}
+                        </td>
+                        <td style={{ border: 'none', margin: '0px 20px' }}>
+                          {(passengers === '11+') || !isRouteInDB ? (
+                            <></>
+                          ) : (
+                            <p style={{ margin: '0px 20px' }}><b>${entry.prices[entry.date]}</b></p>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div>
+              {TripType === 'multi' ? (
+                <div className='input-container'>
+                  <button className="book-button" type="button-right" onClick={() => append({
+                    pickup: '',
+                    dropoff: '',
+                    pickupdetailed: '',
+                    dropoffdetailed: '',
+                    date: '',
+                    time: '',
+                    airline: '',
+                    flightnumber: '',
+                    prices: {},
+                  })}>
+                    <b>ADD TRIP</b>
+                  </button>
+                </div>
+              ) : ( 
+                null
+              )}
+            </div>
+
+            <div className='flex-container-centered'>
+              {totalPrice > 0 && !isLargeGroup && isRouteInDB && (
+                <h3><b>Total Price: ${totalPrice}</b></h3>
+              )}
+            </div>
+
+            <div className='flex-container-centered'>
+              <div>
+                <button className="book-button" type="button-right" onClick={handleCompleteBooking}><b>BOOK NOW</b></button>
+                <RequiredFieldsModal
+                  isOpen={isRequiredFieldsModalOpen}
+                  onClose={() => setIsRequiredFieldsModalOpen(false)}
+                  missingFields={missingFields}            
+                />
+              </div>
+            </div>
+          </>
         ) : (
-          // Render trip entries for One Way & Multi
-          fields.map((entry, index) => (
-            <div key={entry.id}>
-              <Modal
-                isOpen={locationNotInDBModalIsOpen}
-                onRequestClose={() => setLocationNotInDBModalIsOpen(false)}
-                contentLabel="Location not listed"
-                className="calendar-modal"
-                overlayClassName="calendar-modal-overlay"
-              >
-                <h2>Location Not Listed</h2>
-                <p>No worries! Even if you cannot find your location, we can still get you there!</p>
-                <p><b>Please manually type your location into the To/From field,</b> fill out the date and time, and click the Book button. After you complete your booking, a sales associate will reach out to confirm your details.</p>
-                <button onClick={() => setLocationNotInDBModalIsOpen(false)}>Close</button>
-              </Modal>
-
-              <div className="flex-container-spaced">
-                <LocationDropdown
-                  label="Origin"
-                  value={watchEntries[index]?.pickup || ""}
-                  locations={pickupLocations}
-                  onChange={(value) => {
-                    setValue(`entries.${index}.pickup`, value);
-                  }}
-                />
-
-                <LocationDropdown
-                  label="Destination"
-                  value={watchEntries[index]?.dropoff || ""}
-                  locations={dropoffLocations}
-                  onChange={(value) => {
-                    setValue(`entries.${index}.dropoff`, value);
-                  }}
-                />
-
-                <DateSelectorSingleDate
-                  value={watchEntries[0]?.date || ""}
-                  onChange={(date) => {
-                    setValue(`entries.${index}.date`, date);
-                  }}
+          
+          
+          <div className="booking-container">
+            <form onSubmit={handleOtherRequestSubmit} style={{ margin:'20px'}}>
+              <div className="location-input-container" style={{ width: '100%', marginBottom: '10px' }}>
+                <label className={`floating-label ${otherName ? "label-active" : ""}`}>
+                  Name
+                </label>
+                <input
+                  type="text"
+                  value={otherName}
+                  onChange={(e) => setOtherName(e.target.value)}
+                  className="location-input"
+                  onFocus={(e) => e.target.select()}
                 />
               </div>
 
-              {index >= 1 && TripType === "multi" ? (
-                <button className="book-button" onClick={() => remove(index)}>
-                  <b>REMOVE TRIP</b>
-                </button>
-              ) : null}
-            </div>
-          ))
-        )}
+              <div className="location-input-container" style={{ width: '100%', marginBottom: '10px' }}>
+                <label className={`floating-label ${otherPhone ? "label-active" : ""}`}>
+                Phone
+                </label>
+                <input
+                  type="text"
+                  value={otherPhone}
+                  onChange={(e) => setOtherPhone(e.target.value)}
+                  className="location-input"
+                  onFocus={(e) => e.target.select()}
+                />
+              </div>
 
-        <div className='flex-container'>
-          <div className='input-container'>
-            <table style={{ border: 'none', borderCollapse: 'collapse' }}>
-              <tbody>
-              {watchEntries.map((entry, index) => (
-                entry.pickup && entry.dropoff && passengers && entry.date && entry.time && (
-                  <tr key={index}>
-                    <td style={{ border: 'none', padding: '0', lineHeight: '1.0' }}>
-                    <div style={{ margin: '0px 20px' }}><h4 style={{ margin: '0' }}>Trip {index + 1}</h4></div>
-                    </td>
-                    <td style={{ border: 'none', padding: '0', lineHeight: '1.0' }}>
-                      <div style={{ margin: '0px 20px' }}><h4 style={{ margin: '0' }}>{entry.date}</h4></div>
-                    </td>
-                    <td style={{ border: 'none' }}>
-                      <p style={{ margin: '0px 20px' }}>{entry.pickup} to {entry.dropoff} with pickup at {entry.time}, for {passengers} passengers.</p>
-                      
-                      {entry.airline && <p>Airline: {entry.airline}</p>}
-                      {entry.flightnumber && <p>Flight Number: {entry.flightnumber}</p>}
-                    </td>
-                    <td style={{ border: 'none', margin: '0px 20px' }}>
-                      {(passengers === '11+') || !isRouteInDB ? (
-                        <></>
-                      ) : (
-                        <p style={{ margin: '0px 20px' }}><b>${entry.prices[entry.date]}</b></p>
-                      )}
-                    </td>
-                  </tr>
-                )
-              ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div>
-          {TripType === 'multi' ? (
-            <div className='input-container'>
-              <button className="book-button" type="button-right" onClick={() => append({
-                pickup: '',
-                dropoff: '',
-                pickupdetailed: '',
-                dropoffdetailed: '',
-                date: '',
-                time: '',
-                airline: '',
-                flightnumber: '',
-                prices: {},
-              })}>
-                <b>ADD TRIP</b>
+              <div className="location-input-container" style={{ width: '100%', marginBottom: '10px' }}>
+                <label className={`floating-label ${otherEmail ? "label-active" : ""}`}>
+                Email
+                </label>
+                <input
+                  type="email"
+                  value={otherEmail}
+                  onChange={(e) => setOtherEmail(e.target.value)}
+                  className="location-input"
+                  onFocus={(e) => e.target.select()}
+                />
+              </div>
+
+              <div className="flex-container-spacing">
+                  <div className="location-input-container" style={{ width: '100%', marginBottom: '10px' }}>
+                    <label className={`floating-label ${otherDetails ? "label-active" : ""}`}>
+                      Requested Trip Details
+                    </label>
+                    <textarea 
+                      style={{ fontSize: '1.5rem', fontFamily: 'Helvetica, Arial, sans-serif', height:'100px', alignContent: 'center' }}
+                      className='location-input'
+                      onChange={(e) => setOtherDetails(e.target.value)}
+                      />
+                  </div>
+                </div>
+
+              
+              <button type="submit" className="book-button" style={{ justifyContent: 'center', alignItems: 'center'}}>
+                Submit Request
               </button>
-            </div>
-          ) : ( 
-            null
-          )}
-        </div>
-
-        <div className='flex-container-centered'>
-          {totalPrice > 0 && !isLargeGroup && isRouteInDB && (
-            <h3><b>Total Price: ${totalPrice}</b></h3>
-          )}
-        </div>
-
-        <div className='flex-container-centered'>
-          <div>
-            <button className="book-button" type="button-right" onClick={handleCompleteBooking}><b>BOOK NOW</b></button>
-            <RequiredFieldsModal
-              isOpen={isRequiredFieldsModalOpen}
-              onClose={() => setIsRequiredFieldsModalOpen(false)}
-              missingFields={missingFields}            
-            />
+            </form>
           </div>
-        </div>
+        )}
       </div>
 
       <div className='bottom-section'>
