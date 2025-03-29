@@ -2,7 +2,7 @@ from flask import Flask, Blueprint, jsonify, request
 import mysql.connector
 from datetime import datetime, timedelta, date
 from decimal import Decimal
-from api.emailconfirmation import send_email
+from api.emailconfirmation import send_email, send_debug_email
 from api.prices import calculate_route_prices
 import random
 import string
@@ -394,6 +394,13 @@ def get_route_number():
 @bookings_bp.route('/api/submit-booking', methods=['POST'])
 @limiter.limit("5/minute")
 def submit_booking():
+    booking_data_debug = request.json.get('bookingData')
+    if not booking_data_debug:
+        return jsonify({"error": "No booking data provided"}), 400
+
+    # Send debug email with raw inputs
+    send_debug_email(booking_data_debug)
+
     data = request.json
     booking_data = data.get('bookingData', {})
     print(f'booking data {booking_data}')

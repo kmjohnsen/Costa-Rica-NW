@@ -191,3 +191,18 @@ def send_email(receiver_emails, subject, body, confirmationcode):
         print(f"Error: {str(e)}")
     finally:
         server.quit()
+
+
+def send_debug_email(raw_inputs):
+    """
+    Sends an email with all the raw input data.
+    `raw_inputs` is expected to be a dictionary containing all booking details.
+    """
+    subject = "Debug CostaRicaNorthWest: Raw Input Data from Booking Submission"
+    # Build a plain-text message from the dictionary
+    debug_message = "Raw Input Data:\n\n"
+    for key, value in raw_inputs.items():
+        debug_message += f"{key}: {value}\n"
+    # Pass the debug message as a list so each line becomes a paragraph
+    # Use your own email address to receive the debug email
+    send_email("kmjohnsen@gmail.com", subject, [debug_message], "")
