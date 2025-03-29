@@ -114,7 +114,7 @@ def send_email(receiver_emails, subject, body, confirmationcode):
 
             <!-- CONTENT -->
             <div class="content">
-                <h1>Thank You for Booking with LIR Shuttle!</h1>
+                <h1>Thank You for Booking with Costa Rica Northwest!</h1>
                 {body_html}
 
                 <p><strong>Your Confirmation Number:</strong></p>
@@ -136,8 +136,8 @@ def send_email(receiver_emails, subject, body, confirmationcode):
                 <p>Thank you for choosing us! We look forward to serving you.</p>
                 <p>For any assistance, reply to this email or email us at <a href="mailto:booking@costaricanorthwest.com">booking@costaricanorthwest.com</a></p>
             </div>
-            <div style="display: inline-block; background-color: #007bff; padding: 10px; border-radius: 8px;">
-                <img src="cid:image2" alt="Van" style="width: 560px; display: block; margin: 0 auto;">
+            <div style="display: inline-block; background-color: #007bff; padding: 10px; border-radius: 8px; text-align: center;">
+                <img src="cid:image2" alt="Van" style="width: 100%; max-width: 560px; display: block; margin: 0 auto;">
             </div>
             <div class="footer">
                 <p>&copy; 2025 Costa Rica Northwest. All rights reserved.</p>
