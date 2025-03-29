@@ -650,8 +650,8 @@ function CompleteBooking() {
           <h2>Add Personal Information</h2>
         </div>
 
-        <div className="flex-container-completebooking">
-          <div className="location-input-container" style={{ width: '300px' }}>
+        <div className="flex-container-completebooking" style={{ display: 'flex' }}>
+          <div className="location-input-container" style={{ width: '270px', margin: '10px' }}>
             <label className={`floating-label ${firstName ? "label-active" : ""}`}>
               First Name
             </label>
@@ -663,10 +663,8 @@ function CompleteBooking() {
               onFocus={(e) => e.target.select()}
             />
           </div>
-        </div>        
-
-        <div className="flex-container-completebooking">
-          <div className="location-input-container" style={{ width: '300px' }}>
+        
+          <div className="location-input-container" style={{ width: '270px' }}>
             <label className={`floating-label ${lastName ? "label-active" : ""}`}>
               Last Name
             </label>
@@ -688,8 +686,8 @@ function CompleteBooking() {
           </div> */}
         </div>        
 
-        <div className="flex-container-completebooking">
-          <div className="location-input-container" style={{ width: '300px' }}>
+        <div className="flex-container-completebooking" style={{ display: 'flex' }}>
+          <div className="location-input-container" style={{ width: '270px', margin: '10px' }}>
             <label className={`floating-label ${email ? "label-active" : ""}`}>
               Email
             </label>
@@ -701,10 +699,8 @@ function CompleteBooking() {
               onFocus={(e) => e.target.select()}
             />
           </div>
-        </div>
-
-        <div className='flex-container-completebooking' >
-          <div  style={{ width: '300px' }}>
+        
+          <div  style={{ width: '270px' }}>
             {/* <label className={`floating-label ${email ? "label-active" : ""}`}>
               Email
             </label> */}
@@ -791,8 +787,8 @@ function CompleteBooking() {
 
                 {(airportLocations.includes(entry.pickup) || airportLocations.includes(entry.dropoff)) && (
                   <>
-                    <div  className="flex-container-completebooking" style={{ width: '300px' }}>
-                      <div className="location-input-container">
+                    <div  className="flex-container-completebooking" style={{  display: 'flex' }}>
+                      <div className="location-input-container" style={{  width: '170px', margin: '5px' }}>
                         <label className={`floating-label-time ${entry.time ? 'label-active' : ''}`}>
                           {airportLocations.includes(entry.pickup)
                             ? "Flight Arrival Time"
@@ -819,21 +815,18 @@ function CompleteBooking() {
                           required
                         />
                       </div>
-                    </div>
                     
-                    <div className="flex-container-completebooking" style={{ width: '300px' }}>
-                      <LocationDropdown
-                        label="Airline"
-                        value={entry.airline || ""}
-                        locations={airlineOptions}
-                        onChange={(value) => {
-                          setValue(`entries.${index}.airline`, value);
-                        }}
-                      />
-                    </div>
-                                          
-                    <div className="flex-container-completebooking">
-                      <div className="location-input-container" style={{ width: '300px' }}>
+                      <div className="location-input-container" style={{ width: '270px', margin: '5px'}}>
+                        <LocationDropdown
+                          label="Airline"
+                          value={entry.airline || ""}
+                          locations={airlineOptions}
+                          onChange={(value) => {
+                            setValue(`entries.${index}.airline`, value);
+                          }}
+                        />
+                      </div>
+                      <div className="location-input-container" style={{ width: '130px', margin: '5px', marginBottom: '10px' }}>
                         <label className={`floating-label ${entry.flightnumber ? "label-active" : ""}`}>
                           Flight Number
                         </label>
@@ -854,7 +847,7 @@ function CompleteBooking() {
                 )}
                   
                 <div className="flex-container-completebooking">
-                  <div className="location-input-container" style={{ width: '300px' }}>
+                  <div className="location-input-container" style={{ width: '450px', marginBottom: '10px' }}>
                     <label className={`floating-label ${questions ? "label-active" : ""}`}>
                       Questions / Comments (optional)
                     </label>

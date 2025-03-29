@@ -161,23 +161,11 @@ body {
   border-radius: 15px;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
   width: 90%;
-  max-width: 900px;
+  max-width: 890px;
   margin: -50px auto 20px; /* Move it up slightly */
   position: relative;
   z-index: 10;
 }
-
-/* Booking Form Box */
-/* .text-container-completebooking {
-  background: var(--bright-white);
-  padding: 0px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  width: 90%;
-  max-width: 800px;
-  margin: -50px auto 20px; 
-  position: relative;
-  z-index: 10;
-} */
 
 .flex-container-spaced {
   display: flex;
@@ -219,7 +207,6 @@ body {
   justify-content: center;
   align-items: center;
   width: 100%;
-  padding: 5px 10px;
   max-width: 800px;
   margin: 0 auto; 
   background-color: var(--bright-white);
@@ -521,7 +508,7 @@ input[type="time"]::-webkit-datetime-edit {
   }
 
   .flex-container-spaced{
-    width: 90%;
+    width: 100%;
   }
 
   .flex-container-completebooking{
@@ -573,7 +560,7 @@ input[type="time"]::-webkit-datetime-edit {
   }
 
   .flex-container-spaced{
-    width: 90%;
+    width: 100%;
   }
 }
 
@@ -613,7 +600,7 @@ input[type="time"]::-webkit-datetime-edit {
   }
 
   .flex-container-spaced{
-    width: 90%;
+    width: 100%;
   }
 
   .flex-container-completebooking{

@@ -17,6 +17,7 @@ import './ResponsiveTimePicker.css';
       label={label}
       error={false}
       fullWidth
+      sx={{ width: '300px', border: 'none', borderColor: 'var(--bright-white)' }}  // Force width to 300px
     />
   );
 
