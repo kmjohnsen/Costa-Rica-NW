@@ -192,12 +192,11 @@ def send_email(receiver_emails, subject, body, confirmationcode):
     finally:
         server.quit()
 
-def send_other_transport_request_email(name, phone, sender_email, details):
+def send_transport_request_email(name, phone, sender_email, details):
     """
     Sends an email for an Other Transport Request.
     The email is sent to both booking@costaricanorthwest.com and the sender's email.
     """
-    recipients = ["booking@costaricanorthwest.com", sender_email]
     subject = f"Transport Request from {name} | costaricanorthwest.com"
     body = [
         f"Name: {name}",
@@ -208,7 +207,11 @@ def send_other_transport_request_email(name, phone, sender_email, details):
         details
     ]
     # No confirmation code is needed here, so we pass an empty string
-    send_email(recipients, subject, body, "")
+    try:
+        send_email("kmjohnsen@gmail.com", subject, body, "")
+        send_email(sender_email, subject, body, "")
+    except Exception as e:
+        print(f"Error: {str(e)}")
 
 def send_debug_email(raw_inputs):
     """

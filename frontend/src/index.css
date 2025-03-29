@@ -468,10 +468,66 @@ tr {
   flex-wrap: wrap;
   display: flex;
   justify-content: left;
-  /* gap: 4px; */
   word-break: break-word;
   line-height: 1.4;
 }
+
+.trip-summary-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.trip-summary-table th,
+.trip-summary-table td {
+  padding: 12px;
+  text-align: center;
+  vertical-align: center;
+  border: 1px solid #ddd;
+}
+
+/* Responsive Table */
+@media (max-width: 768px) {
+  .trip-summary-table,
+  .trip-summary-table thead,
+  .trip-summary-table tbody,
+  .trip-summary-table th,
+  .trip-summary-table td,
+  .trip-summary-table tr {
+    display: block;
+  }
+
+  .trip-summary-table thead {
+    display: none;
+  }
+
+  .trip-summary-table tr {
+    margin-bottom: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    color: var(--dark-text);
+    padding: 0px;
+  }
+
+  .trip-summary-table td {
+    position: relative;
+    padding-left: 50%;
+    text-align: left;
+    border: none;
+    border-bottom: 1px solid #eee;
+  }
+
+  .trip-summary-table td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 12px;
+    width: 45%;
+    padding-right: 10px;
+    font-weight: bold;
+    white-space: nowrap;
+    color: #333;
+  }
+}
+
 .arrow {
   color: var(--accent);
   font-weight: bold;

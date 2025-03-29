@@ -764,28 +764,44 @@ function CompleteBooking() {
                 <p style={{ fontSize: '1.5rem', margin: '0' }}><u>Trip {index + 1}</u></p>
               </div>
               <div className="flex-container-completebooking" key={index}>
-                <div className="trip-summary">
-                  <span><strong>{entry.date}:</strong>&nbsp;
-                  {entry.pickup}
-                  <span className="arrow"> → </span>{entry.dropoff}, pickup for  
-                    {requestType === 'Large Group'
-                      ? ` ${largeGroupPassengers} Passengers.`
-                      : ` ${passengers} Passenger${passengers > 1 ? 's.' : '.'}`}
-                  </span>
-                </div>
+                <table className="trip-summary-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Origin</th>
+                      <th>Destination</th>
+                      <th>Passengers</th>
+                      <th>Cost</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td data-label="Date">{entry.date}</td>
+                      <td data-label="Origin">{entry.pickup}</td>
+                      <td data-label="Destination">{entry.dropoff}</td>
+                      <td data-label="Passengers">{requestType === 'Large Group'
+                          ? `${largeGroupPassengers}`
+                          : `${passengers}`}</td>
+                      <td data-label="Cost">{requestType !== 'Large Group' && entry.prices?.[entry.date]
+                          ? `$${entry.prices[entry.date]}`
+                          : '—'}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
 
-                {/* Display price of the trip */}
-                {(requestType !== 'Large Group' && requestType !== 'Alternate Route') && (
-                  <div style={{ minWidth: '100px', maxWidth: '100%', display: 'flex', alignItems: 'center' }}>
-                    <p>
-                      {tripPrices[index]?.[entry.date] ? (
-                        <span style={{ fontSize: '1.4rem' }}><b>${tripPrices[index][entry.date]}</b> - cash due on trip completion </span>
-                      ) : (
-                        <span style={{ fontSize: '1.4rem', color: 'gray' }}>Fetching price...</span>
-                      )}
-                    </p>
-                  </div>
-                )}
+                  {/* Display price of the trip */}
+                  {/* {(requestType !== 'Large Group' && requestType !== 'Alternate Route') && (
+                    <div style={{ minWidth: '100px', maxWidth: '100%', display: 'flex', alignItems: 'center' }}>
+                      <p>
+                        {tripPrices[index]?.[entry.date] ? (
+                          <span style={{ fontSize: '1.4rem' }}><b>${tripPrices[index][entry.date]}</b> - cash due on trip completion </span>
+                        ) : (
+                          <span style={{ fontSize: '1.4rem', color: 'gray' }}>Fetching price...</span>
+                        )}
+                      </p>
+                    </div>
+                  )} */}
                 </div>
 
                 {(airportLocations.includes(entry.pickup) || airportLocations.includes(entry.dropoff)) && (

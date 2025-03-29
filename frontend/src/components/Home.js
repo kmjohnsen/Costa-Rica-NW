@@ -59,7 +59,7 @@ function BookingForm() {
       details: otherDetails
     };
     try {
-      await axios.post(`${API_BASE_URL}/api/other-request`, payload);
+      await axios.post(`${API_BASE_URL}/api/submit-booking-email-request`, payload);
       alert("Your request has been submitted successfully.");
       setOtherName("");
       setOtherPhone("");
