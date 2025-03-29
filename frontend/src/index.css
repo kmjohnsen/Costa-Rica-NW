@@ -147,7 +147,7 @@ body {
 .hero-text h2 {
   top: 15%; /* Adjust vertical positioning */
   text-align: right; /* Align text to the left */
-  font-size: clamp(1rem, 3vw, 1.5rem); /* Adjusts between 1rem and 2rem */
+  font-size: clamp(.8rem, 3vw, 1.5rem); /* Adjusts between 1rem and 2rem */
   max-width: 60%;
   margin: 5%;
   text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6); /* Dark shadow for contrast */

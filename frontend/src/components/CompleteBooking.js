@@ -593,26 +593,29 @@ function CompleteBooking() {
         {requestType === 'Large Group' && (
           <>
             <div className="flex-container-completebooking">
-              <h2>Submit Email Request Form</h2>
+              <h2>Submit Request Form</h2>
             </div>
             <div className="flex-container-completebooking">
               <p style={{ fontSize:'1.2rem' }}>Thank you for choosing us for your upcoming trip!</p>
             </div>
             <div className="flex-container-completebooking">
-              <p  style={{ width:'90%', maxWidth:'850px', fontSize:'1.2rem', textAlign: 'center', margin: '0 auto', color: 'var(--accent)' }}><i>Due to the size of your party, we want to ensure that every detail is perfectly arranged. Please complete the form, and a dedicated sales associate will reach out to discuss your specific needs and ensure a seamless, enjoyable experience.</i></p>
+              <p><i>Due to the size of your party, we want to ensure that every detail is perfectly arranged. A dedicated sales associate will need to out to discuss your specific needs and ensure a seamless, enjoyable experience. </i></p>
+              <p><i>Please complete the form and someone will contact you shortly to confirm the booking! </i></p>
             </div>
 
-            <div className="flex-container-centered">
-              <div className="input-container-light" style={{ width: '300px', margin: '20px 0' }}>        
+            <div className="flex-container-completebooking">
+              <div className="location-input-container" style={{ width: '180px', margin: '10px' }}>
+                <label className={`floating-label ${largeGroupPassengers ? "label-active" : ""}`}>
+                  Passengers
+                </label>
                 <input
                   type="number"
                   value={largeGroupPassengers}
-                  style={{ fontSize: '1.5rem', width: '100%', justifyContent: 'center' }}
                   onChange={(e) => setLargeGroupPassengers(e.target.value)}
-                  placeholder="Passengers"
+                  className="location-input"
+                  onFocus={(e) => e.target.select()}
                   required
                 />
-                <label>PASSENGERS</label>
               </div>
             </div>
           </>
@@ -621,7 +624,7 @@ function CompleteBooking() {
         {requestType === 'Alternate Route' && (
           <>
             <div className="flex-container-completebooking">
-              <h2>Submit Email Request Form</h2>
+              <h2>Submit Request Form</h2>
             </div>
             <div className="flex-container-completebooking">
               <p style={{ fontSize:'1.2rem' }}>Thank you for choosing us for your upcoming trip!</p>
@@ -635,7 +638,7 @@ function CompleteBooking() {
         {requestType === 'Upcoming' && (
           <>
             <div  className="flex-container-completebooking">
-              <h2>Submit Email Request Form</h2>
+              <h2>Submit Request Form</h2>
               </div>
             <div className="flex-container-completebooking">
               <p style={{ fontSize:'1.2rem' }} >Thank you for choosing us for your upcoming trip!</p>
