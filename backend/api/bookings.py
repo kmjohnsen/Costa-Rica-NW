@@ -1,17 +1,19 @@
 from flask import Flask, Blueprint, jsonify, request
-import mysql.connector
-from datetime import datetime, timedelta, date
-from decimal import Decimal
-from api.emailconfirmation import send_email, send_debug_email, send_transport_request_email
-from api.prices import calculate_route_prices
-import random
-import string
-import os
-from dotenv import load_dotenv
+from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity, verify_jwt_in_request
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from flask_jwt_extended import jwt_required, get_jwt
+from datetime import datetime, timedelta, date
+from decimal import Decimal
+from functools import wraps
+import mysql.connector
+import random
+import string
 import bleach
+import os
+
+from api.emailconfirmation import send_email, send_debug_email, send_transport_request_email
+from api.prices import calculate_route_prices
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 limiter = Limiter(
@@ -20,14 +22,11 @@ limiter = Limiter(
     default_limits=["200 per day", "50 per hour"],
     storage_uri="memory://",
 ) 
+bookings_bp = Blueprint('bookings', __name__)
 
-costaricanwemail = "kmjohnsen@gmail.com"
-
-# Load environment variables from .env file
 load_dotenv()
 
-# Database configuration using os.getenv()
-db_config = {
+DB_CONFIG = {
     'user': os.getenv("DB_USER"),
     'password': os.getenv("DB_PASSWORD"),
     'host': os.getenv("DB_HOST"),
@@ -35,11 +34,32 @@ db_config = {
     'port': int(os.getenv("DB_PORT"))  # Convert port to integer
 }
 
-# Define a blueprint for locations
-bookings_bp = Blueprint('bookings', __name__)
+ADMIN_EMAILS = [e.strip().lower() for e in os.getenv("WHITELISTED_EMAILS", "").split(",") if e.strip()]
+ADMIN_ROLES = {"admin", "dev"}
+CRNW_EMAIL = "kmjohnsen@gmail.com"
 
 
-# Helper function to convert timedelta and handle serialization
+def admin_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        verify_jwt_in_request()
+        claims = get_jwt()
+        email = get_jwt_identity()
+        if email.lower() not in ADMIN_EMAILS or claims.get("role") not in ADMIN_ROLES:
+            return jsonify({'error': 'Access denied'}), 403
+        return f(*args, **kwargs)
+    return wrapper
+
+
+def get_connection(dictionary):
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor(dictionary=dictionary)
+        return conn, cursor
+    except mysql.connection.Error as err:
+        print(f"MySQL Error: {err}")
+        raise
+
 def convert_to_serializable(obj):
     if isinstance(obj, timedelta):
                 # Calculate hours and minutes from timedelta
@@ -55,18 +75,14 @@ def convert_to_serializable(obj):
         return float(obj)  # Convert Decimal to float for JSON serialization
     return obj  # Returns other types unchanged
 
+
 # Endpoint to get all bookings in date order
 @bookings_bp.route('/api/bookings', methods=['GET'])
 @limiter.limit("10/minute")
-@jwt_required()
+@admin_required
 def get_all_bookings():
-    claims = get_jwt()
-    role = claims.get('role')
-    if role not in ['admin', 'dev']:
-        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
     try:
-        conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor(dictionary=True)
+        conn, cursor = get_connection(dictionary=True)
         query =("""
                 SELECT b.bookingID, b.userID, b.routeID, b.startcity, b.endcity, u.FirstName, u.LastName, u.email, u.PhoneNumber, b.booking_date, b.pickup_time, b.routecost, b.driver, b.passengers, 
                         b.flight_airline, b.flight_number, b.questions, b.startcity, b.endcity, b.pickup_location, b.dropoff_location, b.manualbookinginfo
@@ -77,86 +93,62 @@ def get_all_bookings():
         print(f"query: {query}")
         cursor.execute(query)  
         bookings = cursor.fetchall()
-
-        # Debug: Print all fetched data
-        # print("Fetched Bookings:", bookings)  # Helps verify what data is being retrieved
-
-        # Convert any timedelta objects to a serializable format
         serialized_bookings = []
         for booking in bookings:
             # Create a new dictionary with serializable values
             serialized_booking = {key: convert_to_serializable(value) for key, value in booking.items()}
             serialized_bookings.append(serialized_booking)
-
-        # Return the serialized bookings as JSON
-        cursor.close()
-        conn.close()
         return jsonify(serialized_bookings), 200
-
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 @bookings_bp.route('/api/get_completed_bookings', methods=['GET'])
 @limiter.limit("10/minute") 
-@jwt_required()
+@admin_required
 def get_completed_bookings():
-    claims = get_jwt()
-    role = claims.get('role')
-    if role not in ['admin', 'dev']:
-        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
     try:
-        conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor(dictionary=True)
+        conn, cursor = get_connection(dictionary=True)
         query =("""
                 SELECT b.bookingID, b.userID, b.routeID, b.startcity, b.endcity, u.FirstName, u.LastName, u.email, u.PhoneNumber, b.booking_date, b.pickup_time, b.routecost, b.driver, b.passengers, 
                         b.flight_airline, b.flight_number, b.questions, b.startcity, b.endcity, b.pickup_location, b.dropoff_location, b.manualbookinginfo
                 FROM booking_database.completed_bookings b
                 INNER JOIN 
                     booking_database.user_information u ON b.userID = u.userID  
-                ORDER BY b.booking_date ASC;""")
+                ORDER BY b.booking_date DESC;""")
         print(f"query: {query}")
         cursor.execute(query)  
         bookings = cursor.fetchall()
-
-        # Debug: Print all fetched data
-        # print("Fetched Bookings:", bookings)  # Helps verify what data is being retrieved
-
-        # Convert any timedelta objects to a serializable format
         serialized_bookings = []
         for booking in bookings:
             # Create a new dictionary with serializable values
             serialized_booking = {key: convert_to_serializable(value) for key, value in booking.items()}
             serialized_bookings.append(serialized_booking)
-
-        # Return the serialized bookings as JSON
-        cursor.close()
-        conn.close()
         return jsonify(serialized_bookings), 200
-
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 # Endpoint to get bookings for a specific date
 @bookings_bp.route('/api/bookings/day', methods=['GET'])
-@jwt_required()
+@admin_required
 @limiter.limit("10/minute") 
 def get_bookings_for_day():
-    claims = get_jwt()
-    role = claims.get('role')
-    if role not in ['admin', 'dev']:
-        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
-
     date = request.args.get('date')
-    # date = request.args.get('date', datetime.now().strftime('%Y-%m-%d'))
-
     if not date:
         return jsonify({'error': 'Date is required'}), 400
-
     print(f"Received date: {date}")
 
     try:
-        conn, cursor = get_database_connection_dictionary()
-        query = ("SELECT * FROM booking_database.booking_information RIGHT JOIN route_information ON booking_database.booking_information.routeID = booking_database.route_information.routeID WHERE DATE(booking_date) = %s")
+        conn, cursor = get_connection(dictionary=True)
+        query = ("""SELECT * FROM booking_database.booking_information 
+                 RIGHT JOIN route_information 
+                 ON booking_database.booking_information.routeID = booking_database.route_information.routeID 
+                 WHERE DATE(booking_date) = %s""")
         print(f"query: {query} date: {date}")
         cursor.execute(query, (date,))
         try:
@@ -164,53 +156,44 @@ def get_bookings_for_day():
         except Exception as f:
             return jsonify({'error': 'No bookings found for this date'}), 400
 
-        # print(f"bookings: {bookings}")
-
-        # Serialize the bookings for JSON response (converts time, decimal object to json readable)
         serialized_bookings = [
             {key: convert_to_serializable(value) for key, value in booking.items()}
             for booking in bookings
         ]
-
-        cursor.close()
-        conn.close()
         return jsonify(serialized_bookings), 200
     
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 # Endpoint to get a monthly summary
 @bookings_bp.route('/api/bookings/monthly-summary', methods=['GET'])
-@jwt_required()
+@admin_required
 def get_monthly_summary():
-    claims = get_jwt()
-    role = claims.get('role')
-    if role not in ['admin', 'dev']:
-        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
-
     month = request.args.get('month', datetime.now().strftime('%Y-%m'))
-    conn, cursor = get_database_connection_dictionary()
-    cursor.execute("""
-        SELECT COUNT(*) as trips, SUM(routecost) as money_collected
-        FROM booking_database.booking_information
-        WHERE booking_date LIKE %s
-    """, (f"{month}%",))
-    summary = cursor.fetchone()
-    cursor.close()
-    conn.close()
-    return jsonify(summary)
+    try:
+        conn, cursor = get_connection(dictionary=True)
+        cursor.execute("""
+            SELECT COUNT(*) as trips, SUM(routecost) as money_collected
+            FROM booking_database.booking_information
+            WHERE booking_date LIKE %s
+        """, (f"{month}%",))
+        summary = cursor.fetchone()
+        return jsonify(summary)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 # Endpoint to get monthly summary for each driver
 @bookings_bp.route('/api/drivers/monthly-summary', methods=['GET'])
-@jwt_required()
+@admin_required
 def get_driver_monthly_summary():
-    claims = get_jwt()
-    role = claims.get('role')
-    if role not in ['admin', 'dev']:
-        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
-
     month = request.args.get('month', datetime.now().strftime('%Y-%m'))
-    conn, cursor = get_database_connection_dictionary()
+    conn, cursor = get_connection(dictionary=True)
     cursor.execute("""
         SELECT driver_name, COUNT(*) as trips, SUM(routecost) as money_collected
         FROM booking_database.booking_information
@@ -225,13 +208,8 @@ def get_driver_monthly_summary():
 # Endpoint to modify a booking
 @bookings_bp.route('/api/bookings/modify', methods=['PUT'])
 @limiter.limit("10/minute")
-@jwt_required()
+@admin_required
 def modify_booking():
-    claims = get_jwt()
-    role = claims.get('role')
-    if role not in ['admin', 'dev']:
-        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
-
     # Get the updated fields from the request body
     data = request.json
     print(f"data: {request.json}")
@@ -294,16 +272,13 @@ def modify_booking():
     conn = None
     cursor = None
     try:
-        conn, cursor = get_database_connection()
+        conn, cursor = get_connection(dictionary=True)
         if booking_updates:
             cursor.execute(booking_query, booking_values)
         if user_updates:
             cursor.execute(user_query, user_values)
         conn.commit()
         return jsonify({'message': 'Booking/User Info updated successfully'}), 200
-    except mysql.connector.Error as err:
-        print(f"MySQL Error: {err}")
-        return jsonify({'error': f'MySQL Error: {err}'}), 500
     finally:
         if cursor is not None:
             cursor.close()
@@ -312,15 +287,10 @@ def modify_booking():
 
 # Endpoint to get all bookings in date order
 @bookings_bp.route('/api/pendingbookings', methods=['GET'])
-@jwt_required()
+@admin_required
 def get_pending_bookings():
-    claims = get_jwt()
-    role = claims.get('role')
-    if role not in ['admin', 'dev']:
-        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
-
     try:
-        conn, cursor = get_database_connection_dictionary()
+        conn, cursor = get_connection(dictionary=True)
         query =("""
                 SELECT b.tempbookingID, b.userID, b.routeID, b.startcity, b.endcity, u.FirstName, u.LastName, u.email, u.PhoneNumber, b.booking_date, b.pickup_time, b.routecost, b.driver, b.passengers, 
                         b.flight_airline, b.flight_number, b.questions, b.startcity, b.endcity, b.pickup_location, b.dropoff_location, b.manualbookinginfo, b.confirmation_number
@@ -351,17 +321,12 @@ def get_pending_bookings():
 
 # Endpoint to assign/change driver
 @bookings_bp.route('/api/bookings/assign-driver', methods=['POST'])
-@jwt_required()
+@admin_required
 def assign_driver():
-    claims = get_jwt()
-    role = claims.get('role')
-    if role not in ['admin', 'dev']:
-        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
-
     data = request.json
     booking_id = data.get('booking_id')
     driver_name = data.get('driver_name')
-    conn, cursor = get_database_connection()
+    conn, cursor = get_connection(dictionary=True)
     cursor.execute("UPDATE booking_database.booking_information SET driver = %s WHERE booking_id = %s", (driver_name, booking_id))
     conn.commit()
     cursor.close()
@@ -378,8 +343,7 @@ def get_route_number():
         return jsonify({'error': 'Pickup and dropoff locations are required'}), 400
 
     try:
-        conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor()
+        conn, cursor = get_connection(dictionary=True)
         routeID = fetch_route_number(pickup, dropoff, cursor)
         print(f"Fetched route id {routeID}")
         return jsonify(routeID), 200
@@ -398,7 +362,8 @@ def submit_booking_email_request():
     phone = data.get('phone')
     email = data.get('email')
     details = data.get('details')
-    send_transport_request_email(name, phone, email, details)
+    confirmationcode = data.get('confirmationcode')
+    send_transport_request_email(name, phone, email, details, confirmationcode)
     return jsonify({"message": "Other transport request received"}), 200
 
 
@@ -409,7 +374,7 @@ def submit_booking():
     booking_data_debug = request.json.get('bookingData')
     if not booking_data_debug:
         return jsonify({"error": "No booking data provided"}), 400
-
+    
     # Send debug email with raw inputs
     send_debug_email(booking_data_debug)
 
@@ -423,7 +388,7 @@ def submit_booking():
         )
     entries = booking_data.get('entries', [])
 
-    #Sanitize before saving
+    # Sanitize before saving
     first_name = bleach.clean(booking_data.get('firstName', ''))
     last_name = bleach.clean(booking_data.get('lastName', ''))
     email = bleach.clean(booking_data.get('email', ''))
@@ -433,7 +398,7 @@ def submit_booking():
 
     print(f"personal details: {first_name}, {last_name}, {email}, {telephone}, {requestType}, {questions}, {bookingsite} {manualRouteRequest} {largeGroupPassengers} {passengers}")
 
-    # Make sure requestType is valid
+    # Validate requestType
     if requestType == 'Auto' or requestType == 'Large Group' or requestType == 'Upcoming' or requestType == 'Invalid Phone' or requestType == 'Alternate Route':
         print("valid requestType")
     else:
@@ -444,8 +409,7 @@ def submit_booking():
         query = "SELECT 1 FROM booking_database.valid_phone_numbers WHERE phone_number=(%s) LIMIT 1;"
         try:
         ## Database operation
-            conn = mysql.connector.connect(**db_config)
-            cursor = conn.cursor()
+            conn, cursor = get_connection(dictionary=False)
             cursor.execute(query, (telephone,))
             result = cursor.fetchone()
             if result:
@@ -462,7 +426,7 @@ def submit_booking():
     # Enter data into database
     try:
         # Start database connection
-        conn, cursor = get_database_connection()
+        conn, cursor = get_connection(dictionary=False)
         
         user_id = fetch_or_create_user(cursor, first_name, last_name, email, telephone)
         print(f"user id: {user_id}")
@@ -483,9 +447,23 @@ def submit_booking():
             routeID, pickup, dropoff, pickup_detailed, dropoff_detailed, date, time, airline, flight_number = (
                 entry.get(key) for key in ['routenumber', 'pickup', 'dropoff', 'pickupdetailed', 'dropoffdetailed', 'date', 'time', 'airline', 'flightnumber']
             )
+
+            # Ensure reservation is not more than one year out
+            MAX_DATE = datetime.today() + timedelta(days=365)
+            # Parse string to datetime (expecting 'YYYY-MM-DD')
+            try:
+                date_obj = datetime.strptime(date, '%Y-%m-%d')
+            except ValueError:
+                return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD'}), 400
+
+            if date_obj > MAX_DATE:
+                return jsonify({"error": "Date is too far in the future"}), 400
+
+            # Remove potentially dangerous insertions into database via bleach
             pickup_detailed = bleach.clean(entry.get('pickupdetailed', ''))
             dropoff_detailed = bleach.clean(entry.get('dropoffdetailed', ''))
 
+            # Fetch pricing information from database, or "none" if Large Group or Alternate Route
             if requestType == 'Large Group':
                 passengers = largeGroupPassengers
                 prices = None
@@ -503,10 +481,9 @@ def submit_booking():
                                         
             routeID = fetch_route_number(pickup, dropoff, cursor)
             
-            # Create data to use in booking_information insertion
-            print(f"Into Booking Information: user id: {user_id}, route id {routeID}, prices {prices}, confirmationcode {confirmation_code}, date {date}, time {time}, airline {airline}, flight {flight_number}, site {bookingsite}, passengers {passengers}, questions {questions}, pickup {pickup_detailed}, dropoff {dropoff_detailed}, manual booking {manualRouteRequest}")
+            # print(f"Into Booking Information: user id: {user_id}, route id {routeID}, prices {prices}, confirmationcode {confirmation_code}, date {date}, time {time}, airline {airline}, flight {flight_number}, site {bookingsite}, passengers {passengers}, questions {questions}, pickup {pickup_detailed}, dropoff {dropoff_detailed}, manual booking {manualRouteRequest}")
             dataforbooking = compile_dataforbooking(user_id, routeID, pickup, dropoff, prices, confirmation_code, date, time, airline, flight_number, bookingsite, passengers, questions, pickup_detailed, dropoff_detailed, manualRouteRequest)
-            print("here")
+
             try:
                 insert_into_booking_database(requestType, dataforbooking, cursor)
             except Exception as e:
@@ -518,7 +495,7 @@ def submit_booking():
         
         return jsonify({'message': 'Confirmed!'}), 200
     except Exception as e:
-        print(f"exception")
+        print(f"exception: {e}")  # Add this
         return jsonify({'error': str(e)}), 500
     finally:
         print(f"done")
@@ -527,15 +504,8 @@ def submit_booking():
 
 @bookings_bp.route('/api/approve-booking', methods=['POST'])
 @limiter.limit("10/minute")
-@jwt_required()
+@admin_required
 def approve_booking():
-    claims = get_jwt()
-    role = claims.get('role')
-    if role not in ['admin', 'dev']:
-        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
-
-    print("approving booking")
-
     data = request.json
     bookingID = data.get('bookingID')
     print(f"bookingID: {bookingID}")
@@ -552,7 +522,7 @@ def approve_booking():
     # Enter data into database
     try:
         # Start database connection
-        conn, cursor = get_database_connection()
+        conn, cursor = get_connection(dictionary=False)
         
         insert_into_booking_database(requestType, dataforbooking, cursor)
         conn.commit()
@@ -562,7 +532,7 @@ def approve_booking():
 
         return jsonify({'message': 'Booking successfully added to Completed Bookings table.'}), 200
     except Exception as e:
-        print(f"exception")
+        print(f"exception: {e}")  # Add this
         return jsonify({'error': str(e)}), 500
     
     finally:
@@ -572,35 +542,35 @@ def approve_booking():
 
 @bookings_bp.route('/api/completed-booking', methods=['POST'])
 @limiter.limit("10/minute") 
-@jwt_required()
+@admin_required
 def completed_booking():
-    claims = get_jwt()
-    role = claims.get('role')
-    if role not in ['admin', 'dev']:
-        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
-
     data = request.json
     bookingID = data.get('bookingID')
     print(f"bookingID: {bookingID}")
     bookingtable = 'booking_information'
     bookingIDvariable = 'bookingID'
-
-    dataforbooking = call_dataforbooking(bookingtable, bookingIDvariable, bookingID)
-    print(f"data for booking (call data): {dataforbooking}")
-    print("data for booking (call data)")
-
-    requestType = 'completed_bookings'
     
     # Enter data into database
     try:
         # Start database connection
-        conn, cursor = get_database_connection()
+        dataforbooking = call_dataforbooking(bookingtable, bookingIDvariable, bookingID)
+        print(f"data for booking (call data): {dataforbooking}")
+        requestType = 'completed_bookings'
+
+        conn, cursor = get_connection(dictionary=False)
         
+        # Add to completed_booking table
         insert_into_booking_database(requestType, dataforbooking, cursor)
+
+        # Delete from booking_information table
+        delete_query = f"DELETE FROM booking_database.{bookingtable} WHERE {bookingIDvariable} = %s"
+        cursor.execute(delete_query, (bookingID,))
+
         conn.commit()
+        
         return jsonify({'message': 'Booking successfully added to Completed Bookings table.'}), 200
     except Exception as e:
-        print(f"exception")
+        print(f"exception: {e}")  # Add this
         return jsonify({'error': str(e)}), 500
     
     finally:
@@ -612,20 +582,6 @@ def completed_booking():
 def generate_confirmation_code():
     # Use string.ascii_uppercase to get uppercase letters (A-Z)
     return ''.join(random.choices(string.ascii_uppercase, k=6))
-
-def get_database_connection():
-    try:
-        conn = mysql.connector.connect(**db_config)
-        return conn, conn.cursor()
-    except Exception as e:
-        raise Exception(f"Database connection error: {str(e)}")
-    
-def get_database_connection_dictionary():
-    try:
-        conn = mysql.connector.connect(**db_config)
-        return conn, conn.cursor(dictionary=True)
-    except Exception as e:
-        raise Exception(f"Database connection error: {str(e)}")
 
 def check_valid_phonenumber(cursor, phonenumber):
     number_query = """SELECT EXISTS(SELECT 1 FROM booking_database.valid_phone_numbers WHERE phone_number = %s);"""
@@ -733,8 +689,7 @@ def call_dataforbooking(bookingtable, bookingIDvariable, bookingID):
         raise ValueError("Invalid table name.")
 
     try:
-        conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor(dictionary=True)
+        conn, cursor = get_connection(dictionary=True)
         query =(f"""
                 SELECT *
                 FROM booking_database.{bookingtable}
@@ -904,29 +859,23 @@ def generate_email_confirmation(entries, requestType, passengers, email, first_n
         emailbody.append(" Expect someone to reach out to you soon to confirm your trip!")
         # TODO make a send email for Aaron, and mark URGENT if the date is soon
         if requestType == 'Upcoming':
-            send_email([email, costaricanwemail], "Urgent: New Upcoming Booking Request", emailbody, confirmationcode)        
+            send_email([email, CRNW_EMAIL], "Urgent: New Upcoming Booking Request", emailbody, confirmationcode)        
         else:
-            send_email([email, costaricanwemail], "New Booking Request", emailbody, confirmationcode)        
+            send_email([email, CRNW_EMAIL], "New Booking Request", emailbody, confirmationcode)        
 
     # Send confirmation email
     print(emailbody)
     try:
         send_email(email, "Costa Rica Northwest: Shuttle Confirmation", emailbody, confirmationcode)
         subjectline = "Trip Booked: Date " + dates + ", Conf: " + confirmationcode + " " + first_name + " " + last_name
-        send_email(costaricanwemail, subjectline, emailbody, confirmationcode)
+        send_email(CRNW_EMAIL, subjectline, emailbody, confirmationcode)
         print(f"email sent")
     except Exception as e:
         print(f"Error during email sending")
 
 @bookings_bp.route('/api/bookings/remove-booking', methods=['DELETE'])
-@jwt_required()
+@admin_required
 def remove_booking():
-    claims = get_jwt()
-    role = claims.get('role')
-    if role not in ['admin', 'dev']:
-        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
-
-    print("here")
     data = request.json
     bookingID = data.get('bookingID')
     booking_type = data.get('type') # "temp" or "confirmed"
@@ -939,8 +888,7 @@ def remove_booking():
     variable_name = 'tempbookingID' if booking_type == 'temp' else 'bookingID'
 
     try:
-        conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor()
+        conn, cursor = get_connection(dictionary=True)
         
         query = f"DELETE FROM booking_database.{table_name} WHERE {variable_name} = %s"
         try:
@@ -951,7 +899,7 @@ def remove_booking():
             return jsonify({'error': f'Error during removal: {str(e)}'}), 500
         return jsonify({'message': 'Removal successful!'}), 200
     except Exception as e:
-        print(f"exception")
+        print(f"exception: {e}")  # Add this
         return jsonify({'error': str(e)}), 500
     finally:
         if cursor:
@@ -961,99 +909,68 @@ def remove_booking():
 
 # Endpoint to get all blackout dates in date order
 @bookings_bp.route('/api/getblackoutdates', methods=['GET'])
-def get_blackout_dates():
-    conn = mysql.connector.connect(**db_config)
-    cursor = conn.cursor()
-
-    query = "SELECT blackoutdate FROM booking_database.blackout_dates ORDER BY blackoutdate ASC"
-    cursor.execute(query)
-    blackoutdates = cursor.fetchall()
-
-    # Convert dates to ISO format (YYYY-MM-DD) to send in the API
-    formatted_dates = []
-    for date_tuple in blackoutdates:
-        date_str = date_tuple[0]  # Extract the date string
-        # Convert the string to a datetime object
-        date_obj = datetime.strptime(date_str, '%Y-%m-%d')  # Adjust the format as necessary
-        formatted_dates.append(date_obj.strftime('%Y-%m-%d'))  # Append the ISO formatted date
-
-    # print(f"black out dates: {formatted_dates}")
-    return jsonify(formatted_dates)
+@admin_required
+def fetch_blackout_dates():
+    try:
+        conn, cursor = get_connection(dictionary=True)
+        query = "SELECT blackoutdate FROM booking_database.blackout_dates ORDER BY blackoutdate ASC"
+        cursor.execute(query)
+        dates = cursor.fetchall()
+        formatted_dates = [
+            date['blackoutdate'] if isinstance(date['blackoutdate'], str)
+            else date['blackoutdate'].strftime('%Y-%m-%d')
+            for date in dates
+        ]
+        return jsonify(formatted_dates), 200
+    except Exception as e:
+        print(f"Error fetching blackout dates: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 # Submit new blackout dates
 @bookings_bp.route('/api/postblackoutdates', methods=['POST'])
-@jwt_required()
+@admin_required
 def post_blackout_dates():
-    claims = get_jwt()
-    role = claims.get('role')
-    if role not in ['admin', 'dev']:
-        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
-
     data = request.json
-    print(f"Received data: {data}")  # Print to console for debugging
     blackout_date = data.get('newDate', {})
-    # blackout_datetime_obj = datetime.strptime(blackout_date, '%a, %d %b %Y %H:%M:%S %Z')
-    # blackout_date_only = blackout_datetime_obj.strftime('%Y-%m-%d')
-    
     if not blackout_date:
-        return jsonify({'error': 'No date provided'}), 400  # Handle the case where no date is provided
-    
+        return jsonify({'error': 'No date provided'}), 400 
     try:
-        conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor()
-        
-        # Use parameterized query to avoid SQL injection
+        conn, cursor = get_connection(dictionary=True)
         query = "INSERT INTO booking_database.blackout_dates (blackoutdate) VALUES (%s)"
         cursor.execute(query, (blackout_date,))
-    
         conn.commit()
-        
+        return jsonify({'message': 'Blackout date added successfully'}), 200
+    except Exception as e:
+        print(f"Error adding blackout date: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+    finally:
         cursor.close()
         conn.close()
-
-        return jsonify({'message': 'Blackout date added successfully'}), 200
-
-    except Exception as e:
-        print(f"Error: {str(e)}")
-        return jsonify({'error': str(e)}), 500
 
 # Remove blackout date
 @bookings_bp.route('/api/removeblackoutdates', methods=['POST'])
-@jwt_required()
+@admin_required
 def remove_blackout_dates():
-    claims = get_jwt()
-    role = claims.get('role')
-    if role not in ['admin', 'dev']:
-        return jsonify({'error': 'Unauthorized - Admin or Dev role required'}), 403
-
     data = request.json
-    blackout_date = data.get('newDate')  # Extract the date from the request
-    # blackout_datetime_obj = datetime.strptime(blackout_date, '%a, %d %b %Y %H:%M:%S %Z')
-    # blackout_date_only = blackout_datetime_obj.strftime('%Y-%m-%d')
-    # print(f"blackout date: {blackout_date}")
-
+    blackout_date = data.get('newDate')
     if not blackout_date:
-        return jsonify({'error': 'No date provided'}), 400  # Handle the case where no date is provided
-
+        return jsonify({'error': 'No date provided'}), 400  
     try:
-        conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor()
-        
-        # Use a parameterized query to delete the blackout date from the database
+        conn, cursor = get_connection(dictionary=True)
         query = "DELETE FROM booking_database.blackout_dates WHERE blackoutdate = %s"
         cursor.execute(query, (blackout_date,))
-        
-        
         conn.commit()
-        
+        return jsonify({'message': 'Blackout date removed successfully'}), 200
+    except Exception as e:
+        print(f"Error removing blackout date: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+    finally:
         cursor.close()
         conn.close()
         
-        return jsonify({'message': 'Blackout date removed successfully'}), 200
-    
-    except Exception as e:
-        print(f"Error: {str(e)}")
-        return jsonify({'error': str(e)}), 500
 
 # Provide the margin for autobooking
 @bookings_bp.route('/api/datemargin', methods=['GET'])

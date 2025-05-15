@@ -1,27 +1,26 @@
-# auth.py - Flask authentication routes
-from flask import Blueprint, jsonify, request, session
-from flask_bcrypt import Bcrypt
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
-import mysql.connector
-import datetime
-from google.oauth2 import id_token
-from google.auth.transport import requests
+# auth.py - Flask authentication
 import os
 import logging
-import jwt
+import mysql.connector
 from functools import wraps
+from flask import Blueprint, jsonify, request
+from flask_bcrypt import Bcrypt
+from flask_jwt_extended import (
+    create_access_token, jwt_required, get_jwt_identity,
+    get_jwt, verify_jwt_in_request
+)
+from google.oauth2 import id_token
+from google.auth.transport import requests
 
-
+# Logging setup
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
 gunicorn_logger = logging.getLogger("gunicorn.error")
 
-# Define a blueprint for authentication routes
+# Blueprint
 authorize_bp = Blueprint('authorize', __name__)
-
-# Initialize Bcrypt and JWTManager here instead of importing from server.py
 bcrypt = Bcrypt()
 
-# Database configuration
+# Environment config
 db_config = {
     'user': os.getenv("DB_USER"),
     'password': os.getenv("DB_PASSWORD"),
@@ -30,42 +29,28 @@ db_config = {
     'port': int(os.getenv("DB_PORT"))  # Convert port to integer
 }
 
-# Store your CLIENT_ID and CLIENT_SECRET securely
 CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")  
-CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")  
 
-def decode_token(token):
-    try:
-        return jwt.decode(token, os.getenv("JWT_SECRET"), algorithms=["HS256"])
-    except jwt.ExpiredSignatureError:
-        return None
-    except jwt.InvalidTokenError:
-        return None
-    
-def generate_token(user_id):
-    payload = {
-        "user_id": user_id,
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=12)
-    }
-    return jwt.encode(payload, os.getenv("JWT_SECRET"), algorithm="HS256")
-
-def login_required(f):
+# Admin-only access decorator
+def admin_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = request.headers.get('Authorization')
-        if token:
-            token = token.replace("Bearer ", "")
-            user_data = decode_token(token)
-            if user_data:
-                return f(*args, **kwargs)
-        return jsonify({'error': 'Unauthorized'}), 401
+        verify_jwt_in_request()
+        claims = get_jwt()
+        email = get_jwt_identity()
+
+        whitelist = os.getenv("WHITELISTED_EMAILS", "")
+        allowed_emails = [e.strip().lower() for e in whitelist.split(",") if e.strip()]
+        if email.lower() not in allowed_emails or claims.get("role") not in ["admin", "dev"]:
+            return jsonify({'error': 'Access denied'}), 403
+
+        return f(*args, **kwargs)
     return decorated
 
-# Token verification endpoint
+
 @authorize_bp.route('/api/auth/verify-token', methods=['GET'])
 @jwt_required()
 def verify_token():
-    print("LOOOOOOOOOK HERE || in verify_token step")
     try:
         auth_header = request.headers.get("Authorization")
         print(f"Authorization header received: {auth_header}")
@@ -143,39 +128,6 @@ def google_auth():
             cursor.close()
         if conn:
             conn.close()
-
-# Google Authorization
-# @authorize_bp.route('/api/auth/google/callback', methods=['POST'])
-# def google_callback():
-#     # Get the token from the request parameters (Google redirects back to this endpoint)
-#     token = request.json.get('id_token')
-
-#     conn = None
-#     cursor = None
-#     try:
-#         conn = mysql.connector.connect(**db_config)
-#         cursor = conn.cursor(dictionary=True)
-
-#         # Verify the token
-#         idinfo = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
-
-#         # Extract user information from the verified token
-#         user_email = idinfo['email']
-#         user_name = idinfo['name']
-#         user_id = idinfo['sub']  # Google user ID
-
-#         # Check if the user already exists in the database
-#         cursor.execute("SELECT * FROM user_information WHERE (Email = %s && (role = 'dev' || role = 'admin'))", (user_email,))
-#         user = cursor.fetchone()
-
-#         if user:
-#             # User exists, create a session for them
-#             session['user_id'] = user['id']  # Store user ID in session
-#             return jsonify({'status': 'success', 'user_id': user['userID'], 'email': user['Email'], 'name': user['FirstName']}), 200
-
-#     except ValueError:
-#         return jsonify({'error': 'Invalid token'}), 401
-
 
 # Register route
 @authorize_bp.route('/api/register', methods=['POST'])
@@ -258,7 +210,7 @@ def login():
 
 # Protected route
 @authorize_bp.route('/api/protected', methods=['GET'])
-@jwt_required()
+@admin_required
 def protected():
     current_user = get_jwt_identity()
     return jsonify(logged_in_as=current_user), 200

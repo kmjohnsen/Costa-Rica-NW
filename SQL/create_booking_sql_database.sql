@@ -131,6 +131,12 @@ UNION
 SELECT DISTINCT endcity AS city
 FROM booking_database.route_information;
 
+INSERT INTO booking_database.user_information (userID, role, FirstName, LastName, Email, PhoneNumber, UserPassword)
+VALUES (3, 'admin', 'Chris', 'Grass', 'grasstopher@gmail.com', '+1234567890', '12345678');
+
+UPDATE booking_database.user_information SET email = 'terraba@gmail.com' WHERE userID = 1;
+UPDATE booking_database.user_information SET email = 'grasstopher@gmail.com', FirstName = 'Chris', LastName = "Grass", role = 'admin' WHERE userID = 3;
+
 SELECT DISTINCT endcity AS long_name, endcity_shortname AS short_name
                         FROM booking_database.route_information;
                         

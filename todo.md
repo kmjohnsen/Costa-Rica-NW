@@ -1,6 +1,13 @@
 # TO DO LIST
 
 ## Important
+- [ ] Other request - explanation at top
+- [ ] Other request - weird shadow
+- [ ] Airline and flight number fields - make required, not optional
+- [ ] Require whitelisted users versus just checking that a jwt is used.
+- [ ] Setup automated testing for the API (python portion)
+- [ ] Show cost for booking a trip that is very close?
+- [ ] origin destination at full screen
 - [ ] Add Sentry for logging of errors
 - [ ] bleach
 - [ ] Use https://developer.mozilla.org/en-US/observatory for securtiy
@@ -43,6 +50,7 @@
 - [ ] Remove trip in admin page has a confirmation popup that it removed what you wanted.
 
 ## Less Important - After MVP
+- [ ] Logging framework for what I have in the debug email.
 - [ ] Like delta website, make an expand widget arrow button that shows up under a certain screen size
 - [ ] In admin page, link bookings by Confirmation Number, as they are the same across the same bookings.
 - [ ] In admin page, for approve booking, add a waiting icon while the approval emails and stuff are processing, so Aaron doesn't think that nothing is happening.
@@ -67,6 +75,8 @@
 - [ ] change JWT SECRET KEY for production (in server.py)
 
 ### Completed ✓
+- [✓] Cap on booking date
+- [✓] Single month date picker - can't go beyond same month to pick end of trip
 - [✓] Modify email to make it more appropriate
 - [✓] Dont allow clicking off the confirm email popup, but put in a cancel button there
 - [✓] Complete booking make sure times are required

@@ -6,16 +6,6 @@
   flex-direction: column;
 }
 
-/* Grey out past dates */
-.past-date {
-  color: var(--placeholder-color) !important;
-}
-
-/* Black text for today and future dates */
-.future-date {
-  color: var(--dark-text) !important;
-}
-
 /* Thin border around today's date */
 .today-date {
   border: 2px solid var(--accent) !important;
@@ -23,9 +13,8 @@
   background-color: var(--bright-white);
 }
 
-/* Calendar layout: Start on Sunday */
 .react-calendar {
-  width: 350px;
+  width: 100%;
   max-width: 100%;
   background: var(--bright-white);
   border-radius: 10px;
@@ -44,8 +33,9 @@
   grid-template-columns: repeat(7, 1fr) !important;
 }
 
-.react-calendar .react-calendar__tile--weekend {
-  color: black !important;
+/* Remove any potential red coloring */
+.react-calendar abbr[title] {
+  color: inherit !important;
 }
 
 /* Date Selector Container */
@@ -54,7 +44,7 @@
   display: flex;
   flex-direction: row;
   align-items: left;
-  width: 260px;
+  width: 250px;
 }
 
 /* Position the chevron like in LocationDropdown */
@@ -108,12 +98,11 @@
   color: var(--dark-text);
 }
 
-
 /* Calendar Modal */
 .calendar-modal {
   background: white;
   padding: 20px;
-  max-width: 350px;
+  width: 650px;
   margin: auto;
   border-radius: 12px;
   box-shadow: 0px 5px 15px var(--shadow-for-box);
@@ -157,9 +146,50 @@
 
 /* ✅ Mobile-friendly touch effect */
 @media (max-width: 1000px) {
-
   .date-selector-container {
     width: 100%;
   }
+}
 
+@media (max-width: 680px) {
+  .calendar-modal {
+    width: 350px;
+  }
+}
+
+.react-calendar__navigation__label {
+  white-space: nowrap !important;
+}
+
+/* Grey out past dates */
+.past-date {
+  color: var(--placeholder-color) !important;
+}
+
+/* Ensure past dates stay gray even on weekends */
+.react-calendar__tile.past-date {
+  color: var(--placeholder-color) !important;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* =========================== */
+/* ✅ FINAL COLOR FIXES (NO RED WEEKENDS) */
+/* =========================== */
+
+/* Force all weekend days black by default */
+.react-calendar__tile--weekend,
+.react-calendar__month-view__days__day--weekend,
+.react-calendar__month-view__days__day--weekend abbr,
+.react-calendar__tile--weekend abbr {
+  color: black ;
+}
+
+/* Filler days (including weekends) */
+.react-calendar__tile--neighboringMonth,
+.react-calendar__tile--neighboringMonth.abbr,
+.react-calendar__tile--neighboringMonth.react-calendar__tile--weekend,
+.react-calendar__tile--neighboringMonth.react-calendar__tile--weekend abbr {
+  color: var(--placeholder-color) !important;
+  opacity: 0.6 !important;
 }

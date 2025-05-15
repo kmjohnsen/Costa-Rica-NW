@@ -13,9 +13,12 @@ import LocationDropdown from './LocationDropdown';
 import CalendarRoundTrip from "./CalendarRoundTrip";
 import DateSelectorSingleDate from "./CalendarSingleDate";
 import TripTypeDropdown from "./TripType"; 
+import generateConfirmationCode from './CompleteBooking' ;
 
 
 Modal.setAppElement('#root');
+
+
 
 const heroImages = [
   "/all_photos/IMG_TOMVD.png",
@@ -31,6 +34,11 @@ function BookingForm() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  const [loading, setLoading] = useState(false);
+  const [isOtherRequiredModalOpen, setIsOtherRequiredModalOpen] = useState(false);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [missingOtherFields, setMissingOtherFields] = useState('');
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -52,22 +60,59 @@ function BookingForm() {
   // Handler for the "Other Transport Request" form submission
   const handleOtherRequestSubmit = async (e) => {
     e.preventDefault();
+
+    // Check for missing required fields
+    const missing = [];
+    if (!otherName.trim()) missing.push("Name");
+    if (!otherPhone.trim()) missing.push("Phone");
+    if (!otherEmail.trim()) missing.push("Email");
+    if (!otherDetails.trim()) missing.push("Trip Details");
+
+    if (missing.length > 0) {
+      setMissingOtherFields(`Please complete the following fields:\n• ${missing.join("\n• ")}`);
+      setIsOtherRequiredModalOpen(true);
+      return;
+    }
+
+    
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phoneRegex = /^\+?\d{7,15}$/;
+
+  if (!emailRegex.test(otherEmail)) {
+    setMissingOtherFields("Please enter a valid email address.");
+    setIsOtherRequiredModalOpen(true);
+    return;
+  }
+
+  if (!phoneRegex.test(otherPhone)) {
+    setMissingOtherFields("Please enter a valid phone number (digits only, with optional +).");
+    setIsOtherRequiredModalOpen(true);
+    return;
+  }
+    
+    const confirmationCode = generateConfirmationCode
     const payload = {
       name: otherName,
       phone: otherPhone,
       email: otherEmail,
-      details: otherDetails
+      details: otherDetails,
+      confirmationcode: confirmationCode,
     };
+    setLoading(true);
     try {
       await axios.post(`${API_BASE_URL}/api/submit-booking-email-request`, payload);
-      alert("Your request has been submitted successfully.");
       setOtherName("");
       setOtherPhone("");
       setOtherEmail("");
       setOtherDetails("");
+      setActiveTab("airport");
+      setIsSuccessModalOpen(true);
+      scrollToTop();
     } catch (error) {
       console.error("Error submitting other transport request:", error);
       alert("There was an error submitting your request. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -446,9 +491,16 @@ function BookingForm() {
 
   const handleCompleteBooking = async () => {
     const entries = getValues('entries'); // get the entries from form state
-    const { hasIncompleteFields, missingFieldsMessage } = validateEntries(entries, ['pickup', 
-      'dropoff', 'date'
+
+    let { hasIncompleteFields, missingFieldsMessage } = validateEntries(entries, ['pickup', 
+      'dropoff', 'date', 
     ]);
+
+    if (!passengers) {
+      if (!missingFieldsMessage) missingFieldsMessage = '';
+      hasIncompleteFields = true;
+      missingFieldsMessage += "\nPlease select the number of passengers.";
+    }
     
     if (hasIncompleteFields) {
       setMissingFields(missingFieldsMessage);
@@ -457,11 +509,7 @@ function BookingForm() {
     }
 
     console.log("Request type:", requestType)
-    // if (requestType === 'Large Group' || requestType === 'Upcoming') {
     navigate('/completebooking', { state: { requestType, entries, passengers, isLargeGroup, isDateValid } })
-    // } else {
-    //   navigate('/completebooking', { state: { requestType, entries } })
-    // }
   };
   
   return (
@@ -469,6 +517,50 @@ function BookingForm() {
       <nav>
         <Navbar onBookClick={handleBookClick}/>
       </nav>
+
+      <Modal
+        isOpen={loading}
+        contentLabel="Processing Request"
+        className="Modal-for-popup"
+        overlayClassName="Overlay-for-popup"
+        shouldCloseOnOverlayClick={false}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <h2>Processing Request...</h2>
+          <div className="loader"></div> {/* Add your spinner CSS */}
+          <p>Please wait while your request is sent to info@costaricanorthwest.com.</p>
+        </div>
+      </Modal>
+      <Modal
+        isOpen={isSuccessModalOpen}
+        onRequestClose={() => setIsSuccessModalOpen(false)}
+        contentLabel="Success Modal"
+        className="calendar-modal"
+        overlayClassName="calendar-modal-overlay"
+      >
+        <h2>Transportation Request Successfully Sent!</h2>
+        <p>We will reach out shortly to confirm your trip.</p>
+        <div style={{ textAlign: 'center', marginTop: '20px' }}>
+          <button className="book-button" onClick={() => setIsSuccessModalOpen(false)}>
+            <b>CLOSE</b>
+          </button>
+        </div>
+      </Modal>
+      <Modal
+        isOpen={isOtherRequiredModalOpen}
+        onRequestClose={() => setIsOtherRequiredModalOpen(false)}
+        contentLabel="Missing Fields Modal"
+        className="calendar-modal"
+        overlayClassName="calendar-modal-overlay"
+      >
+        <h2>Missing Information</h2>
+        <p>{missingOtherFields}</p>
+        <div style={{ textAlign: 'center', marginTop: '20px' }}>
+          <button className="book-button" onClick={() => setIsOtherRequiredModalOpen(false)}>
+            <b>CLOSE</b>
+          </button>
+        </div>
+      </Modal>
 
       {/* Hero Section with Background Image */}
       <div className="hero-container">
@@ -484,7 +576,6 @@ function BookingForm() {
           <h2>Explore Northwest Costa Rica with safe, reliable, and convenient transportation.</h2>
         </div>
       </div>
-
 
       <div className="booking-container">
         <div style={{backgroundColor: 'var(--light-grey)', borderTopLeftRadius: '16px', borderTopRightRadius: '16px'}}>
@@ -546,6 +637,7 @@ function BookingForm() {
                   <p><b>Please manually type your location into the To/From field,</b> fill out the date and time, and click the Book button. After you complete your booking, a sales associate will reach out to confirm your details.</p>
                   <button onClick={() => setLocationNotInDBModalIsOpen(false)}>Close</button>
                 </Modal>
+                
 
                 <div className="flex-container-spaced">
                   {/* Single Origin & Destination for Round Trip */}
@@ -574,8 +666,15 @@ function BookingForm() {
                     label={
                       watchEntries[0]?.date 
                         ? "Dates" 
-                        : "Select Dates"
-                    }              
+                        : "Select Dates"}
+                    tileDisabled={({ date }) => date < new Date()}
+                    tileClassName={({ date }) => {
+                      const today = new Date();
+                      // Strip time so comparison is accurate
+                      const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                      const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                      return dateOnly < todayOnly ? 'past-date' : '';
+                    }}              
                   />
                   
                 </div>
@@ -583,7 +682,7 @@ function BookingForm() {
             ) : (
               // Render trip entries for One Way & Multi
               fields.map((entry, index) => (
-                <div key={entry.id}>
+                <div key={entry.id} style={{margin: '10px'}}>
                   <Modal
                     isOpen={locationNotInDBModalIsOpen}
                     onRequestClose={() => setLocationNotInDBModalIsOpen(false)}
@@ -766,6 +865,11 @@ function BookingForm() {
                 <button type="button-right" className="book-button">
                   <b>SUBMIT REQUEST</b>
                 </button>
+                <RequiredFieldsModal
+                  isOpen={isRequiredFieldsModalOpen}
+                  onClose={() => setIsRequiredFieldsModalOpen(false)}
+                  missingFields={missingFields}            
+                />
               </div>
             </form>
           </div>

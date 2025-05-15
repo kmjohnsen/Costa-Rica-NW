@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import Modal from "react-modal";
 import Calendar from "react-calendar";
@@ -9,8 +9,23 @@ import "./Calendars.css";
 
 Modal.setAppElement("#root");
 
-function CalendarRoundTrip({ onDateChange, label }) {
-  // Initialize with null so no date is pre-selected.
+function useIsMobile(breakpoint = 680) {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < breakpoint);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < breakpoint);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [breakpoint]);
+
+  return isMobile;
+}
+
+function CalendarRoundTrip({ onDateChange, label, tileClassName }) {
+  const isMobile = useIsMobile(); 
   const [value, setValue] = useState(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
@@ -19,13 +34,19 @@ function CalendarRoundTrip({ onDateChange, label }) {
   };
 
   const handleDateChange = (newValue) => {
-    // newValue can be a Date (first click) or an array (range selected)
     setValue(newValue);
     if (Array.isArray(newValue) && newValue.length === 2 && newValue[0] && newValue[1]) {
       onDateChange(newValue[0], newValue[1]);
       setIsCalendarOpen(false);
     }
   };
+
+  const today = new Date();
+  const oneYearFromNow = new Date();
+  oneYearFromNow.setFullYear(today.getFullYear() + 1);
+
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1)
 
   // Format the display text based on the selection
   let formattedDate = label || "Select Dates";
@@ -59,6 +80,10 @@ function CalendarRoundTrip({ onDateChange, label }) {
           value={value}
           locale="en-US"
           tileDisabled={({ date }) => date < new Date()}
+          tileClassName={tileClassName}
+          showDoubleView={!isMobile} 
+          maxDate={oneYearFromNow}
+          // activeStartDate={new Date(tomorrow.getFullYear(), tomorrow.getMonth(), 1)}
         />
         <button className="close-modal-btn" onClick={toggleCalendarModal}>
           Close
@@ -71,6 +96,7 @@ function CalendarRoundTrip({ onDateChange, label }) {
 CalendarRoundTrip.propTypes = {
   onDateChange: PropTypes.func.isRequired,
   label: PropTypes.string,
+  tileClassName: PropTypes.func,
 };
 
 export default CalendarRoundTrip;

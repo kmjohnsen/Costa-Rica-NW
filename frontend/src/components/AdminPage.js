@@ -212,8 +212,8 @@ const handleCompletedTrip = async (booking) => {
     }, { headers: getAuthHeaders() });
 
     if (response.status === 200) {
+      handleViewChange(view)
       alert('Trip marked as complete successfully!');
-      handleRemove()
     } else {
       console.error('Failed to complete the trip:', response.data);
     }
@@ -358,7 +358,9 @@ const handleRemove = async (booking) => {
   // Fetch blackout dates
   const fetchBlackoutDates = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/getblackoutdates`);     
+      const response = await axios.get(`${API_BASE_URL}/api/getblackoutdates`, {
+        headers: getAuthHeaders(),
+      });     
       setBlackoutDates(response.data); // Update state with the formatted dates
       console.log('blackout dates:', response.data);
     } catch (error) {

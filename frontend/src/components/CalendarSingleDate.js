@@ -21,6 +21,10 @@ const DateSelectorSingleDate = ({ value, onChange }) => {
     setIsCalendarOpen(false); // Close modal after selecting a date
   };
 
+  const today = new Date();
+  const oneYearFromNow = new Date();
+  oneYearFromNow.setFullYear(today.getFullYear() + 1);
+
   return (
     <div className="date-selector-container">
       <button onClick={toggleCalendarModal} className="date-picker-button">
@@ -45,6 +49,7 @@ const DateSelectorSingleDate = ({ value, onChange }) => {
           value={selectedDate || new Date()}
           locale="en-US"
           tileDisabled={({ date }) => date < new Date()}
+          maxDate={oneYearFromNow}
         />
         <button className="close-modal-btn" onClick={toggleCalendarModal}>
           Close
