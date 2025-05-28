@@ -3,8 +3,8 @@
 ## Important
 - [ ] Other request - explanation at top
 - [ ] Other request - weird shadow
-- [ ] Airline and flight number fields - make required, not optional
-- [ ] Require whitelisted users versus just checking that a jwt is used.
+- [ ] Other request - not working from AWS
+- [ ] Other request - not sending email to the sender.
 - [ ] Setup automated testing for the API (python portion)
 - [ ] Show cost for booking a trip that is very close?
 - [ ] origin destination at full screen
@@ -14,7 +14,7 @@
 - [ ] make a run local env variable on web server.
 - [ ] Get submit booking working to have into database
 - [ ] Make sure passengers gets in email, and in database
-- [ ] Email lists time with date in it, remove so only the time.
+- [ ] Email lists time with date in it, remove so only the time
 - [ ] Restrict to to/from the airport only
 - [ ] Add a form to fill out if want something different "More than airport transportation, use this form"
 - [ ] Flight Arrival Time/Flight Departure Time with note Landing: "Our driver ... " See whatsapp message
@@ -75,6 +75,7 @@
 - [ ] change JWT SECRET KEY for production (in server.py)
 
 ### Completed ✓
+- [✓] Require whitelisted users versus just checking that a jwt is used.
 - [✓] Cap on booking date
 - [✓] Single month date picker - can't go beyond same month to pick end of trip
 - [✓] Modify email to make it more appropriate

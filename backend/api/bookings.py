@@ -5,6 +5,7 @@ from flask_limiter.util import get_remote_address
 from datetime import datetime, timedelta, date
 from decimal import Decimal
 from functools import wraps
+from urllib.parse import unquote
 import mysql.connector
 import random
 import string
@@ -624,21 +625,31 @@ def fetch_or_create_user(cursor, first_name, last_name, email, telephone):
 
 def fetch_route_number(pickup, dropoff, cursor):
     print("fetching route number")
+    pickup = unquote(pickup or '').strip()
+    dropoff = unquote(dropoff or '').strip()
+    print(f"pickup '{pickup}'")
+    print(f"dropoff '{dropoff}'")
+
     try:
-        query = "SELECT routeID FROM booking_database.route_information WHERE startcity = %s AND endcity = %s"
-        cursor.execute(query, (pickup, dropoff))
+        # Case-insensitive search
+        query = """
+            SELECT routeID FROM booking_database.route_information 
+            WHERE LOWER(startcity) = LOWER(%s) AND LOWER(endcity) = LOWER(%s)
+        """
+        cursor.execute(query, (pickup.lower(), dropoff.lower()))
         result = cursor.fetchone()
-        print(f"result of route query: {cursor.fetchone()}")
+        print(f"result of direct query: {result}")
         if result:
-            print(f"Found routeID: {result[0]}")
-            return result[0]
-        print("Route not found in the given order. Trying reverse order.")
-        cursor.execute(query, (dropoff, pickup))
+            return result["routeID"]
+
+        print("Trying reverse")
+        cursor.execute(query, (dropoff.lower(), pickup.lower()))
         result = cursor.fetchone()
+        print(f"result of reverse query: {result}")
         if result:
-            print(f"Found routeID (reverse): {result[0]}")
-            return result[0]
-        print("Route ID not found for both orders. Route is not in route list.")
+            return result["routeID"]
+
+        print("No route found in either direction.")
         return 9999
     except Exception as e:
         print(f"Error fetching route ID: {e}")

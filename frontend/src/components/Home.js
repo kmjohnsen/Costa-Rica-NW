@@ -212,7 +212,6 @@ function BookingForm() {
   const watchEntries = useWatch({ control, name: "entries"});
 
   const fetchRouteAndPrices = useCallback(async () => {
-    console.log("hi")
     await Promise.all(
       watchEntries.map(async (entry, index) => {
         const { pickup, dropoff, routenumber } = entry;

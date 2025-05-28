@@ -140,6 +140,10 @@ UPDATE booking_database.user_information SET email = 'grasstopher@gmail.com', Fi
 SELECT DISTINCT endcity AS long_name, endcity_shortname AS short_name
                         FROM booking_database.route_information;
                         
+SELECT routeID FROM booking_database.route_information 
+WHERE startcity = 'LIR - Liberia Airport' 
+AND endcity = 'Dreams Las Mareas Resort';
+
                         
 SELECT b.tempbookingID, b.userID, b.routeID, b.startcity, b.endcity, u.FirstName, u.LastName, u.email, u.PhoneNumber, b.booking_date, b.pickup_time, b.routecost, b.driver, b.passengers, 
                         b.flight_airline, b.flight_number, b.questions, b.startcity, b.endcity, b.pickup_location, b.dropoff_location, b.manualbookinginfo
