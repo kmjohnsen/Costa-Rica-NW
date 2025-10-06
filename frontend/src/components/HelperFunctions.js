@@ -1,3 +1,5 @@
+import { useState, useEffect } from "react";
+
 export function validateEntries(entries, fields) {
   const capitalizeFirstLetter = (string) => 
     `${string.charAt(0).toUpperCase()}${string.slice(1)}`;
@@ -55,4 +57,33 @@ export function formatDateYYYYMMDD(date) {
 export function parseDateYYYYMMDD(dateString) {
   const [year, month, day] = dateString.split('-').map(Number);
   return new Date(year, month - 1, day); // Creates a Date in local time
+}
+
+// logger.js
+const isLocal = 
+  window.location.hostname === "localhost" || 
+  window.location.hostname === "127.0.0.1" ;
+
+export const logger = {
+  debug: (...args) => {
+    if (isLocal) {
+      console.log("[DEBUG]", ...args);
+    }
+  },
+};
+
+
+export function useIsMobile(breakpoint = 720) {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < breakpoint);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < breakpoint);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [breakpoint]);
+
+  return isMobile;
 }

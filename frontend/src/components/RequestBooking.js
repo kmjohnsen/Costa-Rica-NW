@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Navbar from './NavBar'; // Import the top navigation bar
 import axios from 'axios';
 import API_BASE_URL from '../config';
+import { logger } from './HelperFunctions'
 
 
 function CompleteBooking() {
@@ -56,7 +57,7 @@ function CompleteBooking() {
   };
 
   const handleSubmitRequest = async () => {
-    console.log("Request Button Clicked")
+    logger.debug("Request Button Clicked")
     setLoading(true);
     let confirmationCode = 0;
 

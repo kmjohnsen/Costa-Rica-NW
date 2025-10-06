@@ -2,10 +2,11 @@ import React from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';  // Import datepicker styles
 import PropTypes from 'prop-types';
+import { logger } from './HelperFunctions'
 
 function DateNavigation({ selectedDate, onDateChange }) {
   const handleDateChange = (date) => {
-    console.log("New date selected from DatePicker:", date);
+    logger.debug("New date selected from DatePicker:", date);
     onDateChange(date); // Already a Date object
   };
 

@@ -2,6 +2,6 @@
 from .locations import locations_bp
 from .prices import prices_bp
 from .auth import authorize_bp
-from .bookings import bookings_bp
+from .booking_routes import bookings_bp
 from .users import users_bp
 from .verification import verification_bp

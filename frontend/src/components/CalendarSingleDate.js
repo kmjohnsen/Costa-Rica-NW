@@ -29,8 +29,12 @@ const DateSelectorSingleDate = ({ value, onChange }) => {
     <div className="date-selector-container">
       <button onClick={toggleCalendarModal} className="date-picker-button">
         <FontAwesomeIcon icon={faCalendarAlt} className="calendar-icon" />
-        <span className="date-text">
-          {selectedDate ? selectedDate.toString().slice(0, 10) : "Select Date"}
+        <span
+          className={`date-text ${!selectedDate ? "placeholder" : ""}`}
+        >
+          {selectedDate
+            ? selectedDate.toString().slice(0, 10)
+            : "Select Date"}
         </span>
         <div className="chevron-container">
           <FontAwesomeIcon icon={faChevronDown} className="chevron-icon" />
@@ -41,7 +45,7 @@ const DateSelectorSingleDate = ({ value, onChange }) => {
         isOpen={isCalendarOpen}
         onRequestClose={toggleCalendarModal}
         contentLabel="Select Date"
-        className="calendar-modal"
+        className="calendar-modal calendar-single"
         overlayClassName="calendar-modal-overlay"
       >
         <Calendar

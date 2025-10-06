@@ -6,6 +6,7 @@ import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import './AdminModal.css'; // Import CSS for styling
 import API_BASE_URL from '../config';
+import { logger } from './HelperFunctions'
 
 function ModifyUserModal({ show, user, onClose, onModify }) {
   // State to handle edit mode
@@ -59,14 +60,14 @@ const getUpdatedFields = (original, updated) => {
       changedFields[key] = updated[key]; // Add the changed fields to the object
     }
   });
-  console.log('Changed Fields: ', changedFields)
+  logger.debug('Changed Fields: ', changedFields)
   return changedFields;
 };
 
 // Function to add user ID to existing object
 const addUserID = (updatedFields, originaluser) => {
   updatedFields.userID = originaluser.userID;
-  console.log('Added User ID: ', updatedFields)
+  logger.debug('Added User ID: ', updatedFields)
   return updatedFields
 };
 
@@ -74,8 +75,8 @@ const addUserID = (updatedFields, originaluser) => {
 const handleSave = async () => {
   // Find which fields have been changed
   const updatedFields = getUpdatedFields(user, editableUser);
-  console.log('all of editable user: ', editableUser)
-  console.log('all of user: ', user)
+  logger.debug('all of editable user: ', editableUser)
+  logger.debug('all of user: ', user)
   const updatedFieldsUserID = addUserID(updatedFields, user);
 
 

@@ -12,7 +12,7 @@ import Navbar from './NavBar'; // Import the top navigation bar
 import Calendar from 'react-calendar'; // Calendar component for selecting dates
 import 'react-calendar/dist/Calendar.css'; // Import calendar styles
 import API_BASE_URL from '../config';
-import { formatDateYYYYMMDD, parseDateYYYYMMDD } from './HelperFunctions';
+import { formatDateYYYYMMDD, parseDateYYYYMMDD, logger } from './HelperFunctions';
 
 function AdminPage() {
   const [view, setView] = useState('allBookings');
@@ -21,7 +21,7 @@ function AdminPage() {
   const [driverSummaries, setDriverSummaries] = useState([]);
   const [date, setDate] = useState(formatDateYYYYMMDD(new Date())); // Today by default
   
-  console.log("initialized date:", date)
+  logger.debug("initialized date:", date)
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [highlightedBooking, setHighlightedBooking] = useState(null); // Track the last modified booking
@@ -69,7 +69,7 @@ function AdminPage() {
   // Check for token on mount
   useEffect(() => {
     const token = localStorage.getItem('access_token');
-    console.log("Stored Token:", token);  // ✅ Debugging
+    logger.debug("Stored Token:", token);  // ✅ Debugging
     if (!token) {
       console.error("No access token found, redirecting to login.");
       // If no token, redirect to login
@@ -84,13 +84,13 @@ function AdminPage() {
         }
       })
       .then(response => response.json())
-      .then(data => console.log("Token verification response:", data))
+      .then(data => logger.debug("Token verification response:", data))
       .catch(err => console.error("Error verifying token:", err));
       
       axios.get(`${API_BASE_URL}/api/auth/verify-token`, {headers: getAuthHeaders()})
       .then(response => {
         // Token is valid, proceed as needed
-        console.log('Token verified:', response.data);
+        logger.debug('Token verified:', response.data);
       })
       .catch(error => {
         console.error('Token verification failed:', error);
@@ -176,7 +176,7 @@ const handleApprove = async (groupedBookings) => {
         }, { headers: getAuthHeaders() });
 
         if (response.status === 200) {
-          console.log(`Booking ${booking.tempbookingID} approved successfully.`);
+          logger.debug(`Booking ${booking.tempbookingID} approved successfully.`);
           handleRemove(booking)
         } else {
           console.error(`Failed to approve booking ${booking.tempbookingID}:`, response.data);
@@ -242,7 +242,7 @@ const handleRemove = async (booking) => {
     try {
       const response = await axios.get(`${API_BASE_URL}/api/bookings`, { headers: getAuthHeaders() });
       setBookings(response.data);
-      console.log('all bookings:', response.data);
+      logger.debug('all bookings:', response.data);
       setIsPending(false);
       setIsCompleted(false);
     } catch (error) {
@@ -261,7 +261,7 @@ const handleRemove = async (booking) => {
       const response = await axios.get(`${API_BASE_URL}/api/get_completed_bookings`, { headers: getAuthHeaders() });
       setBookings(response.data);
       setIsCompleted(true);
-      console.log('Completed bookings:', response.data);
+      logger.debug('Completed bookings:', response.data);
     } catch (error) {
       console.error('Error fetching completed bookings:', error);
     }
@@ -347,7 +347,7 @@ const handleRemove = async (booking) => {
     try {
       const response = await axios.get(`${API_BASE_URL}/api/pendingbookings`, { headers: getAuthHeaders() });
       setBookings(response.data);
-      console.log('pending bookings:', response.data);
+      logger.debug('pending bookings:', response.data);
       setIsPending(true);
       setIsCompleted(false);
     } catch (error) {
@@ -362,7 +362,7 @@ const handleRemove = async (booking) => {
         headers: getAuthHeaders(),
       });     
       setBlackoutDates(response.data); // Update state with the formatted dates
-      console.log('blackout dates:', response.data);
+      logger.debug('blackout dates:', response.data);
     } catch (error) {
       console.error('Error fetching blackout dates:', error);
     }
@@ -373,7 +373,7 @@ const handleRemove = async (booking) => {
     try {
       const response = await axios.get(`${API_BASE_URL}/api/getpricingrules`);     
       setPricingRules(response.data); // Update state with the formatted dates
-      console.log('pricing rules:', response.data);
+      logger.debug('pricing rules:', response.data);
     } catch (error) {
       console.error('Error fetching pricing rules:', error);
     }
@@ -447,7 +447,7 @@ const handleRemove = async (booking) => {
   // Open the modal for booking modification
   const handleOpenModal = (booking) => {
     setSelectedBooking(booking);
-    console.log('booking info: ', booking)
+    logger.debug('booking info: ', booking)
     setShowModal(true);
     setRefreshCounter(0)
   };
@@ -464,13 +464,13 @@ const handleRemove = async (booking) => {
     setHighlightedBooking(updatedFields); // Highlight the modified booking
     // Use a callback to ensure the state is updated before logging or using it
     setTimeout(() => {
-      console.log('Updated Fields: ', updatedFields);
-      console.log('Highlighted Booking after update: ', highlightedBooking);
+      logger.debug('Updated Fields: ', updatedFields);
+      logger.debug('Highlighted Booking after update: ', highlightedBooking);
     }, 0);
     // setRefreshCounter(0) // ensures the page will show the highlighted change
     handleViewChange(view); // Refresh the current view to show updated bookings
-    console.log('updated Fields: ', updatedFields)
-    console.log('Highlighted booking: ', highlightedBooking)
+    logger.debug('updated Fields: ', updatedFields)
+    logger.debug('Highlighted booking: ', highlightedBooking)
   };
 
   const handleSubmitNewBooking = async (e) => {
@@ -625,8 +625,8 @@ const handleRemove = async (booking) => {
               onDateChange={(newDate) => {
                 newDate.setHours(0, 0, 0, 0); // Ensure time is reset to midnight
                 const formattedDate = formatDateYYYYMMDD(newDate);
-                console.log('New Date (local):', newDate);
-                console.log('Formatted Date:', formattedDate);
+                logger.debug('New Date (local):', newDate);
+                logger.debug('Formatted Date:', formattedDate);
                 setDate(formattedDate);
                 fetchDailyBookings(formattedDate);
               }}

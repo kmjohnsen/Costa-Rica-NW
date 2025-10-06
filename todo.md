@@ -1,6 +1,23 @@
 # TO DO LIST
 
 ## Important
+
+- [ ] Twilio verify
+- [ ] Github - share with Ed (ed@dorrington.org) (add user/share read only)
+- [ ] Change email to Amazon SES, with SPF/DKIM DNS records for less likely to be spam
+- [ ] Make "CAncel" "Close"
+- [ ] Past trips on the bottom?
+- [ ] Look at more date pickers - core javascript, use own ui
+- [ ] JetBrains - PyCharm
+- [ ] Tests (helps for refactoring) - library in python or javascript (look up flask for testing)
+- [ ] other email service if Google breaks?
+- [ ] sql injection attack - parameterized queries instead
+- [ ] close button messed up
+- [ ] end to end - Playwright
+- [ ] setup RDS to do nightly backups
+- [ ] maybe backup of EC2 instance?
+- [ ] who owns what ? Domain, AWS, google mail?
+- [ ] submit request form shows $99999 cost
 - [ ] Other request - explanation at top
 - [ ] Other request - weird shadow
 - [ ] Other request - not working from AWS
@@ -34,22 +51,26 @@
 - [ ] Make Twilio production version
 
 ## Auth stuff
+
 - [ ] Add check token for API requests
 - [ ] Handle token invalid/expired in API requests - check out access and refresh token
 - [ ] Protected routes
+
 ## Testing
+
 - [ ] Passengers +11
 - [ ] Auto
 - [ ] My location not listed
 - [ ] Invalid phone number
 - [ ] Upcoming trip
 - [ ] Pricinig rules (not working)
-      - [ ] Percent increase
-      - [ ] Dollar increase
+  - [ ] Percent increase
+  - [ ] Dollar increase
 - [ ] Multi trip booking for all of the above
 - [ ] Remove trip in admin page has a confirmation popup that it removed what you wanted.
 
 ## Less Important - After MVP
+
 - [ ] Logging framework for what I have in the debug email.
 - [ ] Like delta website, make an expand widget arrow button that shows up under a certain screen size
 - [ ] In admin page, link bookings by Confirmation Number, as they are the same across the same bookings.
@@ -67,14 +88,17 @@
 - [ ] unhide Modify Trip button on Complete Bookings (wasnt working so hid it using "display: 'none'")
 
 ### Questions for Aaron
+
 - [ ] how do you want to interact with the data in the Admin area? What mods are needed
 - [ ] how do you want the calendar to function with large groups? 10+
 
 ### After decide on website name and hosting stuff
+
 - [ ] change the "lirshuttle.com" booking site hardcoding in Home.js to whatever site is.
 - [ ] change JWT SECRET KEY for production (in server.py)
 
 ### Completed ✓
+
 - [✓] Require whitelisted users versus just checking that a jwt is used.
 - [✓] Cap on booking date
 - [✓] Single month date picker - can't go beyond same month to pick end of trip
@@ -95,8 +119,8 @@
 - [✓] Make a "completed bookings" table
 - [✓] Roundtrip fix, to make work
 - [✓] bookings.py requires on SQL parameterized query:
-      query = "SELECT * FROM routes WHERE pickup = %s"
-      cursor.execute(query, (pickup,))- [ ] Create phone texting confirmation using Twilio
+  query = "SELECT * FROM routes WHERE pickup = %s"
+  cursor.execute(query, (pickup,))- [ ] Create phone texting confirmation using Twilio
 - [✓] Fix how if you modify one of the trip To/From locations, it doesn't update prices
 - [✓] Add ability to view manualtriptext in Admin page
 - [✓] Link reviews
@@ -104,7 +128,7 @@
 - [✓] FUTURE --> Pricing rules by route. not all
 - [✓] Add "My route is not here"
 - [✓] About us, terms and conditions, FAQ from Aaron
-- [✓] Aaron to look at Twilio 
+- [✓] Aaron to look at Twilio
 - [✓] Make Pricing rules work
 - [✓] Tally - prices of all trips, total
 - [✓] About us, terms and conditions, FAQ on menu
@@ -118,9 +142,9 @@
 - [✓] OAuth (Google, facebook)
 - [✓] Fix Review Booking Requests
 - [✓] Fix add pending booking, make sure it doesn't mess up new booking
-      - [✓] Fix remove pending booking- [✓] Grab price from prices.py for most bookings, but from quoted price for modify
+  - [✓] Fix remove pending booking- [✓] Grab price from prices.py for most bookings, but from quoted price for modify
 - [✓] Add price for day API call
-- [✓] Make a hard limit of 48 hours on when you can book. Within 48 hours, need HUMAN ASSISTANCE 
+- [✓] Make a hard limit of 48 hours on when you can book. Within 48 hours, need HUMAN ASSISTANCE
 - [✓] Make required fields be selected before moving on
 - [✓] Allow Aaron to enter new bookings from other methods
 - [✓] Allow Aaron to modify bookings
@@ -138,10 +162,10 @@
 - [✓] Booking page - add the phone number with country code
 - [✓] Change prices for routes to include date or date range as input, so we can use it in modify modal, admin page.
 - [✓] Pricing
-      - [✓] 10+ passengers, NEED HUMAN ASSISTANCE
-      - [✓] Dynamic reservations - after 4 bookings, increase by 5%
-      - [✓] Golden season - mid Dec thru mid Jan
-      - [✓] Xmas eve and day have different prices
+  - [✓] 10+ passengers, NEED HUMAN ASSISTANCE
+  - [✓] Dynamic reservations - after 4 bookings, increase by 5%
+  - [✓] Golden season - mid Dec thru mid Jan
+  - [✓] Xmas eve and day have different prices
 - [✓] Add waiting symbol while the email is being sent
 - [✓] Catch for local numbers - simple request rather than autobook
 - [✓] Make weekend days in calendar black.

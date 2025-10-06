@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Modal from 'react-modal';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
@@ -8,13 +8,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Navbar from './NavBar'; // Import the top navigation bar
 import axios from 'axios';
 import RequiredFieldsModal from './RequiredFieldsModal';
-import { validateEntries } from './HelperFunctions';
+import { validateEntries, logger } from './HelperFunctions';
 import { useDebounce } from 'use-debounce';
 import API_BASE_URL from '../config';
-import ResponsiveTimePicker from './ResponsiveTimePicker';
+import ResponsiveTimePicker from './TimePicker';
 import "./ButtonDropdown.css";
 import LocationDropdown from './LocationDropdown'; 
-
 
 
 function CompleteBooking() {
@@ -52,7 +51,6 @@ function CompleteBooking() {
   const [isRequiredFieldsModalOpen, setIsRequiredFieldsModalOpen] = useState(false);
   const [missingFields, setMissingFields] = useState('')
   const [tempEdit, setTempEdit] = useState(null);
-  const [tripPrices, setTripPrices] = useState({});
   const [dateMargin, setDateMargin] = useState('');
   const [isLargeGroup, setIsLargeGroup] = useState(initialIsLargeGroup || false)
   const [isDateValid, setIsDateValid] = useState(initialIsDateValid || false)
@@ -62,14 +60,14 @@ function CompleteBooking() {
   const [debouncedTelephone] = useDebounce(telephone, 300);
   const [successfulBooking, setSuccessfulBooking] = useState(false)
   const [successfulRequest, setSuccessfulRequest] = useState(false)
-  // const [confirmation_code, setConfirmation_Code] = useState('');
 
   // Initialize useForm and useFieldArray
   const { control, setValue } = useForm({
     defaultValues: { entries: initialEntries, passengers: passengers }
   });
 
-  const watchEntries = useWatch({ control, name: "entries" }) || [];
+  const watched = useWatch({ control, name: "entries" });
+  const watchEntries = useMemo(() => watched || [], [watched]);
 
   // Fetch margin used for selecting dates
   useEffect(() => {
@@ -81,13 +79,13 @@ function CompleteBooking() {
   // Check the country code with the backend
   useEffect(() => {
     if (requestType !== 'Alternate Route' && debouncedTelephone && debouncedTelephone.length >= 3) {
-      console.log("telephone", telephone)
+      logger.debug("telephone", telephone)
       axios.get(`${API_BASE_URL}/api/valid-phone`, {
         params: { phone: debouncedTelephone.startsWith('+') ? debouncedTelephone.slice(1) : debouncedTelephone },
       })
         .then((response) => {
         setValidPhone(response.data.valid);
-        console.log("Response data", response.data.valid)
+        logger.debug("Response data", response.data.valid)
       })
       .catch((error) => {
         console.error('Error checking phone number:', error);
@@ -111,13 +109,8 @@ function CompleteBooking() {
       const response = await axios.get(`${API_BASE_URL}/api/prices`, {
         params: { routenumber, passengers, startdate, enddate },
       });
-      console.log("Fetched prices for trip:", response.data);
+      logger.debug("Fetched prices for trip:", response.data);
   
-      // Update tripPrices immutably
-      setTripPrices((prevPrices) => ({
-        ...prevPrices,
-        [index]: response.data,
-      }));
     } catch (error) {
       console.error("Error fetching prices:", error);
     }
@@ -128,7 +121,7 @@ function CompleteBooking() {
     let manualroutetext = '';
     watchEntries.forEach((entry, index) => {
       manualroutetext += `Trip ${index + 1}: ${entry.date}. ${entry.pickup} to ${entry.dropoff} for ${entry.passengers} passengers. `;
-      console.log("Manual route text", manualroutetext);
+      logger.debug("Manual route text", manualroutetext);
     });
     setManualRouteRequest(manualroutetext);
   }, [watchEntries]); // Add dependencies here
@@ -136,7 +129,7 @@ function CompleteBooking() {
   useEffect(() => {
     if (requestType === 'Alternate Route') {
       manualRouteTextCreate();
-      console.log("Manual route", manualRouteRequest);
+      logger.debug("Manual route", manualRouteRequest);
     }
   }, [manualRouteTextCreate, requestType, manualRouteRequest]); // Use manualRouteTextCreate as dependency
   
@@ -149,13 +142,13 @@ function CompleteBooking() {
         }
       });
     }
-  }, [initialEntries]);
+  }, [initialEntries, passengers]);
 
   // Check if the group is too large for auto-booking
   useEffect(() => {
     const largeGroup = (passengers === '11+');
     setIsLargeGroup(largeGroup);
-  }, [watchEntries]);
+  }, [watchEntries, passengers]);
 
   // Check if the date is valid for auto-booking
   useEffect(() => {
@@ -165,9 +158,9 @@ function CompleteBooking() {
       const dateMarginInMilliseconds = dateMargin * 24 * 60 * 60 * 1000; // Convert margin to milliseconds
       const futureDateMargin = new Date(currentDate.getTime() + dateMarginInMilliseconds); // Current date + margin
       
-      console.log("current Date", currentDate);
-      console.log("futureDateMargin", futureDateMargin);
-      console.log("booking Date HERE:", bookingDate);
+      logger.debug("current Date", currentDate);
+      logger.debug("futureDateMargin", futureDateMargin);
+      logger.debug("booking Date HERE:", bookingDate);
 
       return bookingDate > futureDateMargin; // Date valid if after margin
     });
@@ -179,7 +172,7 @@ function CompleteBooking() {
   useEffect(() => {
     if (requestType === 'Alternate Route') {
       manualRouteTextCreate()
-      console.log("Manual route", manualRouteRequest)
+      logger.debug("Manual route", manualRouteRequest)
       return; // Skip other checks for Alternate Route
     }
 
@@ -192,7 +185,7 @@ function CompleteBooking() {
     } else {
       setRequestType('Auto');
     }
-    console.log("request type ", requestType)
+    logger.debug("request type ", requestType)
   }, [isLargeGroup, isDateValid, validPhone, requestType, manualRouteRequest, manualRouteTextCreate]);
 
   // Function to generate a 6-digit uppercase confirmation code
@@ -228,7 +221,7 @@ function CompleteBooking() {
       Object.keys(tempEdit).forEach((field) => {
         setValue(`entries.${currentEditIndex}.${field}`, tempEdit[field]);
       });
-      console.log("temp edit", tempEdit)
+      logger.debug("temp edit", tempEdit)
 
       // Extract updated trip details
       const { pickup, dropoff, passengers, date } = tempEdit;
@@ -238,7 +231,7 @@ function CompleteBooking() {
         fetchPrices(currentEditIndex, tempEdit.routenumber, passengers, date, date);
       }
       
-      console.log("Saved trip:", tempEdit); // Debugging
+      logger.debug("Saved trip:", tempEdit); // Debugging
     }
     closeEditModal();
   };
@@ -251,9 +244,9 @@ function CompleteBooking() {
       telephone: telephone || '',
     }];
 
-    console.log("fields", fields)
-    console.log("time", watchEntries)
-    console.log("passengers", passengers)
+    logger.debug("fields", fields)
+    logger.debug("time", watchEntries)
+    logger.debug("passengers", passengers)
 
     // Add `largeGroupPassengers` if `isLargeGroup` is true
     if (isLargeGroup) {
@@ -270,8 +263,8 @@ function CompleteBooking() {
     const { hasIncompleteFields: missingPassenger, missingFieldsMessage: passengerMsg } =
       validateEntries(passengerData, ['passengers']);
     
-    console.log("Fields before validation:", fields);
-    console.log("Required Fields:", requiredFields);
+    logger.debug("Fields before validation:", fields);
+    logger.debug("Required Fields:", requiredFields);
     const { hasIncompleteFields: hasMissingContactInfo, missingFieldsMessage: contactMissingMsg } =
       validateEntries(fields, ['firstName', 'lastName', 'email', 'telephone']);
 
@@ -323,10 +316,10 @@ function CompleteBooking() {
             passengers, 
             largeGroupPassengers 
           };
-          console.log("bookingData", bookingData);
+          logger.debug("bookingData", bookingData)
     
           const response = await axios.post(`${API_BASE_URL}/api/submit-booking`, { bookingData });
-          console.log("here2");
+          logger.debug("here2");
           setLoading(false);
           if (response.status === 200) {
             setSuccessfulRequest(true);
@@ -422,25 +415,8 @@ function CompleteBooking() {
         overlayClassName="Overlay-for-popup"
       >
         <div>
-          <button
+          <button className="close-booking-button"
             onClick={closeBookingConfirmationModal}
-            style={{
-              position: 'absolute',
-              top: '10px',
-              right: '10px',
-              background: 'var(--accent)',
-              color: 'var(--text-color)',
-              borderRadius: '50%',
-              height: '25px',
-              width: '25px',
-              border: 'none',
-              fontSize: '20px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transform: 'translateY(0px)',
-            }}
             aria-label="Close"
           >
             <span style={{ transform: 'translateY(1px)' }}>&times;</span>
@@ -761,7 +737,7 @@ function CompleteBooking() {
           entry.pickup && entry.dropoff && passengers && entry.date && (
             <React.Fragment key={index}>
               <div className="flex-container-completebooking">
-                <p style={{ fontSize: '1.5rem', margin: '0' }}><u>Trip {index + 1}</u></p>
+                <p style={{ fontSize: '1.5rem', margin: '0', color: 'var(--accent)', fontWeight: 'bold' }}>Trip {index + 1}</p>
               </div>
               <div className="flex-container-completebooking" key={index}>
                 <table className="trip-summary-table">
@@ -807,31 +783,26 @@ function CompleteBooking() {
                 {(airportLocations.includes(entry.pickup) || airportLocations.includes(entry.dropoff)) && (
                   <>
                     <div  className="flex-container-completebooking" style={{  display: 'flex' }}>
-                      <div className="location-input-container" style={{  width: '170px', margin: '5px' }}>
-                        <label className={`floating-label-time ${entry.time ? 'label-active' : ''}`}>
+                      <div className="location-input-container" style={{  width: '270px', margin: '5px' }}>
+                        {/* <label className={`floating-label-time ${entry.time ? 'label-active' : ''}`}>
                           {airportLocations.includes(entry.pickup)
                             ? "Flight Arrival Time"
                             : airportLocations.includes(entry.dropoff)
                               ? "Flight Departure Time"
                               : "Shuttle Pickup Time"}
-                        </label>
+                        </label> */}
                         <ResponsiveTimePicker
-                          // label={airportLocations.includes(entry.pickup)
-                          //   ? "Flight Arrival Time"
-                          //   : airportLocations.includes(entry.dropoff)
-                          //     ? "Flight Departure Time"
-                          //     : "Shuttle Pickup Time"
-                          //   }
-                          value={entry?.time instanceof Date ? entry?.time : null}
-                          onChange={(time) => {
-                            if (time) {
-                              const formattedTime = new Date(time).toLocaleTimeString('en-US', { hour12: false });
-                              setValue(`entries.${index}.time`, formattedTime);
-                            } else {
-                              setValue(`entries.${index}.time`, null);
-                            }
+                          label={
+                            airportLocations.includes(entry.pickup)
+                              ? "Flight Arrival Time"
+                              : airportLocations.includes(entry.dropoff)
+                              ? "Flight Departure Time"
+                              : "Shuttle Pickup Time"
+                          }
+                          value={entry.time || ""}
+                          onChange={(newTime) => {
+                            setValue(`entries.${index}.time`, newTime);
                           }}
-                          required
                         />
                       </div>
                     
@@ -845,7 +816,7 @@ function CompleteBooking() {
                           }}
                         />
                       </div>
-                      <div className="location-input-container" style={{ width: '130px', margin: '5px', marginBottom: '10px' }}>
+                      <div className="location-input-container" style={{ width: '270px', margin: '5px', marginBottom: '10px' }}>
                         <label className={`floating-label ${entry.flightnumber ? "label-active" : ""}`}>
                           Flight Number
                         </label>

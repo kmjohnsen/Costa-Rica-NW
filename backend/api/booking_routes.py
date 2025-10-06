@@ -3,14 +3,16 @@ from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity, verify_j
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from datetime import datetime, timedelta, date
-from decimal import Decimal
+from enum import Enum
 from functools import wraps
-from urllib.parse import unquote
 import mysql.connector
 import random
 import string
-import bleach
 import os
+import bleach
+
+from api.SQL_access_functions import fetch_all_bookings, fetch_completed_bookings, fetch_bookings_for_a_day, fetch_pending_bookings, fetch_route_number, fetch_monthly_summary, fetch_or_create_user
+from api.utils import serialize_records, sanitize_personal_fields
 
 from api.emailconfirmation import send_email, send_debug_email, send_transport_request_email
 from api.prices import calculate_route_prices
@@ -39,6 +41,23 @@ ADMIN_EMAILS = [e.strip().lower() for e in os.getenv("WHITELISTED_EMAILS", "").s
 ADMIN_ROLES = {"admin", "dev"}
 CRNW_EMAIL = "kmjohnsen@gmail.com"
 
+class RequestType(str, Enum):
+    AUTO = "Auto"
+    LARGE_GROUP = "Large Group"
+    UPCOMING = "Upcoming"
+    INVALID_PHONE = "Invalid Phone"
+    ALTERNATE_ROUTE = "Alternate Route"
+
+VALID_REQUEST_TYPES = {
+    RequestType.AUTO,
+    RequestType.LARGE_GROUP,
+    RequestType.UPCOMING,
+    RequestType.INVALID_PHONE,
+    RequestType.ALTERNATE_ROUTE,
+}
+
+MAX_DAYS_AHEAD = 365
+DATE_FMT = "%Y-%m-%d"
 
 def admin_required(f):
     @wraps(f)
@@ -61,21 +80,6 @@ def get_connection(dictionary):
         print(f"MySQL Error: {err}")
         raise
 
-def convert_to_serializable(obj):
-    if isinstance(obj, timedelta):
-                # Calculate hours and minutes from timedelta
-        total_seconds = int(obj.total_seconds())
-        hours, remainder = divmod(total_seconds, 3600)
-        minutes = remainder // 60
-        # Format as HH:MM
-        return f'{hours:02}:{minutes:02}'
-        #return obj.strftime('%H:%M')  # Converts timedelta to a string representation
-    elif isinstance(obj, (datetime, date)):
-        return obj.strftime('%Y-%m-%d')  # Converts datetime or date to 'YYYY-MM-DD' format
-    elif isinstance(obj, Decimal):
-        return float(obj)  # Convert Decimal to float for JSON serialization
-    return obj  # Returns other types unchanged
-
 
 # Endpoint to get all bookings in date order
 @bookings_bp.route('/api/bookings', methods=['GET'])
@@ -84,22 +88,8 @@ def convert_to_serializable(obj):
 def get_all_bookings():
     try:
         conn, cursor = get_connection(dictionary=True)
-        query =("""
-                SELECT b.bookingID, b.userID, b.routeID, b.startcity, b.endcity, u.FirstName, u.LastName, u.email, u.PhoneNumber, b.booking_date, b.pickup_time, b.routecost, b.driver, b.passengers, 
-                        b.flight_airline, b.flight_number, b.questions, b.startcity, b.endcity, b.pickup_location, b.dropoff_location, b.manualbookinginfo
-                FROM booking_database.booking_information b
-                INNER JOIN 
-                    booking_database.user_information u ON b.userID = u.userID  
-                ORDER BY b.booking_date ASC;""")
-        print(f"query: {query}")
-        cursor.execute(query)  
-        bookings = cursor.fetchall()
-        serialized_bookings = []
-        for booking in bookings:
-            # Create a new dictionary with serializable values
-            serialized_booking = {key: convert_to_serializable(value) for key, value in booking.items()}
-            serialized_bookings.append(serialized_booking)
-        return jsonify(serialized_bookings), 200
+        bookings = fetch_all_bookings(cursor)
+        return jsonify(serialize_records(bookings)), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     finally:
@@ -112,22 +102,8 @@ def get_all_bookings():
 def get_completed_bookings():
     try:
         conn, cursor = get_connection(dictionary=True)
-        query =("""
-                SELECT b.bookingID, b.userID, b.routeID, b.startcity, b.endcity, u.FirstName, u.LastName, u.email, u.PhoneNumber, b.booking_date, b.pickup_time, b.routecost, b.driver, b.passengers, 
-                        b.flight_airline, b.flight_number, b.questions, b.startcity, b.endcity, b.pickup_location, b.dropoff_location, b.manualbookinginfo
-                FROM booking_database.completed_bookings b
-                INNER JOIN 
-                    booking_database.user_information u ON b.userID = u.userID  
-                ORDER BY b.booking_date DESC;""")
-        print(f"query: {query}")
-        cursor.execute(query)  
-        bookings = cursor.fetchall()
-        serialized_bookings = []
-        for booking in bookings:
-            # Create a new dictionary with serializable values
-            serialized_booking = {key: convert_to_serializable(value) for key, value in booking.items()}
-            serialized_bookings.append(serialized_booking)
-        return jsonify(serialized_bookings), 200
+        bookings = fetch_completed_bookings(cursor)
+        return jsonify(serialize_records(bookings)), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     finally:
@@ -139,30 +115,17 @@ def get_completed_bookings():
 @admin_required
 @limiter.limit("10/minute") 
 def get_bookings_for_day():
-    date = request.args.get('date')
-    if not date:
+    booking_date = request.args.get('date')
+    if not booking_date:
         return jsonify({'error': 'Date is required'}), 400
     print(f"Received date: {date}")
 
     try:
         conn, cursor = get_connection(dictionary=True)
-        query = ("""SELECT * FROM booking_database.booking_information 
-                 RIGHT JOIN route_information 
-                 ON booking_database.booking_information.routeID = booking_database.route_information.routeID 
-                 WHERE DATE(booking_date) = %s""")
-        print(f"query: {query} date: {date}")
-        cursor.execute(query, (date,))
-        try:
-            bookings = cursor.fetchall()
-        except Exception as f:
-            return jsonify({'error': 'No bookings found for this date'}), 400
-
-        serialized_bookings = [
-            {key: convert_to_serializable(value) for key, value in booking.items()}
-            for booking in bookings
-        ]
-        return jsonify(serialized_bookings), 200
-    
+        bookings = fetch_bookings_for_a_day(cursor, booking_date)
+        if not bookings:
+            return jsonify({'error': 'No bookings found for this date'}), 404
+        return jsonify(serialize_records(bookings)), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     finally:
@@ -176,13 +139,8 @@ def get_monthly_summary():
     month = request.args.get('month', datetime.now().strftime('%Y-%m'))
     try:
         conn, cursor = get_connection(dictionary=True)
-        cursor.execute("""
-            SELECT COUNT(*) as trips, SUM(routecost) as money_collected
-            FROM booking_database.booking_information
-            WHERE booking_date LIKE %s
-        """, (f"{month}%",))
-        summary = cursor.fetchone()
-        return jsonify(summary)
+        bookings = fetch_monthly_summary(cursor, month)
+        return jsonify(bookings)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     finally:
@@ -213,11 +171,8 @@ def get_driver_monthly_summary():
 def modify_booking():
     # Get the updated fields from the request body
     data = request.json
-    print(f"data: {request.json}")
     updated_fields = data.get('updatedFields')
     is_pending = data.get('isPending')
-    print(f"is pending {is_pending}")
-    print(f"updated fields: {updated_fields}")
 
     # Check if there are any fields to update
     if not updated_fields:
@@ -292,33 +247,13 @@ def modify_booking():
 def get_pending_bookings():
     try:
         conn, cursor = get_connection(dictionary=True)
-        query =("""
-                SELECT b.tempbookingID, b.userID, b.routeID, b.startcity, b.endcity, u.FirstName, u.LastName, u.email, u.PhoneNumber, b.booking_date, b.pickup_time, b.routecost, b.driver, b.passengers, 
-                        b.flight_airline, b.flight_number, b.questions, b.startcity, b.endcity, b.pickup_location, b.dropoff_location, b.manualbookinginfo, b.confirmation_number
-                FROM booking_database.temp_booking b
-                INNER JOIN 
-                    booking_database.user_information u ON b.userID = u.userID  ORDER BY b.booking_date ASC;""")
-        cursor.execute(query)  
-        bookings = cursor.fetchall()
-        # print(f"bookings: {bookings}")
-
-        # Debug: Print all fetched data
-        # print("Fetched Bookings:", bookings)  # Helps verify what data is being retrieved
-
-        # Convert any timedelta objects to a serializable format
-        serialized_bookings = []
-        for booking in bookings:
-            # Create a new dictionary with serializable values
-            serialized_booking = {key: convert_to_serializable(value) for key, value in booking.items()}
-            serialized_bookings.append(serialized_booking)
-
-        # Return the serialized bookings as JSON
-        cursor.close()
-        conn.close()
-        return jsonify(serialized_bookings), 200
-
+        bookings = fetch_pending_bookings(cursor)
+        return jsonify(serialize_records(bookings)), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 # Endpoint to assign/change driver
 @bookings_bp.route('/api/bookings/assign-driver', methods=['POST'])
@@ -367,10 +302,8 @@ def submit_booking_email_request():
     send_transport_request_email(name, phone, email, details, confirmationcode)
     return jsonify({"message": "Other transport request received"}), 200
 
-
-
 @bookings_bp.route('/api/submit-booking', methods=['POST'])
-@limiter.limit("5/minute")
+@limiter.limit("10/minute")
 def submit_booking():
     booking_data_debug = request.json.get('bookingData')
     if not booking_data_debug:
@@ -390,19 +323,12 @@ def submit_booking():
     entries = booking_data.get('entries', [])
 
     # Sanitize before saving
-    first_name = bleach.clean(booking_data.get('firstName', ''))
-    last_name = bleach.clean(booking_data.get('lastName', ''))
-    email = bleach.clean(booking_data.get('email', ''))
-    telephone = bleach.clean(booking_data.get('telephone', ''))
-    questions = bleach.clean(booking_data.get('questions', ''))
-    manualRouteRequest = bleach.clean(booking_data.get('manualRouteRequest', ''))
+    sanitize_personal_fields(entries)
 
     print(f"personal details: {first_name}, {last_name}, {email}, {telephone}, {requestType}, {questions}, {bookingsite} {manualRouteRequest} {largeGroupPassengers} {passengers}")
 
-    # Validate requestType
-    if requestType == 'Auto' or requestType == 'Large Group' or requestType == 'Upcoming' or requestType == 'Invalid Phone' or requestType == 'Alternate Route':
-        print("valid requestType")
-    else:
+    allowed_request_types = {'Auto', 'Large Group', 'Upcoming', 'Invalid Phone', 'Alternate Route'}
+    if requestType not in allowed_request_types:
         return jsonify({'error': 'Invalid Request Type'}), 400
     
     # Make sure phone number is in valid phone list
@@ -450,10 +376,10 @@ def submit_booking():
             )
 
             # Ensure reservation is not more than one year out
-            MAX_DATE = datetime.today() + timedelta(days=365)
+            MAX_DATE = datetime.today() + timedelta(days=MAX_DAYS_AHEAD)
             # Parse string to datetime (expecting 'YYYY-MM-DD')
             try:
-                date_obj = datetime.strptime(date, '%Y-%m-%d')
+                date_obj = datetime.strptime(date, DATE_FMT)
             except ValueError:
                 return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD'}), 400
 
@@ -595,101 +521,31 @@ def check_valid_phonenumber(cursor, phonenumber):
     except Exception as e:
         return jsonify({'e': str(e)}), 500
     
-def fetch_or_create_user(cursor, first_name, last_name, email, telephone):
-    # Create user information, or check if it already exists
-    print("fetching user")
-    query = """INSERT INTO booking_database.user_information (FirstName, LastName, Email, PhoneNumber) 
-            SELECT %s, %s, %s, %s
-                WHERE NOT EXISTS 
-                (SELECT email FROM booking_database.user_information WHERE email=%s)"""
 
-    select_query = "SELECT userID FROM booking_database.user_information WHERE Email = %s"
-
-    try:
-        print(f"query2: {query}, data {(first_name, last_name, email, telephone, email)}")
-        cursor.execute(query, (first_name, last_name, email, telephone, email))
-
-        cursor.execute(select_query, (email,))
-        user_id = cursor.fetchone()
-
-        # Check if user_id is found and return the actual ID
-        if user_id:
-            print(f"User ID found: {user_id[0]}")
-            return user_id[0]
-        else:
-            print("No user ID found.")
-            return None
-    except Exception as e:
-        print(f"Error during user fetch or creation: {str(e)}")
-        return None
-
-def fetch_route_number(pickup, dropoff, cursor):
-    print("fetching route number")
-    pickup = unquote(pickup or '').strip()
-    dropoff = unquote(dropoff or '').strip()
-    print(f"pickup '{pickup}'")
-    print(f"dropoff '{dropoff}'")
-
-    try:
-        # Case-insensitive search
-        query = """
-            SELECT routeID FROM booking_database.route_information 
-            WHERE LOWER(startcity) = LOWER(%s) AND LOWER(endcity) = LOWER(%s)
-        """
-        cursor.execute(query, (pickup.lower(), dropoff.lower()))
-        result = cursor.fetchone()
-        print(f"result of direct query: {result}")
-        if result:
-            return result["routeID"]
-
-        print("Trying reverse")
-        cursor.execute(query, (dropoff.lower(), pickup.lower()))
-        result = cursor.fetchone()
-        print(f"result of reverse query: {result}")
-        if result:
-            return result["routeID"]
-
-        print("No route found in either direction.")
-        return 9999
-    except Exception as e:
-        print(f"Error fetching route ID: {e}")
-        return 9999
 
 def compile_dataforbooking(user_id, routeID, pickup, dropoff, prices, confirmationcode, date, time, airline, flight_number, bookingsite, passengers, questions, pickup_detailed, dropoff_detailed, manualbookinginfo):
-    print(f"Calling compile_dataforbooking with: {user_id}, {routeID}, {pickup}, {dropoff}, {prices}, {confirmationcode}, {date}, {time}, {airline}, {flight_number}, {bookingsite}, {passengers}, {questions}, {pickup_detailed}, {dropoff_detailed}, {manualbookinginfo}")
-    questions = bleach.clean(questions)
-    pickup = bleach.clean(pickup)
-    dropoff = bleach.clean(dropoff)
-    airline = bleach.clean(airline)
-    pickup_detailed = bleach.clean(pickup_detailed)
-    dropoff_detailed = bleach.clean(dropoff_detailed)
-    manualbookinginfo = bleach.clean(manualbookinginfo)
+    # print(f"Calling compile_dataforbooking with: {user_id}, {routeID}, {pickup}, {dropoff}, {prices}, {confirmationcode}, {date}, {time}, {airline}, {flight_number}, {bookingsite}, {passengers}, {questions}, {pickup_detailed}, {dropoff_detailed}, {manualbookinginfo}")
     
     dataforbooking = {
         "userID": user_id if user_id else None,
         "routeID": routeID if routeID else None,
-        "startcity": pickup if pickup else None,
-        "endcity": dropoff if dropoff else None,
+        "startcity": bleach.clean(pickup) if pickup else None,
+        "endcity": bleach.clean(dropoff) if dropoff else None,
         "confirmation_number": confirmationcode if confirmationcode else None,
         "booking_date": date if date else None,
         "pickup_time": time if time else None,
-        "flight_airline": airline if airline else None,
+        "flight_airline": bleach.clean(airline) if airline else None,
         "flight_number": int(flight_number) if flight_number else None,  
         "booking_site": bookingsite if bookingsite else None,
         "passengers": int(passengers) if passengers else None, 
-        "questions": questions if questions else None,
-        "pickup_location": pickup_detailed if pickup_detailed else None,
-        "dropoff_location": dropoff_detailed if dropoff_detailed else None,
-        "manualbookinginfo": manualbookinginfo if manualbookinginfo else None,
+        "questions": bleach.clean(questions) if questions else None,
+        "pickup_location": bleach.clean(pickup_detailed) if pickup_detailed else None,
+        "dropoff_location": bleach.clean(dropoff_detailed) if dropoff_detailed else None,
+        "manualbookinginfo":bleach.clean( manualbookinginfo) if manualbookinginfo else None,
+        "routecost": prices if prices is not None else None,
     }
-    print("here4")
-    # Add prices to data only if it's not None
-    if prices is not None:
-        dataforbooking["routecost"] = prices
-    else:
-        dataforbooking["routecost"] = None  # Explicitly set to None if you prefer
-    print(dataforbooking)
     return dataforbooking
+
 
 def call_dataforbooking(bookingtable, bookingIDvariable, bookingID):
     print("Call Data for a Booking")
@@ -698,7 +554,6 @@ def call_dataforbooking(bookingtable, bookingIDvariable, bookingID):
     allowed_tables = ["booking_information", "temp_booking"]
     if bookingtable not in allowed_tables:
         raise ValueError("Invalid table name.")
-
     try:
         conn, cursor = get_connection(dictionary=True)
         query =(f"""
@@ -709,12 +564,7 @@ def call_dataforbooking(bookingtable, bookingIDvariable, bookingID):
         print(f"query call data: {query}, bookingID {bookingID}")
         cursor.execute(query, (bookingID,))
         data = cursor.fetchall()
-        print(f"data from call3: {data}")
-    
-
-        dataforbooking = {key: convert_to_serializable(value) for key, value in data[0].items()}
-        print(f"data for booking:: {dataforbooking}")
-        return dataforbooking
+        return serialize_records(data)
     except Exception as e:
             return jsonify({'error': str(e)}), 500
     finally:
@@ -724,9 +574,6 @@ def call_dataforbooking(bookingtable, bookingIDvariable, bookingID):
             conn.close()
     
 def insert_into_booking_database(requestType, dataforbooking, cursor):
-    print("insert into booking database")
-    print(f"data for booking: {dataforbooking}")
-    print(f"request type: {requestType}")
 
     # Determine the correct table based on requestType
     if requestType == 'Auto' or requestType == 'Approve':
@@ -742,25 +589,34 @@ def insert_into_booking_database(requestType, dataforbooking, cursor):
     if table_name not in allowed_tables:
         raise ValueError("Invalid table name.")
     
+    allowed_columns = {
+        "userID", "routeID", "startcity", "endcity", "confirmation_number",
+        "booking_date", "pickup_time", "flight_airline", "flight_number",
+        "booking_site", "passengers", "questions", "pickup_location",
+        "dropoff_location", "manualbookinginfo", "routecost"
+    }
+    
     # Build the base SQL query
     # Exclude 'tempbookingID' and 'bookingID' from columns and placeholders
     excluded_columns = {'tempbookingID', 'bookingID'}
     filtered_data = {
-        key: bleach.clean(value) if isinstance(value, str) else value
-        for key, value in dataforbooking.items()
-        if key not in excluded_columns and value is not None
+        key: value for key, value in dataforbooking.items()
+        if key in allowed_columns and value is not None
     }
-    print(f"filtered data: {filtered_data}")
+    if not filtered_data:
+        raise ValueError("No valid fields to insert.")
+    
     # Build columns and placeholders
     columns = ", ".join(filtered_data.keys())
     placeholders = ", ".join(["%s"] * len(filtered_data))
 
     # Safely construct the SQL query
-    query = f"INSERT INTO booking_database.{table_name} ({columns}) VALUES ({placeholders})"
-    print(f"query for insert into database")
+    query = f"""
+        INSERT INTO booking_database.{table_name} ({columns}) 
+        VALUES ({placeholders})
+        """
 
-    # Prepare the values to insert
-    values = [value for key, value in filtered_data.items() if value is not None]
+    values = list(filtered_data.values())
     print(f"Values: {values}")
 
     try:
@@ -929,7 +785,7 @@ def fetch_blackout_dates():
         dates = cursor.fetchall()
         formatted_dates = [
             date['blackoutdate'] if isinstance(date['blackoutdate'], str)
-            else date['blackoutdate'].strftime('%Y-%m-%d')
+            else date['blackoutdate'].strftime(DATE_FMT)
             for date in dates
         ]
         return jsonify(formatted_dates), 200

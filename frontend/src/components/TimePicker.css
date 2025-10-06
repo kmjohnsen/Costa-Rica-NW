@@ -1,0 +1,77 @@
+/* Base styling */
+.time-native-input {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  text-align: center;
+  width: 100%;
+  height: 49px;
+  padding: 12px 40px 12px 40px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: "Helvetica", Arial, sans-serif;
+  background-color: var(--bright-white) !important;
+  color: var(--dark-text);
+  border: var(--bright-white);
+  box-shadow: 0px 2px 5px var(--shadow-for-box);
+  outline: none;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+/* Hide native icons */
+.time-native-input::-webkit-clear-button,
+.time-native-input::-webkit-inner-spin-button,
+.time-native-input::-webkit-calendar-picker-indicator {
+  display: none;
+}
+
+/* ---------- CROSS-BROWSER PLACEHOLDER CONTROL ---------- */
+/* When EMPTY: make the --:-- invisible (white) */
+.time-native-input.is-empty {
+  color: transparent !important;            /* Firefox + fallback */
+  -webkit-text-fill-color: transparent;     /* WebKit/iOS */
+  caret-color: transparent;                 /* hide caret on iOS */
+}
+.time-native-input.is-empty::-webkit-datetime-edit,
+.time-native-input.is-empty::-webkit-datetime-edit-fields-wrapper,
+.time-native-input.is-empty::-webkit-date-and-time-value {
+  color: transparent !important;
+  -webkit-text-fill-color: transparent;
+  font-size: 1rem;
+}
+
+/* When HAS VALUE: show black text */
+.time-native-input.has-value {
+  color: var(--dark-text) !important;
+  -webkit-text-fill-color: var(--dark-text);
+  caret-color: auto;
+  font-size: 1rem;
+}
+.time-native-input.has-value::-webkit-datetime-edit,
+.time-native-input.has-value::-webkit-datetime-edit-fields-wrapper,
+.time-native-input.has-value::-webkit-date-and-time-value {
+  color: var(--dark-text) !important;
+  -webkit-text-fill-color: var(--dark-text);
+  font-weight: 12px;
+}
+
+/* Prevent Firefox’s UI states from overriding color */
+.time-native-input.is-empty:-moz-ui-invalid,
+.time-native-input.is-empty:-moz-focusring {
+  color: transparent !important;
+}
+
+
+.chevron-container {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.chevron-icon {
+  color: var(--dark-text);
+  font-size: 14px;
+}

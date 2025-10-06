@@ -5,6 +5,7 @@ import axios from 'axios';
 import PhoneInput from 'react-phone-input-2';
 import './AdminModal.css'; // Import CSS for styling
 import API_BASE_URL from '../config';
+import {logger} from './HelperFunctions'
 
 
 function AdminBookingModal({ show, booking, isPending, onClose, onModify, isCompleted }) {
@@ -17,8 +18,8 @@ function AdminBookingModal({ show, booking, isPending, onClose, onModify, isComp
   const bookingDate = new Date(editableBooking?.booking_date);
   const currentDate = new Date(); // This gives you the current date and time
 
-  console.log("Booking Date:", bookingDate)
-  console.log("Current Date", currentDate)
+  logger.debug("Booking Date:", bookingDate)
+  logger.debug("Current Date", currentDate)
 
   const getAuthHeaders = () => {
     const token = localStorage.getItem('access_token');
@@ -67,7 +68,7 @@ function AdminBookingModal({ show, booking, isPending, onClose, onModify, isComp
 
   // Fetch prices data
   useEffect(() => {
-    console.log("editable booking data", editableBooking)
+    logger.debug("editable booking data", editableBooking)
     // Ensure valid pickup and dropoff before making the fetch call
     if ( editableBooking?.startcity || editableBooking?.endcity || editableBooking?.passengers || editableBooking?.booking_date) {
       const fetchPrices = async() => {
@@ -84,7 +85,7 @@ function AdminBookingModal({ show, booking, isPending, onClose, onModify, isComp
           })
           // Set the fetched prices into the form
           setPrices(response.data);
-          console.log("prices are:",response.data)
+          logger.debug("prices are:",response.data)
           } catch (error) {
             console.error("Error fetching prices:", error);
           }
@@ -111,7 +112,7 @@ function AdminBookingModal({ show, booking, isPending, onClose, onModify, isComp
                 });
                 // Set the fetched prices into the form
                 setPrices(response.data);
-                console.log("Fetched prices for trip:", response.data);
+                logger.debug("Fetched prices for trip:", response.data);
               } catch (error) {
                 console.error("Error fetching prices:", error);
               }
@@ -155,9 +156,9 @@ function AdminBookingModal({ show, booking, isPending, onClose, onModify, isComp
 
   // Toggle editing mode
   const handleModify = () => {
-    console.log('prices:', {prices})
-    console.log('editableBooking: ', {editableBooking})
-    console.log('booking: ', {booking})
+    logger.debug('prices:', {prices})
+    logger.debug('editableBooking: ', {editableBooking})
+    logger.debug('booking: ', {booking})
     setIsEditing(true);
   };
 
@@ -171,20 +172,20 @@ const getUpdatedFields = (original, updated) => {
       changedFields[key] = updated[key]; // Add the changed fields to the object
     }
   });
-  console.log('Changed Fields: ', changedFields)
+  logger.debug('Changed Fields: ', changedFields)
   return changedFields;
 };
 
 // Function to add booking ID to existing object
 const addBookingID = (updatedFields, originalbooking) => {
-  console.log("tempbookingID", originalbooking.tempbookingID)
-  console.log("bookingID", originalbooking.bookingID)
+  logger.debug("tempbookingID", originalbooking.tempbookingID)
+  logger.debug("bookingID", originalbooking.bookingID)
   if (!originalbooking.bookingID) {
     updatedFields.bookingID = originalbooking.tempbookingID;
   } else {
     updatedFields.bookingID = originalbooking.bookingID;
   }
-  console.log('Added Booking ID: ', updatedFields)
+  logger.debug('Added Booking ID: ', updatedFields)
   return updatedFields
 };
 
@@ -205,8 +206,8 @@ const handleSave = async () => {
     return; 
   } else {
 
-    // console.log('bookingID in SAVE: ', booking.bookingID)
-    // console.log('all of booking: ', booking)
+    // logger.debug('bookingID in SAVE: ', booking.bookingID)
+    // logger.debug('all of booking: ', booking)
     updatedFields = addBookingID(updatedFields, booking);
     updatedFields = addUserID(updatedFields, booking);
 

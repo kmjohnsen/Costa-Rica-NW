@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ModifyUserModal from './ModifyUserModal';
 import API_BASE_URL from '../config';
+import { logger } from './HelperFunctions'
 
 
 function ModifyUserPage() {
@@ -33,7 +34,7 @@ function ModifyUserPage() {
 
   // Handle the save action in the modal
   const handleModify = (updatedFields) => {
-    console.log('updated Fields: ', updatedFields);
+    logger.debug('updated Fields: ', updatedFields);
     fetchUsers();
     setShowModal(false)
   };

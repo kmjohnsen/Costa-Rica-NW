@@ -6,12 +6,14 @@
   --light-background: #f5f8fa;
   --text-color: #e3e3e3;
   --placeholder-color: #575757;
+  --calendar-text: #575757;
   --input-background: rgb(248, 248, 250);
   --light-grey: rgb(231, 231, 231);
   --bright-white: #ffffff;
   --dark-text: rgb(20, 16, 44);
   --accent: #007bff;
   --shadow-for-box: rgba(0, 0, 0, 0.3);
+  --text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
 }
 
 body {
@@ -98,30 +100,35 @@ body {
 /* Hero Image Section */
 .hero-container {
   position: relative;
-  width: 100%;
-  height: 40vh; /* Adjust height as needed */
-  overflow: hidden; /* Prevents image from overflowing */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: var(--bright-white);
+  overflow: hidden;
+  height: 40vh;
+  color: var(--bright-white)
 }
 
 .hero-image {
   position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Ensures the image covers the area */
-  animation: zoomIn 10s infinite ease-in;
+  object-fit: cover;
+  opacity: 0;
+  animation: fadeZoom 36s linear infinite;
 }
 
-@keyframes zoomIn {
-  0% { transform: scale(1.0) translate(0, 0); }
-  100% { transform: scale(1.1) translate(-2%, -2%); }
+.hero-image:nth-child(1) { animation-delay: 0s; }
+.hero-image:nth-child(2) { animation-delay: 8s; }
+.hero-image:nth-child(3) { animation-delay: 16s; }
+.hero-image:nth-child(4) { animation-delay: 24s; }
+.hero-image:nth-child(5) { animation-delay: 32s; }
+.hero-image:nth-child(6) { animation-delay: 40s; }
+
+@keyframes fadeZoom {
+  0% { opacity: 0; transform: scale(1); }
+  5% { opacity: 1; transform: scale(1.03); }
+  33% { opacity: 1; transform: scale(1.12); }
+  38% { opacity: 0; transform: scale(1.15); }
+  100% { opacity: 0; transform: scale(1); }
 }
+
 
 .hero-text {
   position: relative; /* Keep text above the moving image */
@@ -141,7 +148,7 @@ body {
   text-align: right; /* Align text to the left */
   font-size: clamp(2rem, 5vw, 3.5rem); /* Adjusts between 2rem and 4rem based on screen width */
   margin: 5%;
-  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6); /* Dark shadow for contrast */
+  text-shadow: var(--text-shadow); /* Dark shadow for contrast */
 
 }
 
@@ -151,7 +158,7 @@ body {
   font-size: clamp(.8rem, 3vw, 1.5rem); /* Adjusts between 1rem and 2rem */
   max-width: 60%;
   margin: 5%;
-  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6); /* Dark shadow for contrast */
+  text-shadow: var(--text-shadow); /* Dark shadow for contrast */
 
 }
 
@@ -234,6 +241,7 @@ body {
   justify-content: left;
   background-color: var(--bright-white);
   align-items: center;
+  gap: 10px;
 }
 
 .flex-container input::placeholder {
@@ -359,6 +367,25 @@ input[type="search"]::-webkit-calendar-picker-indicator {
   font-family: "Helvetica", Arial, sans-serif;
 }
 
+.close-booking-button {
+  position: 'absolute';
+  top: '10px';
+  right: '10px';
+  background: 'var(--accent)';
+  color: 'var(--text-color)';
+  border-radius: '50%';
+  height: '10px';
+  width: '30px';
+  border: 'none';
+  font-size: '20px';
+  cursor: 'pointer';
+  display: 'flex';
+  align-items: 'center';
+  justify-content: 'center';
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transform: 'translateY(0px)';
+}
+
 .cancel-button {
   background-color: var(--placeholder-color);
   color: var(--text-color);
@@ -475,15 +502,34 @@ tr {
 .trip-summary-table {
   width: 100%;
   border-collapse: collapse;
+  background-color: var(--bright-white);
+  border-radius: 8px;
+  border-color: var(--bright-white);
+  overflow: hidden; /* keeps rounded corners */
+  box-shadow: var(--shadow-for-box);
+  margin: 20px 0;
+  font-family: "Helvetica", Arial, sans-serif;
+}
+
+.trip-summary-table thead {
+  background: var(--accent);
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.85rem;
 }
 
 .trip-summary-table th,
 .trip-summary-table td {
-  padding: 12px;
+  padding: 14px 16px;
   text-align: center;
-  vertical-align: center;
-  border: 1px solid #ddd;
+  border-bottom: 1px solid var(--light-grey);
 }
+
+.trip-summary-table th {
+  font-weight: 600;
+}
+
 
 /* Responsive Table */
 @media (max-width: 768px) {
@@ -495,6 +541,7 @@ tr {
   .trip-summary-table tr {
     display: block;
   }
+  
 
   .trip-summary-table thead {
     display: none;
@@ -507,6 +554,7 @@ tr {
     color: var(--dark-text);
     padding: 0px;
   }
+
 
   .trip-summary-table td {
     position: relative;

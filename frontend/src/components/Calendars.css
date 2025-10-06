@@ -1,66 +1,28 @@
-/* General calendar container */
-.calendar-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-}
+/* ============================= */
+/* Shared Button + Modal Styles  */
+/* ============================= */
 
-/* Thin border around today's date */
-.today-date {
-  border: 2px solid var(--accent) !important;
-  border-radius: 50%;
-  background-color: var(--bright-white);
-}
-
-.react-calendar {
-  width: 100%;
-  max-width: 100%;
-  background: var(--bright-white);
-  border-radius: 10px;
-  box-shadow: 0px 4px 10px var(--shadow-for-box);
-}
-
-.react-calendar__month-view__weekdays {
-  text-transform: uppercase;
-  font-size: 14px;
-  font-weight: bold;
-}
-
-/* Ensure Sunday is the first column */
-.react-calendar__month-view__days {
-  display: grid !important;
-  grid-template-columns: repeat(7, 1fr) !important;
-}
-
-/* Remove any potential red coloring */
-.react-calendar abbr[title] {
-  color: inherit !important;
-}
-
-/* Date Selector Container */
 .date-selector-container {
   position: relative;
   display: flex;
   flex-direction: row;
-  align-items: left;
+  align-items: flex-start;
+  width: 100%;
   width: 250px;
 }
 
-/* Position the chevron like in LocationDropdown */
 .chevron-container {
   position: absolute;
-  right: 12px;
+  right: 5px;
+  width: 40px;
   top: 50%;
   transform: translateY(-50%);
-  pointer-events: none; /* Prevents interaction */
+  pointer-events: none;
 }
 
-/* Adjust the button to prevent overlap */
 .date-picker-button {
   width: 100%;
   height: 49px;
-  padding: 12px 40px 12px 14px; /* Extra padding on right for chevron */
   border-radius: 8px;
   font-size: 16px;
   cursor: pointer;
@@ -69,7 +31,7 @@
   background-color: var(--bright-white);
   box-shadow: 0px 2px 5px var(--shadow-for-box);
   border: none;
-  position: relative; /* Ensure chevron positioning */
+  position: relative;
   text-align: left;
 }
 
@@ -81,13 +43,15 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* Placeholder (e.g. "Select Date") */
+.date-text.placeholder {
+  color: var(--placeholder-color, grey); /* fallback grey */
+}
 
-/* Hover Effect */
 .date-picker-button:hover {
   border-color: var(--accent);
 }
 
-/* Icon Styles */
 .calendar-icon {
   margin-right: 10px;
   color: var(--accent);
@@ -98,23 +62,164 @@
   color: var(--dark-text);
 }
 
-/* Calendar Modal */
 .calendar-modal {
   background: white;
   padding: 20px;
-  width: 650px;
+  width: 100%;
   margin: auto;
   border-radius: 12px;
   box-shadow: 0px 5px 15px var(--shadow-for-box);
   text-align: center;
 }
 
-.calendar-modal h2 {
-  font-size: 20px;
-  color: #333;
+.calendar-modal.calendar-single {
+  max-width: 500px;
 }
 
-/* Close Modal Button */
+.calendar-modal.calendar-roundtrip {
+  max-width: 800px;
+}
+
+.calendar-modal.calendar-roundtrip .rdrDayToday .rdrDayNumber span {
+  border: none !important;
+  background: transparent !important;
+  color: var(--dark-text); /* your normal day color */
+}
+
+.calendar-modal.calendar-roundtrip .rdrCalendarWrapper{
+  width: 100%;
+  margin: auto;
+  background: var(--bright-white);
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px var(--shadow-for-box);
+  border: none;
+  font-family: inherit;
+}
+
+.calendar-modal.calendar-roundtrip .rdrMonths {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 20px;
+}
+
+.calendar-modal.calendar-roundtrip .rdrMonth {
+  flex: 1;
+  min-width: 300px; 
+  max-width: 500px;
+}
+
+.calendar-modal.calendar-roundtrip .rdrWeekDays {
+  text-transform: uppercase;
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--dark-text);
+}
+
+.calendar-modal.calendar-roundtrip .rdrDays {
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr); /* 7 days per week */
+  gap: 0; /* remove spacing if you want tight rows */
+}
+
+.calendar-modal.calendar-roundtrip .rdrDay {
+  width: auto !important;
+  height: 40px !important;
+  line-height: 40px !important;
+  margin: 0 !important;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Today’s date */
+.calendar-modal.calendar-roundtrip .rdrDayToday .rdrDayNumber span {
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  padding: 4px;
+  background: var(--bright-white);
+}
+
+/* Active selection */
+.calendar-modal.calendar-roundtrip .rdrDaySelected .rdrDayNumber span,
+.calendar-modal.calendar-roundtrip .rdrDayInRange .rdrDayNumber span {
+  background: var(--accent);
+  color: white !important;
+  border-radius: 6px;
+}
+
+/* Disabled days */
+.calendar-modal.calendar-roundtrip .rdrDayPassive .rdrDayNumber span {
+  opacity: 0.5;
+  pointer-events: none;
+  color: var(--dark-grey);
+}
+
+/* Hide the default static range shortcuts like "Early" / "Continuous" */
+.calendar-modal.calendar-roundtrip .rdrStaticRanges,
+.calendar-modal.calendar-roundtrip .rdrInputRanges {
+  display: none !important;
+}
+
+/* === Roundtrip Calendar Navigation === */
+
+/* Make header a proper row: arrows on edges, month/year centered */
+.calendar-modal.calendar-roundtrip .rdrMonthAndYearWrapper {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  font-size: 16px;
+  padding: 4px 8px;
+  gap: 12px;
+}
+
+/* Center the month/year text */
+.calendar-modal.calendar-roundtrip .rdrMonthAndYearPickers {
+  flex: 1;
+  min-width: 0px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 16px;
+
+}
+
+/* Shrink arrow button containers */
+.calendar-modal.calendar-roundtrip .rdrNextPrevButton,
+.calendar-modal.calendar-roundtrip .rdrPrevButton, 
+.calendar-modal.calendar-roundtrip .rdrNextButton {
+  flex: 0 0 28px;
+  width: 28px !important;
+  height: 28px !important;
+  padding: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* Shrink the actual arrow icons */
+.calendar-modal.calendar-roundtrip .rdrNextButton i,
+.calendar-modal.calendar-roundtrip .rdrPrevButton i {
+  font-size: 14px !important;
+  line-height: 1;
+}
+
+
+
+.calendar-modal-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
 .close-modal-btn {
   margin-top: 10px;
   background-color: var(--accent);
@@ -130,66 +235,82 @@
   background-color: var(--accent);
 }
 
-/* Calendar Modal Overlay */
-.calendar-modal-overlay {
-  background-color: rgba(0, 0, 0, 0.5);
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-/* ✅ Mobile-friendly touch effect */
 @media (max-width: 1000px) {
   .date-selector-container {
     width: 100%;
   }
-}
-
-@media (max-width: 680px) {
-  .calendar-modal {
-    width: 350px;
+  .calendar-modal.calendar-roundtrip {
+    width: 90%;
+    max-width: none;
   }
 }
 
-.react-calendar__navigation__label {
-  white-space: nowrap !important;
+@media (max-width: 720px) {
+  .calendar-modal,
+  .calendar-modal.calendar-single,
+  .calendar-modal.calendar-roundtrip {
+    width: 370px !important;
+    max-width: none !important;
+  }
 }
 
-/* Grey out past dates */
-.past-date {
-  color: var(--placeholder-color) !important;
+/* ============================= */
+/* react-calendar (Single Day)   */
+/* Match RoundTrip look & remove red weekends */
+/* ============================= */
+
+.calendar-modal.calendar-single .react-calendar {
+  width: 100% !important;
+  max-width: 100%;
+  background: var(--bright-white);
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px var(--shadow-for-box);
+  border: none;
+  font-family: inherit;
 }
 
-/* Ensure past dates stay gray even on weekends */
-.react-calendar__tile.past-date {
-  color: var(--placeholder-color) !important;
+.calendar-modal.calendar-single .react-calendar__month-view__weekdays {
+  text-transform: uppercase;
+  font-size: 14px;
+  color: var(--calendar-text);
+}
+
+/* Make weekends look the same as weekdays */
+.calendar-modal.calendar-single .react-calendar__month-view__days__day--weekend {
+  color: var(--dark-text) !important;
+}
+
+/* Day tile style */
+.calendar-modal.calendar-single .react-calendar__tile {
+  border-radius: 6px;
+  padding: 10px 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Today’s date circle */
+.calendar-modal.calendar-single .react-calendar__tile--now {
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background-color: var(--bright-white);
+}
+
+/* Selected day */
+.calendar-modal.calendar-single .react-calendar__tile--active {
+  background: var(--accent) !important;
+  color: white !important;
+  border-radius: 6px;
+}
+
+/* Past/disabled days stay greyed out */
+.calendar-modal.calendar-single .react-calendar__tile:disabled {
+  opacity: 0.5;
   pointer-events: none;
+  color: var(--dark-grey) !important;
+}
+
+/* Neighboring month filler days (keep grey, not black) */
+.calendar-modal.calendar-single .react-calendar__month-view__days__day--neighboringMonth {
+  color: var(--dark-grey) !important;
   opacity: 0.6;
-}
-
-/* =========================== */
-/* ✅ FINAL COLOR FIXES (NO RED WEEKENDS) */
-/* =========================== */
-
-/* Force all weekend days black by default */
-.react-calendar__tile--weekend,
-.react-calendar__month-view__days__day--weekend,
-.react-calendar__month-view__days__day--weekend abbr,
-.react-calendar__tile--weekend abbr {
-  color: black ;
-}
-
-/* Filler days (including weekends) */
-.react-calendar__tile--neighboringMonth,
-.react-calendar__tile--neighboringMonth.abbr,
-.react-calendar__tile--neighboringMonth.react-calendar__tile--weekend,
-.react-calendar__tile--neighboringMonth.react-calendar__tile--weekend abbr {
-  color: var(--placeholder-color) !important;
-  opacity: 0.6 !important;
 }

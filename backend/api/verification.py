@@ -76,7 +76,7 @@ def send_verification():
     try:
         client = Client(account_sid, auth_token)
 
-        verification_check = client.verify.v2.services(verify_sid).verifications.create(to={phone_number}, channel="sms")
+        verification_check = client.verify.v2.services(verify_sid).verifications.create(to=phone_number, channel="sms")
 
         print(f"verif status: {verification_check.status}")
 
@@ -100,14 +100,13 @@ def verify_code():
 
         # Append '+' if missing
         if not phone_number.startswith('+'):
-            phone_number_plus = '+' + phone_number
-        print(f"phone number plus: {phone_number_plus}")
+            phone_number = '+' + phone_number
 
         # Verify the code
         client = Client(account_sid, auth_token)
 
         verification_check = client.verify.v2.services(verify_sid).verification_checks.create(
-            to=phone_number_plus,
+            to=phone_number,
             code=code
         )
 
@@ -115,20 +114,17 @@ def verify_code():
 
         if verification_check.status == "approved":
             print("verification check: approved")
-            query = "INSERT INTO booking_database.valid_phone_numbers (phone_number) VALUES (%s);"
             try:
             ## Database operation
                 conn = mysql.connector.connect(**db_config)
                 cursor = conn.cursor()
 
                 # Insert confirmation code into the database
-                cursor.execute(query, (phone_number,))
-                print(f"made it here {query}, {phone_number}")
+                cursor.execute(
+                    "INSERT IGNORE INTO booking_database.valid_phone_numbers (phone_number) VALUES (%s);",
+                    (phone_number,)
+                )
                 conn.commit()
-                
-            except Exception as e:
-                print(f"Error: {str(e)}")
-                return jsonify({'error': str(e)}), 500
             finally:
                 cursor.close()
                 conn.close()

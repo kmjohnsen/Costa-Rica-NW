@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from './NavBar'; // Import the top navigation bar
 import RequiredFieldsModal from './RequiredFieldsModal';
-import { validateEntries, formatDateYYYYMMDD } from './HelperFunctions';
+import { validateEntries, formatDateYYYYMMDD, logger } from './HelperFunctions';
 import API_BASE_URL from '../config';
 import PassengersDropdown from './PassengersDropdown'; 
 import LocationDropdown from './LocationDropdown'; 
@@ -45,7 +45,7 @@ function BookingForm() {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % heroImages.length);
-    }, 10000); // Change every 10 seconds
+    }, 12000); // Change every 12 seconds
 
     return () => clearInterval(interval);
   }, []);
@@ -180,7 +180,7 @@ function BookingForm() {
     axios.get(`${API_BASE_URL}/api/locations`)
       .then(response => {
         const destinationsData = response.data
-        console.log("pickup locations", response.data)
+        logger.debug("pickup locations", response.data)
 
         setDestinations(destinationsData);
         const longNames = Object.values(destinationsData).map(destination => destination.long); // Extract only long names
@@ -198,7 +198,7 @@ function BookingForm() {
   }, []);
 
   useEffect(() => {
-    console.log("Destinations:", destinations); // Debugging output
+    logger.debug("Destinations:", destinations); // Debugging output
   }, [destinations]);
 
   // Fetch margin used for selecting dates
@@ -215,11 +215,11 @@ function BookingForm() {
     await Promise.all(
       watchEntries.map(async (entry, index) => {
         const { pickup, dropoff, routenumber } = entry;
-        console.log("pickup, dropoff, route num, passengers", pickup, dropoff, routenumber, passengers)
+        logger.debug("pickup, dropoff, route num, passengers", pickup, dropoff, routenumber, passengers)
   
         // Ensure `pickup` and `dropoff` are set before making requests
         if (!pickup || !dropoff || !passengers) {
-          console.log(`Skipping trip ${index + 1} due to missing pickup, dropoff, or passengers.`);
+          logger.debug(`Skipping trip ${index + 1} due to missing pickup, dropoff, or passengers.`);
           return;
         }
   
@@ -231,7 +231,7 @@ function BookingForm() {
           });
           currentRouteNumber = routeResponse.data;
           setValue(`entries.${index}.routenumber`, currentRouteNumber);
-          console.log(`Fetched routenumber for trip ${index + 1}:`, currentRouteNumber);
+          logger.debug(`Fetched routenumber for trip ${index + 1}:`, currentRouteNumber);
 
           if (currentRouteNumber === 9999) {
             setIsRouteInDB(false);
@@ -263,7 +263,7 @@ function BookingForm() {
             });
   
             setValue(`entries.${index}.prices`, priceResponse.data);
-            console.log(`Fetched prices for trip ${index + 1}:`, priceResponse.data);
+            logger.debug(`Fetched prices for trip ${index + 1}:`, priceResponse.data);
           } catch (error) {
             console.error(`Error fetching prices for trip ${index + 1}:`, error);
           }
@@ -348,10 +348,10 @@ function BookingForm() {
     const formattedReturn = formatDateYYYYMMDD(returnDate);
     setValue("entries.0.date", formattedDeparture);
     setValue("entries.1.date", formattedReturn);
-    console.log("return date set as:", formattedReturn);
-    console.log("Raw returnDate:", returnDate);
-  console.log("Local returnDate:", returnDate.toString());
-  console.log("UTC returnDate:", returnDate.toISOString());
+    logger.debug("return date set as:", formattedReturn);
+    logger.debug("Raw returnDate:", returnDate);
+  logger.debug("Local returnDate:", returnDate.toString());
+  logger.debug("UTC returnDate:", returnDate.toISOString());
   };
   
   const handleTripTypeChange = (value) => {
@@ -408,16 +408,16 @@ function BookingForm() {
   // Log values whenever they are updated
   useEffect(() => {
     watchEntries.forEach((trip, index) => {
-      console.log("Watch Entries :", {watchEntries});
-      console.log(`Entry ${index + 1}:`);
-      console.log("Pickup:", trip.pickup);
-      console.log("Dropoff:", trip.dropoff);
-      console.log("Pickup Detailed:", trip.pickupdetailed);
-      console.log("Dropoff Detailed:", trip.dropoffdetailed);
-      console.log("Date:", trip.date);
-      console.log("Passengers:", passengers);
-      console.log("Prices:", trip.prices);
-      // console.log("Destinations", destinations);
+      logger.debug("Watch Entries :", {watchEntries});
+      logger.debug(`Entry ${index + 1}:`);
+      logger.debug("Pickup:", trip.pickup);
+      logger.debug("Dropoff:", trip.dropoff);
+      logger.debug("Pickup Detailed:", trip.pickupdetailed);
+      logger.debug("Dropoff Detailed:", trip.dropoffdetailed);
+      logger.debug("Date:", trip.date);
+      logger.debug("Passengers:", passengers);
+      logger.debug("Prices:", trip.prices);
+      // logger.debug("Destinations", destinations);
     });
   }, [watchEntries, passengers]);
 
@@ -437,7 +437,7 @@ function BookingForm() {
   const handleBookClick = () => {
     // Toggle the `isHeroExpanded` state when Book is clicked
     setIsHeroExpanded((prev) => !prev);
-    console.log("hero expanded", isHeroExpanded)
+    logger.debug("hero expanded", isHeroExpanded)
     scrollToTop()
   };
   
@@ -507,7 +507,7 @@ function BookingForm() {
       return;
     }
 
-    console.log("Request type:", requestType)
+    logger.debug("Request type:", requestType)
     navigate('/completebooking', { state: { requestType, entries, passengers, isLargeGroup, isDateValid } })
   };
   
@@ -563,13 +563,14 @@ function BookingForm() {
 
       {/* Hero Section with Background Image */}
       <div className="hero-container">
-        <img
-          src={heroImages[currentImageIndex]}
-          alt="Travel Destination"
-          className={`hero-image ${
-            currentImageIndex % 2 === 0 ? "ken-burns-zoom-in" : "ken-burns-zoom-out"
-          }`}
-        />
+        {heroImages.map((src, index) => (
+          <img
+            key={index}
+            src={src}
+            alt="Travel Destination"
+            className={`hero-image ${index === currentImageIndex ? "active" : ""}`}
+          />
+        ))}
         <div className="hero-text">
           <h1>Stress-Free Airport Transfers</h1>
           <h2>Explore Northwest Costa Rica with safe, reliable, and convenient transportation.</h2>
@@ -628,7 +629,7 @@ function BookingForm() {
                   isOpen={locationNotInDBModalIsOpen}
                   onRequestClose={() => setLocationNotInDBModalIsOpen(false)}
                   contentLabel="Location not listed"
-                  className="calendar-modal"
+                  className="calendar-modal calendar-roundtrip"
                   overlayClassName="calendar-modal-overlay"
                 >
                   <h2>Location Not Listed</h2>
@@ -662,18 +663,7 @@ function BookingForm() {
 
                   <CalendarRoundTrip 
                     onDateChange={handleDateChangeRoundTrip} 
-                    label={
-                      watchEntries[0]?.date 
-                        ? "Dates" 
-                        : "Select Dates"}
-                    tileDisabled={({ date }) => date < new Date()}
-                    tileClassName={({ date }) => {
-                      const today = new Date();
-                      // Strip time so comparison is accurate
-                      const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-                      const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-                      return dateOnly < todayOnly ? 'past-date' : '';
-                    }}              
+                    label={watchEntries[0]?.date ? "Dates" : "Select Dates"}
                   />
                   
                 </div>
@@ -686,7 +676,7 @@ function BookingForm() {
                     isOpen={locationNotInDBModalIsOpen}
                     onRequestClose={() => setLocationNotInDBModalIsOpen(false)}
                     contentLabel="Location not listed"
-                    className="calendar-modal"
+                    className="calendar-modal calendar-single"
                     overlayClassName="calendar-modal-overlay"
                   >
                     <h2>Location Not Listed</h2>

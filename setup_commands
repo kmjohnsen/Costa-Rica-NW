@@ -16,7 +16,7 @@ flask run
 
 # bash:
 cd  C:/Users/kmjoh/Documents/VSCode/reacttest/backend
-.venv/Scripts/activate
+source .venv/Scripts/activate
 export FLASK_ENV="development"
 export FLASK_APP="C:/Users/kmjoh/Documents/VSCode\reacttest/backend/server.py"
 flask run --debug
@@ -57,12 +57,9 @@ ps aux | grep gunicorn
 #error check
 sudo journalctl -u gunicorn.service --no-pager -n 50
 
-
 #FYI - ssh files here:
 Certificate is saved at: /etc/letsencrypt/live/costaricanorthwest.com/fullchain.pem
 Key is saved at:         /etc/letsencrypt/live/costaricanorthwest.com/privkey.pem
-
-
 
 #Start serve
 http-server build -p 3000 --cors --host 0.0.0.0

@@ -50,32 +50,35 @@ bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 # ✅ Allow CORS for both localhost (dev) and EC2 (prod)
 
-RUNNING_LOCAL = os.getenv("RUNNING_LOCAL", "False") == "True"
-
-ALLOWED_ORIGINS = ["https://costaricanorthwest.com"]
 if RUNNING_LOCAL:
-    ALLOWED_ORIGINS.extend([
+    ALLOWED_ORIGINS = ([
         "http://localhost:3000",
-        "http://127.0.0.1:3000"
+        "http://127.0.0.1:3000",
+        "http://localhost:5000"
     ])
+else:
+    ALLOWED_ORIGINS = ["https://costaricanorthwest.com"]
     
-CORS(app, resources={r"/*": {"origins": ALLOWED_ORIGINS, "supports_credentials": True}}, methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+CORS(app, resources={r"/api/*": {"origins": ALLOWED_ORIGINS, "supports_credentials": True}})
 
 # Ensure the response includes Cross-Origin headers
 @app.after_request
-def add_cors_headers(response):
-    origin = request.headers.get('Origin')
-    if origin in ALLOWED_ORIGINS:
-        response.headers["Access-Control-Allow-Origin"] = origin
-    else:
-        response.headers["Access-Control-Allow-Origin"] = "https://costaricanorthwest.com"
-    
+def add_security_headers(response):
     response.headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups"
     response.headers["Cross-Origin-Embedder-Policy"] = "require-corp"
-    response.headers["Access-Control-Allow-Credentials"] = "true"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-    response.headers["Referrer-Policy"] = "no-referrer-when-downgrade"  # Prevents cross-origin restrictions
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://apis.google.com; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data:; "
+        "font-src 'self'; "
+        "connect-src 'self' https://costaricanorthwest.com http://localhost:5000 http://127.0.0.1:5000; "
+        "http://localhost:3000 http://127.0.0.1:3000; "
+    )
+    response.headers["Referrer-Policy"] = "no-referrer-when-downgrade"
     return response
 
 # Register blueprints directly

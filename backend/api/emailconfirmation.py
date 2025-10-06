@@ -61,7 +61,7 @@ def create_email(subject, html_body, sender_name=DEFAULT_SENDER_NAME, sender_ema
     return msg
 
 
-def send_smtp_email(msg, sender_email, recipient_emails):
+def send_smtp_email(base_msg, sender_email, recipient_emails):
     if isinstance(recipient_emails, str):
         recipient_emails = [recipient_emails]
 
@@ -69,10 +69,19 @@ def send_smtp_email(msg, sender_email, recipient_emails):
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls()
             server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+
             for email in recipient_emails:
+                # Clone the base message
+                msg = MIMEMultipart("related")
+                msg["From"] = base_msg["From"]
+                msg["Subject"] = base_msg["Subject"]
                 msg["To"] = email
+
+                for part in base_msg.get_payload():
+                    msg.attach(part)
+
+                print(f"Sending to: {email}")
                 server.sendmail(sender_email, email, msg.as_string())
-        print("Email sent successfully!")
     except Exception as e:
         print(f"Email sending failed: {e}")
 

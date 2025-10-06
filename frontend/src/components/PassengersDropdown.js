@@ -15,7 +15,7 @@ const PassengersDropdown = ({ selectedPassengers, onPassengerChange }) => {
         className="dropdown-button"
         onClick={() => setShowOptions(!showOptions)}
       >
-        <FontAwesomeIcon icon={faUser} style={{ marginRight: "8px" }} /> {/* User Icon */}
+        <FontAwesomeIcon icon={faUser} style={{ marginRight: "8px" }} />
         <span>{selectedPassengers} {selectedPassengers === "1" ? "Passenger" : "Passengers"}</span>
         <FontAwesomeIcon 
           icon={faChevronDown} 
