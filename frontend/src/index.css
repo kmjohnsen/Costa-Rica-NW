@@ -1,7 +1,11 @@
 /* Define color variables */
 :root {
+  /* Brand colors */
+  --accent: #007bff;
   --primary-color: #00601d;
   --secondary-color: #cc2e2e;
+
+  /* Neutral palette */
   --dark-background: rgb(20, 16, 44);
   --light-background: #f5f8fa;
   --text-color: #e3e3e3;
@@ -11,14 +15,26 @@
   --light-grey: rgb(231, 231, 231);
   --bright-white: #ffffff;
   --dark-text: rgb(20, 16, 44);
-  --accent: #007bff;
+
+  /* Effects */
   --shadow-for-box: rgba(0, 0, 0, 0.3);
   --text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
+  --rounded-edges: 8px;
+
+  /* Typography */
+  --font-family-main: "Helvetica", Arial, sans-serif;
+  --font-size-small: 0.8rem;
+  --font-size-base: 1rem;
+  --font-size-large: 1.5rem;
+
+  /* Transitions and spacing */
+  --padding-base: 10px;
+  --margin-base: 10px;
 }
 
 body {
   margin: 0;
-  font-family: "Helvetica", Arial, sans-serif;
+  font-family: var(--font-family-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   padding: 0;
@@ -26,22 +42,22 @@ body {
   height: 100%;
   overflow-x: hidden; /* Prevent horizontal scrolling */
   color: #333;
-  background-color: var(--light-background); /* Light background */
+  background-color: var(--light-background);
 }
 
 .site-header {
-  text-align: center; /* Center-align the text */
-  padding: 20px 0px; /* Padding for spacing */
-  border-radius: 8px; /* Rounded corners */
-  max-width: 800px; /* Limit the width for readability */
-  margin: 10px auto; /* Center the element horizontally with margin */
+  text-align: center;
+  padding: 20px 0px; 
+  border-radius: var(--rounded-edges);
+  max-width: 800px; 
+  margin: 10px auto;
 }
 
 .site-header p {
-  font-size: 1.1rem; /* Adjust font size for readability */
-  color: #171717; /* Darker color for contrast */
-  line-height: 1.4; /* Increased line height for readability */
-  margin: 0; /* Remove default margin */
+  font-size: 1.1rem; 
+  color: #171717;
+  line-height: 1.4; 
+  margin: 0; 
 }
 
 .App {
@@ -85,15 +101,15 @@ body {
 
 .large-textarea {
   width: 95%;
-  height: 70px; /* Set desired height */
-  overflow-wrap: break-word; /* Ensures long words break onto the next line */
-  word-wrap: break-word; /* Supports older browsers */
-  white-space: normal; /* Prevents the text from continuing on one line */
+  height: 70px; 
+  overflow-wrap: break-word; 
+  word-wrap: break-word; 
+  white-space: normal; 
   background-color: var(--input-background);
-  font-family: "Helvetica", Arial, sans-serif;
+  font-family: var(--font-family-main);
   color: var(--dark-text);
-  border: 1px solid var(--placeholder-color); /* Set solid border */
-  border-radius: 8px;
+  border: 1px solid var(--placeholder-color);
+  border-radius: var(--rounded-edges);
   resize: none;
 }
 
@@ -131,34 +147,34 @@ body {
 
 
 .hero-text {
-  position: relative; /* Keep text above the moving image */
+  position: relative; 
   z-index: 2;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
-  align-items: flex-end; /* Aligns content to the right */
-  text-align: right; /* Aligns text to the right */
-  width: 80%; /* Adjust width */
+  align-items: flex-end; 
+  text-align: right; 
+  width: 80%;
   max-width: 800px;
 }
 
 .hero-text h1 {
-  top: 15%; /* Adjust vertical positioning */
-  text-align: right; /* Align text to the left */
-  font-size: clamp(2rem, 5vw, 3.5rem); /* Adjusts between 2rem and 4rem based on screen width */
+  top: 15%; 
+  text-align: right; 
+  font-size: clamp(2rem, 5vw, 3.5rem); 
   margin: 5%;
-  text-shadow: var(--text-shadow); /* Dark shadow for contrast */
+  text-shadow: var(--text-shadow);
 
 }
 
 .hero-text h2 {
-  top: 15%; /* Adjust vertical positioning */
-  text-align: right; /* Align text to the left */
-  font-size: clamp(.8rem, 3vw, 1.5rem); /* Adjusts between 1rem and 2rem */
+  top: 15%;
+  text-align: right; 
+  font-size: clamp(.8rem, 3vw, 1.5rem); 
   max-width: 60%;
   margin: 5%;
-  text-shadow: var(--text-shadow); /* Dark shadow for contrast */
+  text-shadow: var(--text-shadow); 
 
 }
 
@@ -199,7 +215,7 @@ body {
 .other-request-form {
   width: 100%;
   box-sizing: border-box;
-  padding: 20px; /* Adjust padding as needed */
+  padding: 20px; 
 }
 
 /* Booking Form Box */
@@ -215,47 +231,30 @@ body {
   z-index: 10;
 }
 
-.flex-container-spaced {
+.flex-container-spaced 
+.flex-container-centered
+.flex-container
+.flex-container-completebooking{
   display: flex;
-  flex-wrap: wrap; /* Ensures wrapping on smaller screens */
-  justify-content: space-between; /* Aligns items properly */
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px; /* Adds spacing between elements */
-  padding: 10px 0; /* Optional: Adds vertical spacing */
+  gap: 10px; 
+  padding: 10px 0; 
   width: 100%;
 }
 
-.flex-container-centered {
-  display: flex;
-  flex-wrap: wrap; /* Ensures wrapping on smaller screens */
-  justify-content: center; /* Aligns items properly */
-  align-items: center;
-  gap: 10px; /* Adds spacing between elements */
-  padding: 0px 0; /* Optional: Adds vertical spacing */
-  width: 100%;
-}
+.flex-container-spaced {  justify-content: space-between; }
+.flex-container-centered .flex-container-completebooking {  justify-content: center; }
+.flex-container {  justify-content: left; background-color: var(--bright-white); }
 
-.flex-container {
-  display: flex;
-  flex-wrap: wrap; /* Allows wrapping on smaller screens */
-  justify-content: left;
-  background-color: var(--bright-white);
-  align-items: center;
-  gap: 10px;
-}
 
 .flex-container input::placeholder {
-  color: var(--text-color); /* White color for placeholder text */
-  opacity: 1; /* Ensures full visibility of placeholder text */
-  font-family: "Helvetica", Arial, sans-serif;
+  color: var(--text-color); 
+  opacity: 1; 
+  font-family: var(--font-family-main);
 }
 
 .flex-container-completebooking {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
   max-width: 800px;
   margin: 0 auto; 
   background-color: var(--bright-white);
@@ -264,52 +263,52 @@ body {
 .input-container, 
 .input-container-bottom,
 .input-container-light {
-  padding: 0px ; /* Padding inside the container */
+  padding: 0px ; 
   display: flex;
   flex-direction: column;
-  margin-bottom: 4px; /* Space below the box */
+  margin-bottom: 4px; 
   align-items: center;
-  font-family: "Helvetica", Arial, sans-serif;
+  font-family: var(--font-family-main);
 }
 
 .input-container, 
 .input-container-bottom {
-  background-color: var(--input-background); /* White background for the box */
+  background-color: var(--input-background); 
   color: var(--text-color)
 }
 
 .input-container-light {
-  background-color: var(--bright-white); /* White background for the box */
+  background-color: var(--bright-white); 
   color: black;
-  border-radius: 8px; /* Rounded edges */
+  border-radius: var(--rounded-edges);
   border: black;
-  padding: 10px ; /* Padding inside the container */
-  margin-bottom: 0px; /* Space below the box */
+  padding: 10px ;
+  margin-bottom: 0px; 
   margin: 5px;
   align-items: center;
 }
 
 .input-container input::placeholder {
-  color: var(--placeholder-color); /* White color for placeholder text */
-  opacity: 1; /* Ensures full visibility of placeholder text */
-  font-family: "Helvetica", Arial, sans-serif;
+  color: var(--placeholder-color); 
+  opacity: 1; 
+  font-family: var(--font-family-main);
 }
 
 .input-container label {
   font-weight: bold;
   color: var(--text-color);
   font-size: 0.7rem;
-  margin-bottom: 4px; /* Space between label and input */
+  margin-bottom: 4px;
   justify-content: center;
 }
 
 .input-container input {
-  width: 100%; /* Full width inside the container */
-  padding: 10px;
-  font-size: 1rem;
+  width: 100%; 
+  padding: var(--padding-base);
+  font-size: var(--font-size-base);
   color: var(--text-color);
   background-color: var(--dark-background);
-  border: 1px solid var(--placeholder-color); /* Set solid border */
+  border: 1px solid var(--placeholder-color); 
   box-sizing: border-box;
   box-shadow: none;
   text-align: center;
@@ -318,7 +317,7 @@ body {
 
 .input-container select {
   background-color: var(--dark-background);
-  color: var(--text-color); /* Match text color */
+  color: var(--text-color); 
   border: none;
   outline: none;
   box-shadow: none;
@@ -328,18 +327,18 @@ body {
   font-weight: bold;
   color: black;
   font-size: 0.7rem;
-  margin-bottom: px; /* Space between label and input */
+  margin-bottom: 0px; 
   justify-content: center;
 }
 
 .input-container-light input, select {
-  width: 100%; /* Full width inside the container */
-  padding: 10px;
-  font-size: 1rem;
+  width: 100%; 
+  padding: var(--padding-base);
+  font-size: var(--font-size-base);
   color: black;
   background-color: var(--input-background);
-  border: 1px solid var(--placeholder-color); /* Set solid border */
-  border-radius: 8px;
+  border: 1px solid var(--placeholder-color); 
+  border-radius: var(--rounded-edges);
   box-shadow: none;
   text-align: center;
 }
@@ -362,9 +361,9 @@ input[type="search"]::-webkit-calendar-picker-indicator {
   box-shadow: none;
   outline: none;
   padding: 10px 30px;
-  font-size: 1rem;
-  margin-bottom: 10px; /* Space between label and input */
-  font-family: "Helvetica", Arial, sans-serif;
+  font-size: var(--font-size-base);
+  margin-bottom: var(--margin-base); 
+  font-family: var(--font-family-main);
 }
 
 .close-booking-button {
@@ -394,9 +393,9 @@ input[type="search"]::-webkit-calendar-picker-indicator {
   box-shadow: none;
   outline: none;
   padding: 10px 30px;
-  font-size: 1rem;
-  margin-bottom: 10px; /* Space between label and input */
-  font-family: "Helvetica", Arial, sans-serif;
+  font-size: var(--font-size-base);
+  margin-bottom: var(--margin-base); 
+  font-family: var(--font-family-main);
   border-radius: 0; 
 }
 
@@ -412,25 +411,25 @@ input[type="search"]::-webkit-calendar-picker-indicator {
 
 /* Content section that grows with the page */
 .content {
-  flex: 1; /* This makes the content area expand to take up remaining space */
+  flex: 1; 
 }
 
 /* For the links to Home and Login at the page bottom */
 .footer-links {
   position: relative;
-  padding: 10px;
+  padding: var(--padding-base);
   text-align: center;
 }
 
 .styled-checkbox {
   display: inline-block;
   position: relative;
-  padding-left: 30px; /* Space for the checkbox */
+  padding-left: 30px;
   font-size: 1.5rem;
   color: var(--placeholder-color);
   cursor: pointer;
   user-select: none;
-  font-family: "Helvetica", Arial, sans-serif;
+  font-family: var(--font-family-main);
 }
 
 .styled-checkbox:before {
@@ -445,19 +444,19 @@ input[type="search"]::-webkit-calendar-picker-indicator {
   border-radius: 4px; /* Rounded checkbox */
   background-color: #fff;
   box-sizing: border-box;
-  display: flex; /* Enable flexbox for centering */
+  display: flex; 
   justify-content: center;
   align-items: center;
 }
 
 .styled-checkbox:after {
-  content: "✔"; /* Unicode for checkmark */
+  content: "✔"; 
   position: absolute;
   top: 50%;
-  transform: translate(-175%, -50%); /* Center the checkmark */
-  font-size: 1.2rem; /* Adjust size */
-  color: var(--accent); /* Color of the checkmark */
-  display: none; /* Hidden by default */
+  transform: translate(-175%, -50%); 
+  font-size: 1.2rem; 
+  color: var(--accent); 
+  display: none; 
 }
 
 input[type="checkbox"]:checked + .styled-checkbox:after {
@@ -467,26 +466,26 @@ input[type="checkbox"]:checked + .styled-checkbox:after {
 table {
   width: 100%;
   border: none;
-  border-collapse: collapse; /* Removes the spacing between cells */
+  border-collapse: collapse; 
 }
 
 td {
-  padding: 4px 8px; /* Reduces the space within each cell */
-  border: none; /* Makes the cell borders invisible */
+  padding: 4px 8px; 
+  border: none; 
 }
 
 tr {
-  margin: 0; /* Removes extra space between rows */
+  margin: 0;
   padding: 0;
   border: none;
 }
 
 .left-column {
-  width: 30%; /* Set the width of the left column */
+  width: 30%; 
 }
 
 .right-column {
-  width: 70%; /* Set the width of the right column */
+  width: 70%; 
 }
 
 .trip-summary {
@@ -503,12 +502,12 @@ tr {
   width: 100%;
   border-collapse: collapse;
   background-color: var(--bright-white);
-  border-radius: 8px;
+  border-radius: var(--rounded-edges);
   border-color: var(--bright-white);
-  overflow: hidden; /* keeps rounded corners */
+  overflow: hidden; 
   box-shadow: var(--shadow-for-box);
   margin: 20px 0;
-  font-family: "Helvetica", Arial, sans-serif;
+  font-family: var(--font-family-main);
 }
 
 .trip-summary-table thead {
@@ -550,7 +549,7 @@ tr {
   .trip-summary-table tr {
     margin-bottom: 1rem;
     border: 1px solid #ccc;
-    border-radius: 8px;
+    border-radius: var(--rounded-edges);
     color: var(--dark-text);
     padding: 0px;
   }
@@ -587,7 +586,7 @@ input[type="time"] {
   font-size: 1.5rem;
   text-align: center;
   width: 100%;
-  padding: 10px;
+  padding: var(--padding-base);
   background-color: var(--dark-background);
   color: var(--text-color);
   border: none;
@@ -596,13 +595,13 @@ input[type="time"] {
 
 /* Default grey color for unselected time */
 input[type="time"].time-default {
-  color: #999 !important; /* Grey when default */
-  opacity: 1; /* Ensures visibility */
+  color: #999 !important; 
+  opacity: 1; 
 }
 
 /* White color when a time is selected */
 input[type="time"].time-selected {
-  color: white !important; /* White when selected */
+  color: white !important;
 }
 
 /* Mobile Optimization */
@@ -622,7 +621,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 /* Safari fix for iOS */
 input[type="time"]::-webkit-datetime-edit {
-  color: white; /* Ensures text inside the input is white */
+  color: white; 
 }
 
 
@@ -630,12 +629,12 @@ input[type="time"]::-webkit-datetime-edit {
   background-color: var(--light-background);
   color: var(--dark-background);
   width: 90%;
-  max-width: 1000px; /* Ensures the width doesn’t exceed 90% */
-  margin: 0 auto; /* Centers the element horizontally */
+  max-width: 1000px; 
+  margin: 0 auto;
   display: flex;
-  flex-direction: column; /* Stack children vertically */
-  justify-content: center; /* Horizontally centers content within the section */
-  padding: 20px; /* Optional padding for inner spacing */
+  flex-direction: column; 
+  justify-content: center; 
+  padding: 20px; 
 }
 
 .bottom-section h2 {
@@ -680,7 +679,7 @@ input[type="time"]::-webkit-datetime-edit {
   }
 
   .booking-header h3 {
-    font-size: 1rem; /* Smaller font size for the subheading */
+    font-size: var(--font-size-base); /* Smaller font size for the subheading */
   }
 
   .booking-form-container {
@@ -713,7 +712,7 @@ input[type="time"]::-webkit-datetime-edit {
 @media (max-width: 480px) {
   .booking-page-container {
     width: 90%;
-    padding-top: 180px; /* Further increase padding for small screens */
+    padding-top: 180px; 
   }
 
   .booking-header h1 {
@@ -803,7 +802,7 @@ input[type="time"]::-webkit-datetime-edit {
 .custom-phone-input .country-list {
   background-color: var(--light-background) !important; /* Ensures custom background */
   color: var(--dark-text); /* Ensures text color */
-  border-radius: 8px; /* Matches rounded style */
+  border-radius: var(--rounded-edges); 
 }
 
 .custom-phone-input input::placeholder {
@@ -812,10 +811,10 @@ input[type="time"]::-webkit-datetime-edit {
 }
 
 .custom-phone-input .flag {
-  width: 30px; /* Adjusts the width of the flag */
-  height: 20px; /* Adjusts the height of the flag */
+  width: 30px; 
+  height: 20px; 
 }
 
 .custom-phone-input .flag-dropdown .selected-flag {
-  padding-right: 10px; /* Adjusts padding around the flag icon if needed */
+  padding-right: 10px; 
 }
