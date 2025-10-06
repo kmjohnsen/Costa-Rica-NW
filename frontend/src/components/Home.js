@@ -534,8 +534,8 @@ function BookingForm() {
         isOpen={isSuccessModalOpen}
         onRequestClose={() => setIsSuccessModalOpen(false)}
         contentLabel="Success Modal"
-        className="calendar-modal"
-        overlayClassName="calendar-modal-overlay"
+        className="Modal-for-popup"
+        overlayClassName="Overlay-for-popup"
       >
         <h2>Transportation Request Successfully Sent!</h2>
         <p>We will reach out shortly to confirm your trip.</p>

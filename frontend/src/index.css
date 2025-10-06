@@ -707,6 +707,11 @@ input[type="time"]::-webkit-datetime-edit {
   .flex-container-spaced{
     width: 100%;
   }
+
+  /* Hero Image Section */
+  .hero-container {
+    height: 30vh;
+  }
 }
 
 /* Media query for even smaller screens (mobile devices) */
