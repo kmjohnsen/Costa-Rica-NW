@@ -231,9 +231,9 @@ body {
   z-index: 10;
 }
 
-.flex-container-spaced 
-.flex-container-centered
-.flex-container
+.flex-container-spaced,
+.flex-container-centered,
+.flex-container,
 .flex-container-completebooking{
   display: flex;
   flex-wrap: wrap;
@@ -243,10 +243,11 @@ body {
   width: 100%;
 }
 
-.flex-container-spaced {  justify-content: space-between; }
-.flex-container-centered .flex-container-completebooking {  justify-content: center; }
+.flex-container-spaced {  justify-content: space-between; padding-bottom: 0; }
+.flex-container-centered, .flex-container-completebooking {  justify-content: center; }
 .flex-container {  justify-content: left; background-color: var(--bright-white); }
-
+.flex-container-centered { padding-top: 0; }
+.flex-container-centered .book-button { margin-top: 0; }
 
 .flex-container input::placeholder {
   color: var(--text-color); 
