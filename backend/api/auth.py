@@ -4,6 +4,7 @@ import logging
 import mysql.connector
 from functools import wraps
 from flask import Blueprint, jsonify, request
+from contextlib import contextmanager
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import (
     create_access_token, jwt_required, get_jwt_identity,
@@ -14,10 +15,10 @@ from google.auth.transport import requests
 
 # Logging setup
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
-gunicorn_logger = logging.getLogger("gunicorn.error")
+logger = logging.getLogger("auth")
 
 # Blueprint
-authorize_bp = Blueprint('authorize', __name__)
+authorize_bp = Blueprint("authorize", __name__)
 bcrypt = Bcrypt()
 
 # Environment config
@@ -30,187 +31,112 @@ db_config = {
 }
 
 CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")  
+WHITELISTED_EMAILS = [e.strip().lower() for e in os.getenve("WHITELISTED_EMAILS", "").split(",") if e.strip()]
+
+TABLE_USERS = "booking_database.user_information"
+
+@contextmanager
+def get_db_cursor(dictionary=False):
+    """Context manager for MySQL connections."""
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor(dictionary=dictionary)
+    try:
+        yield conn, cursor
+    finally:
+        cursor.close()
+        conn.close()
+
+def error_response(message, status=400, error="Bad Request"):
+    """Standardized error JSON response."""
+    return jsonify({"error": error, "message": message}), status
+
+
+def generate_access_token(email, role):
+    """Generates a signed JWT access token."""
+    return create_access_token(identity=email, additional_claims={"role": role})
+
 
 # Admin-only access decorator
-def admin_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
+def admin_required(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
         verify_jwt_in_request()
         claims = get_jwt()
-        email = get_jwt_identity()
+        email = get_jwt_identity().lower()
 
-        whitelist = os.getenv("WHITELISTED_EMAILS", "")
-        allowed_emails = [e.strip().lower() for e in whitelist.split(",") if e.strip()]
-        if email.lower() not in allowed_emails or claims.get("role") not in ["admin", "dev"]:
-            return jsonify({'error': 'Access denied'}), 403
+        if email not in WHITELISTED_EMAILS or claims.get("role") not in ["admin", "dev"]:
+            logger.warning(f"Unauthorized access attempt by {email}")
+            return error_response("Access denied", 403, "Forbidden")
 
-        return f(*args, **kwargs)
-    return decorated
+        return fn(*args, **kwargs)
+    return wrapper
 
 
 @authorize_bp.route('/api/auth/verify-token', methods=['GET'])
 @jwt_required()
 def verify_token():
     try:
-        auth_header = request.headers.get("Authorization")
-        print(f"Authorization header received: {auth_header}")
+        email = get_jwt_identity()
+        role = get_jwt().get("role")
+        if not isinstance(email, str):
+            return error_response("Invalid token format", 422)
 
-        if not auth_header or not auth_header.startswith("Bearer "):
-            print("Missing or malformed Authorization header")
-            return jsonify({"error": "Missing or malformed Authorization header"}), 400
-
-        current_email = get_jwt_identity()  # ✅ Extract email as a string
-        current_role = get_jwt()["role"]  # ✅ Extract role from claims
-
-        if not isinstance(current_email, str):
-            print(f"Invalid JWT Payload: {current_email}")  # ✅ Debugging
-            return jsonify({"error": "Invalid JWT format"}), 422
-
-        current_user = {"email": current_email, "role": current_role}
-
-        return jsonify(logged_in_as=current_user), 200
+        return jsonify({"logged_in_as": {"email": email, "role": role}}), 200
 
     except Exception as e:
-        print(f"JWT verification error: {e}")
-        return jsonify({'error': 'Token verification failed', 'message': str(e)}), 500
+        logger.error(f"Token verification failed: {e}")
+        return error_response(str(e), 500, "Token Verification Failed")
+
+
+def _verify_google_token(token):
+    """Verifies Google OAuth2 token and returns user info."""
+    try:
+        return id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
+    except ValueError as e:
+        logger.warning(f"Invalid Google token: {e}")
+        return None
+
+
+def _get_user_by_email(email):
+    """Retrieves a user record by email."""
+    with get_db_cursor(dictionary=True) as (_, cursor):
+        cursor.execute(
+            f"SELECT * FROM {TABLE_USERS} WHERE Email = %s AND role IN ('dev','admin')", (email,)
+        )
+        return cursor.fetchone()
 
 # Google Authorization
 @authorize_bp.route('/api/auth/google', methods=['POST'])
 def google_auth():
-    token = request.json.get('idToken')
-    print(f"Received token (first 50 chars): {token[:50]}...")
+    token = request.json.get("idToken")
+    if not token:
+        return error_response("Missing Google ID token")
 
-    conn = None
-    cursor = None
-    try:
-        conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor(dictionary=True)
-        print("Connected to MySQL successfully.")
+    idinfo = _verify_google_token(token)
+    if not idinfo:
+        return error_response("Invalid Google token", 401)
 
-        # ✅ Verify the Google token safely
-        idinfo = None
-        try:
-            idinfo = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
-            print(f"Google Token Verified: {idinfo}")
-        except ValueError as e:
-            print(f"Google token verification failed: {e}")
-            return jsonify({'error': 'Invalid Google token', 'message': str(e)}), 401
-        
-        if not idinfo:
-            return jsonify({'error': 'Google token verification failed'}), 401
+    email = idinfo.get("email")
+    if not email:
+        return error_response("Email not found in token", 400)
 
-        email = idinfo.get('email')
-        print(f"Extracted email from Google token: {email}")
+    user = _get_user_by_email(email)
+    if not user:
+        return error_response("User not found or unauthorized", 403, "Forbidden")
 
-        # ✅ Check if the user exists in the database
-        cursor.execute("SELECT * FROM booking_database.user_information WHERE Email = %s AND (role = 'dev' OR role = 'admin')", (email,))
-        user = cursor.fetchone()
+    access_token = generate_access_token(user["Email"], user["role"])
+    logger.info(f"Google login success: {email}")
 
-        if user:
-            print(f"User found in database: {user}")
-            access_token = create_access_token(
-                identity=user['Email'],  # ✅ Store only the email as a string
-                additional_claims={'role': user['role']}  # ✅ Store role separately
-            )
-            return jsonify({'status': 'success', 'access_token': access_token, 'user': {'id': user['userID'], 'email': user['Email'], 'name': user['FirstName']}}), 200
-        else:
-            print(f"User {email} not found or does not have admin/dev role.")
-            return jsonify({'error': 'User not found'}), 404
+    return jsonify({
+        "status": "success",
+        "access_token": access_token,
+        "user": {"id": user["userID"], "email": user["Email"], "name": user["FirstName"]},
+    }), 200
 
-    except mysql.connector.Error as db_err:
-        print(f"Database error: {db_err}")
-        return jsonify({'error': 'Database error', 'message': str(db_err)}), 500
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-        return jsonify({'error': 'Unexpected error', 'message': str(e)}), 500
-    finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
-
-# Register route
-@authorize_bp.route('/api/register', methods=['POST'])
-def register():
-    data = request.json
-    email = data.get('email')
-    password = data.get('password')
-    firstname = data.get('firstName')
-    lastname = data.get('lastName')
-    phonenumber = data.get('phoneNumber')
-
-    if not email or not password:
-        return jsonify({'error': 'Email and password are required'}), 400
-
-    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-
-    conn = None
-    cursor = None
-    try:
-        conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor()
-        query = """
-            INSERT INTO booking_database.user_information (Email, FirstName, LastName, UserPassword, PhoneNumber) 
-            VALUES (%s, %s, %s, %s, %s)
-            ON DUPLICATE KEY UPDATE 
-                UserPassword = VALUES(UserPassword), 
-                FirstName = VALUES(FirstName), 
-                LastName = VALUES(LastName), 
-                PhoneNumber = VALUES(PhoneNumber);
-        """
-        cursor.execute(query, (email, firstname, lastname, hashed_password, phonenumber))
-        conn.commit()
-        return jsonify({'message': 'User registered successfully'}), 201
-    except mysql.connector.Error as err:
-        print(f"MySQL Error: {err}")
-        return jsonify({'error': f'MySQL Error: {err}'}), 500
-    except Exception as e:
-        print(f"Unexpected Error: {e}")
-        return jsonify({'error': f'Unexpected Error: {e}'}), 500
-    finally:
-        if cursor is not None:
-            cursor.close()
-        if conn is not None:
-            conn.close()
-
-# Login route
-@authorize_bp.route('/api/login', methods=['POST'])
-def login():
-    data = request.json
-    email = data.get('email')
-    password = data.get('password')
-
-    if not email or not password:
-        return jsonify({'error': 'Email and password are required'}), 400
-
-    conn = None
-    cursor = None
-    try:
-        conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM booking_database.user_information WHERE Email = %s", (email,))
-        user = cursor.fetchone()
-
-        if user and bcrypt.check_password_hash(user['UserPassword'], password):
-            access_token = create_access_token(identity={'email': user['Email']})
-            return jsonify({'access_token': access_token}), 200
-        else:
-            return jsonify({'error': 'Invalid email or password'}), 401
-    except mysql.connector.Error as err:
-        print(f"MySQL Error: {err}")
-        return jsonify({'error': f'MySQL Error: {err}'}), 500
-    except Exception as e:
-        print(f"Unexpected Error: {e}")
-        return jsonify({'error': f'Unexpected Error: {e}'}), 500
-    finally:
-        if cursor is not None:
-            cursor.close()
-        if conn is not None:
-            conn.close()
 
 # Protected route
 @authorize_bp.route('/api/protected', methods=['GET'])
 @admin_required
 def protected():
-    current_user = get_jwt_identity()
-    return jsonify(logged_in_as=current_user), 200
+    email = get_jwt_identity()
+    return jsonify({"logged_in_as": email}), 200

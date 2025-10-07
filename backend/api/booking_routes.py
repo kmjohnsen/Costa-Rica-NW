@@ -14,7 +14,7 @@ import bleach
 from api.SQL_access_functions import fetch_all_bookings, fetch_completed_bookings, fetch_bookings_for_a_day, fetch_pending_bookings, fetch_route_number, fetch_monthly_summary, fetch_or_create_user
 from api.utils import serialize_records, sanitize_personal_fields
 
-from api.emailconfirmation import send_email, send_debug_email, send_transport_request_email
+from api.emailconfirmation import send_booking_confirmation_email, send_debug_email, send_transport_request_email
 from api.prices import calculate_route_prices
 from dotenv import load_dotenv
 
@@ -726,16 +726,16 @@ def generate_email_confirmation(entries, requestType, passengers, email, first_n
         emailbody.append(" Expect someone to reach out to you soon to confirm your trip!")
         # TODO make a send email for Aaron, and mark URGENT if the date is soon
         if requestType == 'Upcoming':
-            send_email([email, CRNW_EMAIL], "Urgent: New Upcoming Booking Request", emailbody, confirmationcode)        
+            send_booking_confirmation_email([email, CRNW_EMAIL], "Urgent: New Upcoming Booking Request", emailbody, confirmationcode)        
         else:
-            send_email([email, CRNW_EMAIL], "New Booking Request", emailbody, confirmationcode)        
+            send_booking_confirmation_email([email, CRNW_EMAIL], "New Booking Request", emailbody, confirmationcode)        
 
     # Send confirmation email
     print(emailbody)
     try:
-        send_email(email, "Costa Rica Northwest: Shuttle Confirmation", emailbody, confirmationcode)
+        send_booking_confirmation_email(email, "Costa Rica Northwest: Shuttle Confirmation", emailbody, confirmationcode)
         subjectline = "Trip Booked: Date " + dates + ", Conf: " + confirmationcode + " " + first_name + " " + last_name
-        send_email(CRNW_EMAIL, subjectline, emailbody, confirmationcode)
+        send_booking_confirmation_email(CRNW_EMAIL, subjectline, emailbody, confirmationcode)
         print(f"email sent")
     except Exception as e:
         print(f"Error during email sending")

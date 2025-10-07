@@ -1,4 +1,5 @@
 # emailconfirmation.py
+# Reviewed
 
 import smtplib
 from email.mime.multipart import MIMEMultipart
@@ -23,8 +24,18 @@ DEFAULT_SENDER_NAME = "Aaron Quiros"
 DEFAULT_SENDER_EMAIL = EMAIL_ADDRESS or "info@costaricanorthwest.com"
 
 
+def load_template(filename: str) -> str:
+    """Loads and returns an HTML email template."""
+    path = os.path.join(TEMPLATE_DIR, filename)
+    try:
+        with open(path, "r", encoding="utf-8") as file:
+            return file.read()
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Email template '{filename}' not found in {TEMPLATE_DIR}.")
+
+
 # Shared Utilities
-def attach_png(msg, image_path, cid):
+def attach_image(msg, image_path, cid):
     try:
         with open(image_path, 'rb') as img_file:
             img_data = img_file.read()
@@ -39,29 +50,23 @@ def attach_png(msg, image_path, cid):
         print(f"An error occurred while attaching {cid}: {e}")
 
 
-def load_template(template_name):
-    path = os.path.join(TEMPLATE_DIR, template_name)
-    with open(path, "r", encoding="utf-8") as f:
-        return f.read()
-    
-
 def create_email(subject, html_body, sender_name=DEFAULT_SENDER_NAME, sender_email=DEFAULT_SENDER_EMAIL):
     msg = MIMEMultipart("related")
     msg["From"] = formataddr((sender_name, sender_email))
     msg["Subject"] = subject
 
     msg_alternative = MIMEMultipart("alternative")
-    msg.attach(msg_alternative)
     msg_alternative.attach(MIMEText(html_body, "html"))
+    msg.attach(msg_alternative)
 
     # Attach images
     for cid, path in IMAGE_PATHS.items():
-        attach_png(msg, path, cid)
+        attach_image(msg, path, cid)
 
     return msg
 
 
-def send_smtp_email(base_msg, sender_email, recipient_emails):
+def send_email_via_smtp(base_msg, sender_email, recipient_emails):
     if isinstance(recipient_emails, str):
         recipient_emails = [recipient_emails]
 
@@ -88,13 +93,13 @@ def send_smtp_email(base_msg, sender_email, recipient_emails):
 
 # Email Functions
 
-def send_email(receiver_emails, subject, body_lines, confirmationcode):
+def send_booking_confirmation_email(receiver_emails, subject, body_lines, confirmationcode):
     body_html = "".join(f"<p>{line}</p>" for line in body_lines)
     html_template = load_template("booking_confirmation.html")
     html_body = html_template.format(body_html=body_html, confirmationcode=confirmationcode)
 
     msg = create_email(subject, html_body)
-    send_smtp_email(msg, DEFAULT_SENDER_EMAIL, receiver_emails)
+    send_email_via_smtp(msg, DEFAULT_SENDER_EMAIL, receiver_emails)
 
 
 def send_transport_request_email(name, phone, sender_email, details, confirmationcode):
@@ -115,7 +120,7 @@ def send_transport_request_email(name, phone, sender_email, details, confirmatio
     msg["To"] = to_email
     msg["Cc"] = cc_email
     recipients = [to_email, cc_email] + bcc_emails
-    send_smtp_email(msg, DEFAULT_SENDER_EMAIL, recipients)
+    send_email_via_smtp(msg, DEFAULT_SENDER_EMAIL, recipients)
 
 
 def send_debug_email(raw_inputs):
@@ -125,4 +130,4 @@ def send_debug_email(raw_inputs):
     html += "</pre>"
 
     msg = create_email(subject, html, sender_name="Raw Data", sender_email="info@costaricanorthwest.com")
-    send_smtp_email(msg, DEFAULT_SENDER_EMAIL, "kmjohnsen@gmail.com")
+    send_email_via_smtp(msg, DEFAULT_SENDER_EMAIL, "kmjohnsen@gmail.com")
