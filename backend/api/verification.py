@@ -1,26 +1,15 @@
 from flask import Flask, Blueprint, request, jsonify
 from twilio.rest import Client
 import phonenumbers
-import mysql.connector
 import os
-from dotenv import load_dotenv
-
+from api.db import get_db_connection
+from api.SQL_access_functions import insert_valid_phone_number
+from utils import serialize_records
 
 app = Flask(__name__)
 
 # Define a blueprint for locations
 verification_bp = Blueprint('verification', __name__)
-
-load_dotenv()
-
-# Database configuration using os.getenv()
-db_config = {
-    'user': os.getenv("DB_USER"),
-    'password': os.getenv("DB_PASSWORD"),
-    'host': os.getenv("DB_HOST"),
-    'database': os.getenv("DB_NAME"),
-    'port': int(os.getenv("DB_PORT"))  # Convert port to integer
-}
 
 # List of approved country codes
 approved_country_codes = ['+1', '+44', '+31', '+33', '+34', '+45', '+46', '+47', '+61', '+64', '+49', '+41', '+43', '+27', '+351', '+353', '+354']  
@@ -113,22 +102,15 @@ def verify_code():
         print("post verif check")
 
         if verification_check.status == "approved":
-            print("verification check: approved")
             try:
-            ## Database operation
-                conn = mysql.connector.connect(**db_config)
-                cursor = conn.cursor()
-
-                # Insert confirmation code into the database
-                cursor.execute(
-                    "INSERT IGNORE INTO booking_database.valid_phone_numbers (phone_number) VALUES (%s);",
-                    (phone_number,)
-                )
-                conn.commit()
+                conn, cursor = get_db_connection(dictionary=True)
+                bookings = insert_valid_phone_number(cursor)
+                return jsonify(serialize_records(bookings)), 200
+            except Exception as e:
+                return jsonify({'error': str(e)}), 500
             finally:
                 cursor.close()
                 conn.close()
-                return jsonify({'success': True, 'message': 'Phone number verified successfully'}), 200
         else:
             return jsonify({'success': False, 'message': 'Invalid code or verification failed'}), 400
 

@@ -1,7 +1,6 @@
 # auth.py - Flask authentication
 import os
 import logging
-import mysql.connector
 from functools import wraps
 from flask import Blueprint, jsonify, request
 from contextlib import contextmanager
@@ -10,6 +9,7 @@ from flask_jwt_extended import (
     create_access_token, jwt_required, get_jwt_identity,
     get_jwt, verify_jwt_in_request
 )
+from SQL_access_functions import get_user_by_email
 from google.oauth2 import id_token
 from google.auth.transport import requests
 
@@ -21,30 +21,15 @@ logger = logging.getLogger("auth")
 authorize_bp = Blueprint("authorize", __name__)
 bcrypt = Bcrypt()
 
-# Environment config
-db_config = {
-    'user': os.getenv("DB_USER"),
-    'password': os.getenv("DB_PASSWORD"),
-    'host': os.getenv("DB_HOST"),
-    'database': os.getenv("DB_NAME"),
-    'port': int(os.getenv("DB_PORT"))  # Convert port to integer
-}
-
 CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")  
-WHITELISTED_EMAILS = [e.strip().lower() for e in os.getenve("WHITELISTED_EMAILS", "").split(",") if e.strip()]
+WHITELISTED_EMAILS = [e.strip().lower() for e in os.getenv("WHITELISTED_EMAILS", "").split(",") if e.strip()]
 
-TABLE_USERS = "booking_database.user_information"
+HTTP_400_BAD_REQUEST = 400
+HTTP_401_UNAUTHORIZED = 401
+HTTP_403_FORBIDDEN = 403
+HTTP_422_UNPROCESSABLE_ENTITY = 422
+HTTP_500_INTERNAL_SERVER_ERROR = 500
 
-@contextmanager
-def get_db_cursor(dictionary=False):
-    """Context manager for MySQL connections."""
-    conn = mysql.connector.connect(**db_config)
-    cursor = conn.cursor(dictionary=dictionary)
-    try:
-        yield conn, cursor
-    finally:
-        cursor.close()
-        conn.close()
 
 def error_response(message, status=400, error="Bad Request"):
     """Standardized error JSON response."""
@@ -66,7 +51,7 @@ def admin_required(fn):
 
         if email not in WHITELISTED_EMAILS or claims.get("role") not in ["admin", "dev"]:
             logger.warning(f"Unauthorized access attempt by {email}")
-            return error_response("Access denied", 403, "Forbidden")
+            return error_response("Access denied", HTTP_403_FORBIDDEN, "Forbidden")
 
         return fn(*args, **kwargs)
     return wrapper
@@ -79,31 +64,23 @@ def verify_token():
         email = get_jwt_identity()
         role = get_jwt().get("role")
         if not isinstance(email, str):
-            return error_response("Invalid token format", 422)
+            return error_response("Invalid token format", HTTP_422_UNPROCESSABLE_ENTITY)
 
         return jsonify({"logged_in_as": {"email": email, "role": role}}), 200
 
     except Exception as e:
         logger.error(f"Token verification failed: {e}")
-        return error_response(str(e), 500, "Token Verification Failed")
+        return error_response(str(e), HTTP_500_INTERNAL_SERVER_ERROR, "Token Verification Failed")
 
 
-def _verify_google_token(token):
+def _verify_google_token(id_token_str):
     """Verifies Google OAuth2 token and returns user info."""
     try:
-        return id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
+        return id_token.verify_oauth2_token(id_token_str, requests.Request(), CLIENT_ID)
     except ValueError as e:
         logger.warning(f"Invalid Google token: {e}")
         return None
-
-
-def _get_user_by_email(email):
-    """Retrieves a user record by email."""
-    with get_db_cursor(dictionary=True) as (_, cursor):
-        cursor.execute(
-            f"SELECT * FROM {TABLE_USERS} WHERE Email = %s AND role IN ('dev','admin')", (email,)
-        )
-        return cursor.fetchone()
+    
 
 # Google Authorization
 @authorize_bp.route('/api/auth/google', methods=['POST'])
@@ -114,15 +91,15 @@ def google_auth():
 
     idinfo = _verify_google_token(token)
     if not idinfo:
-        return error_response("Invalid Google token", 401)
+        return error_response("Invalid Google token", HTTP_401_UNAUTHORIZED)
 
     email = idinfo.get("email")
     if not email:
-        return error_response("Email not found in token", 400)
+        return error_response("Email not found in token", HTTP_400_BAD_REQUEST)
 
-    user = _get_user_by_email(email)
+    user = get_user_by_email(email)
     if not user:
-        return error_response("User not found or unauthorized", 403, "Forbidden")
+        return error_response("User not found or unauthorized", HTTP_403_FORBIDDEN, "Forbidden")
 
     access_token = generate_access_token(user["Email"], user["role"])
     logger.info(f"Google login success: {email}")
@@ -139,4 +116,4 @@ def google_auth():
 @admin_required
 def protected():
     email = get_jwt_identity()
-    return jsonify({"logged_in_as": email}), 200
+    return jsonify({"logged_in_as": {email}}), 200

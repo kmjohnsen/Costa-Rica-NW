@@ -107,3 +107,39 @@ def fetch_or_create_user(cursor, first_name, last_name, email, telephone):
     except Exception as e:
         print(f"Error during user fetch or creation: {str(e)}")
         return None
+    
+
+def get_user_by_email(cursor, email):
+    query = "SELECT * FROM booking_database.user_information WHERE Email = %s AND role IN ('dev','admin')"
+    cursor.execute(query, (email,))
+    return cursor.fetchone()
+
+
+def insert_valid_phone_number(cursor, phone_number):
+    query = "INSERT IGNORE INTO booking_database.valid_phone_numbers (phone_number) VALUES (%s);",
+    cursor.execute(query, (phone_number,))
+    return cursor.fetchone()
+
+
+def fetch_all_locations_long_short(cursor):
+    query = "SELECT DISTINCT endcity AS long_name, endcity_shortname AS short_name FROM booking_database.route_information;"
+    cursor.execute(query) 
+    return cursor.fetchall()
+
+
+def fetch_all_distinct_start_city(cursor):
+    query = "SELECT DISTINCT startcity FROM booking_database.route_information"
+    cursor.execute(query)
+    return cursor.fetchall()
+
+
+def fetch_all_distinct_end_city(cursor):
+    query = "SELECT DISTINCT endcity FROM booking_database.route_information"
+    cursor.execute(query)
+    return cursor.fetchall()
+
+
+def fetch_end_city_from_start_city(cursor, startcity):
+    query = "SELECT DISTINCT endcity FROM booking_database.route_information WHERE startcity = %s"
+    cursor.execute(query, (startcity,))
+    return cursor.fetchall()

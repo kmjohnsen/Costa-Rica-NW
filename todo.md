@@ -2,6 +2,7 @@
 
 ## Important
 
+- [ ] Maybe have server.py and __init __.py together. where createapp() is inside api/init.py
 - [ ] Twilio verify
 - [ ] Github - share with Ed (ed@dorrington.org) (add user/share read only)
 - [ ] Change email to Amazon SES, with SPF/DKIM DNS records for less likely to be spam

@@ -5,11 +5,11 @@ from flask_limiter.util import get_remote_address
 from datetime import datetime, timedelta, date
 from enum import Enum
 from functools import wraps
-import mysql.connector
 import random
 import string
 import os
 import bleach
+from api.db import get_db_connection
 
 from api.SQL_access_functions import fetch_all_bookings, fetch_completed_bookings, fetch_bookings_for_a_day, fetch_pending_bookings, fetch_route_number, fetch_monthly_summary, fetch_or_create_user
 from api.utils import serialize_records, sanitize_personal_fields
@@ -26,16 +26,6 @@ limiter = Limiter(
     storage_uri="memory://",
 ) 
 bookings_bp = Blueprint('bookings', __name__)
-
-load_dotenv()
-
-DB_CONFIG = {
-    'user': os.getenv("DB_USER"),
-    'password': os.getenv("DB_PASSWORD"),
-    'host': os.getenv("DB_HOST"),
-    'database': os.getenv("DB_NAME"),
-    'port': int(os.getenv("DB_PORT"))  # Convert port to integer
-}
 
 ADMIN_EMAILS = [e.strip().lower() for e in os.getenv("WHITELISTED_EMAILS", "").split(",") if e.strip()]
 ADMIN_ROLES = {"admin", "dev"}
@@ -71,23 +61,13 @@ def admin_required(f):
     return wrapper
 
 
-def get_connection(dictionary):
-    try:
-        conn = mysql.connector.connect(**DB_CONFIG)
-        cursor = conn.cursor(dictionary=dictionary)
-        return conn, cursor
-    except mysql.connection.Error as err:
-        print(f"MySQL Error: {err}")
-        raise
-
-
 # Endpoint to get all bookings in date order
 @bookings_bp.route('/api/bookings', methods=['GET'])
 @limiter.limit("10/minute")
 @admin_required
 def get_all_bookings():
     try:
-        conn, cursor = get_connection(dictionary=True)
+        conn, cursor = get_db_connection(dictionary=True)
         bookings = fetch_all_bookings(cursor)
         return jsonify(serialize_records(bookings)), 200
     except Exception as e:
@@ -101,7 +81,7 @@ def get_all_bookings():
 @admin_required
 def get_completed_bookings():
     try:
-        conn, cursor = get_connection(dictionary=True)
+        conn, cursor = get_db_connection(dictionary=True)
         bookings = fetch_completed_bookings(cursor)
         return jsonify(serialize_records(bookings)), 200
     except Exception as e:
@@ -121,7 +101,7 @@ def get_bookings_for_day():
     print(f"Received date: {date}")
 
     try:
-        conn, cursor = get_connection(dictionary=True)
+        conn, cursor = get_db_connection(dictionary=True)
         bookings = fetch_bookings_for_a_day(cursor, booking_date)
         if not bookings:
             return jsonify({'error': 'No bookings found for this date'}), 404
@@ -138,7 +118,7 @@ def get_bookings_for_day():
 def get_monthly_summary():
     month = request.args.get('month', datetime.now().strftime('%Y-%m'))
     try:
-        conn, cursor = get_connection(dictionary=True)
+        conn, cursor = get_db_connection(dictionary=True)
         bookings = fetch_monthly_summary(cursor, month)
         return jsonify(bookings)
     except Exception as e:
@@ -152,7 +132,7 @@ def get_monthly_summary():
 @admin_required
 def get_driver_monthly_summary():
     month = request.args.get('month', datetime.now().strftime('%Y-%m'))
-    conn, cursor = get_connection(dictionary=True)
+    conn, cursor = get_db_connection(dictionary=True)
     cursor.execute("""
         SELECT driver_name, COUNT(*) as trips, SUM(routecost) as money_collected
         FROM booking_database.booking_information
@@ -228,7 +208,7 @@ def modify_booking():
     conn = None
     cursor = None
     try:
-        conn, cursor = get_connection(dictionary=True)
+        conn, cursor = get_db_connection(dictionary=True)
         if booking_updates:
             cursor.execute(booking_query, booking_values)
         if user_updates:
@@ -246,7 +226,7 @@ def modify_booking():
 @admin_required
 def get_pending_bookings():
     try:
-        conn, cursor = get_connection(dictionary=True)
+        conn, cursor = get_db_connection(dictionary=True)
         bookings = fetch_pending_bookings(cursor)
         return jsonify(serialize_records(bookings)), 200
     except Exception as e:
@@ -262,7 +242,7 @@ def assign_driver():
     data = request.json
     booking_id = data.get('booking_id')
     driver_name = data.get('driver_name')
-    conn, cursor = get_connection(dictionary=True)
+    conn, cursor = get_db_connection(dictionary=True)
     cursor.execute("UPDATE booking_database.booking_information SET driver = %s WHERE booking_id = %s", (driver_name, booking_id))
     conn.commit()
     cursor.close()
@@ -279,7 +259,7 @@ def get_route_number():
         return jsonify({'error': 'Pickup and dropoff locations are required'}), 400
 
     try:
-        conn, cursor = get_connection(dictionary=True)
+        conn, cursor = get_db_connection(dictionary=True)
         routeID = fetch_route_number(pickup, dropoff, cursor)
         print(f"Fetched route id {routeID}")
         return jsonify(routeID), 200
@@ -336,7 +316,7 @@ def submit_booking():
         query = "SELECT 1 FROM booking_database.valid_phone_numbers WHERE phone_number=(%s) LIMIT 1;"
         try:
         ## Database operation
-            conn, cursor = get_connection(dictionary=False)
+            conn, cursor = get_db_connection(dictionary=False)
             cursor.execute(query, (telephone,))
             result = cursor.fetchone()
             if result:
@@ -353,7 +333,7 @@ def submit_booking():
     # Enter data into database
     try:
         # Start database connection
-        conn, cursor = get_connection(dictionary=False)
+        conn, cursor = get_db_connection(dictionary=False)
         
         user_id = fetch_or_create_user(cursor, first_name, last_name, email, telephone)
         print(f"user id: {user_id}")
@@ -449,7 +429,7 @@ def approve_booking():
     # Enter data into database
     try:
         # Start database connection
-        conn, cursor = get_connection(dictionary=False)
+        conn, cursor = get_db_connection(dictionary=False)
         
         insert_into_booking_database(requestType, dataforbooking, cursor)
         conn.commit()
@@ -484,7 +464,7 @@ def completed_booking():
         print(f"data for booking (call data): {dataforbooking}")
         requestType = 'completed_bookings'
 
-        conn, cursor = get_connection(dictionary=False)
+        conn, cursor = get_db_connection(dictionary=False)
         
         # Add to completed_booking table
         insert_into_booking_database(requestType, dataforbooking, cursor)
@@ -555,7 +535,7 @@ def call_dataforbooking(bookingtable, bookingIDvariable, bookingID):
     if bookingtable not in allowed_tables:
         raise ValueError("Invalid table name.")
     try:
-        conn, cursor = get_connection(dictionary=True)
+        conn, cursor = get_db_connection(dictionary=True)
         query =(f"""
                 SELECT *
                 FROM booking_database.{bookingtable}
@@ -755,7 +735,7 @@ def remove_booking():
     variable_name = 'tempbookingID' if booking_type == 'temp' else 'bookingID'
 
     try:
-        conn, cursor = get_connection(dictionary=True)
+        conn, cursor = get_db_connection(dictionary=True)
         
         query = f"DELETE FROM booking_database.{table_name} WHERE {variable_name} = %s"
         try:
@@ -779,7 +759,7 @@ def remove_booking():
 @admin_required
 def fetch_blackout_dates():
     try:
-        conn, cursor = get_connection(dictionary=True)
+        conn, cursor = get_db_connection(dictionary=True)
         query = "SELECT blackoutdate FROM booking_database.blackout_dates ORDER BY blackoutdate ASC"
         cursor.execute(query)
         dates = cursor.fetchall()
@@ -805,7 +785,7 @@ def post_blackout_dates():
     if not blackout_date:
         return jsonify({'error': 'No date provided'}), 400 
     try:
-        conn, cursor = get_connection(dictionary=True)
+        conn, cursor = get_db_connection(dictionary=True)
         query = "INSERT INTO booking_database.blackout_dates (blackoutdate) VALUES (%s)"
         cursor.execute(query, (blackout_date,))
         conn.commit()
@@ -826,7 +806,7 @@ def remove_blackout_dates():
     if not blackout_date:
         return jsonify({'error': 'No date provided'}), 400  
     try:
-        conn, cursor = get_connection(dictionary=True)
+        conn, cursor = get_db_connection(dictionary=True)
         query = "DELETE FROM booking_database.blackout_dates WHERE blackoutdate = %s"
         cursor.execute(query, (blackout_date,))
         conn.commit()
