@@ -4,7 +4,7 @@ import phonenumbers
 import os
 from api.db import get_db_connection
 from api.SQL_access_functions import insert_valid_phone_number
-from utils import serialize_records
+from api.utils import serialize_records
 
 app = Flask(__name__)
 

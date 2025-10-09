@@ -9,7 +9,7 @@ from flask_jwt_extended import (
     create_access_token, jwt_required, get_jwt_identity,
     get_jwt, verify_jwt_in_request
 )
-from SQL_access_functions import get_user_by_email
+from api.SQL_access_functions import get_user_by_email
 from google.oauth2 import id_token
 from google.auth.transport import requests
 

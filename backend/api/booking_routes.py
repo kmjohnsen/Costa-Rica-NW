@@ -16,7 +16,7 @@ from api.SQL_access_functions import fetch_all_bookings, fetch_completed_booking
 from api.utils import serialize_records, sanitize_personal_fields
 
 from api.emailconfirmation import send_booking_confirmation_email, send_debug_email, send_transport_request_email
-from api.prices import calculate_route_prices
+from api.prices import get_route_prices
 from dotenv import load_dotenv
 
 app = Flask(__name__)
@@ -372,7 +372,7 @@ def submit_booking():
             else:
                 passengers = passengers
                 print(f"routeID {routeID}, passengers {passengers}, date {date}")
-                day_price = calculate_route_prices(routeID, passengers, date, date)
+                day_price = get_route_prices(routeID, passengers, date, date)
                 print(f"day price: {day_price}")
                 prices = list(day_price.values())[0]
             print(f"prices: {prices}")
@@ -668,7 +668,7 @@ def generate_email_confirmation(entries, requestType, passengers, email, first_n
             print("prices")
             prices = 'NA'
         else:
-            day_price = calculate_route_prices(routeID, passengers, date, date)
+            day_price = get_route_prices(routeID, passengers, date, date)
             print(f"price2: {day_price}")
             prices = list(day_price.values())[0]
             print(f"price3: {prices}, type {type(prices)}")
