@@ -10,6 +10,7 @@ import string
 import os
 import bleach
 from api.db import get_db_connection
+from api.cache_utils import invalidate_cache
 
 from api.SQL_access_functions import fetch_all_bookings, fetch_completed_bookings, fetch_bookings_for_a_day, fetch_pending_bookings, fetch_route_number, fetch_monthly_summary, fetch_or_create_user
 from api.utils import serialize_records, sanitize_personal_fields
@@ -184,12 +185,6 @@ def modify_booking():
           user_updates.append(f"{field} = %s")
           user_values.append(value)
 
-    print(f"booking updates: {booking_updates}")
-    print(f"booking values: {booking_values}")
-    print(f"user updates: {user_updates}")
-    print(f"user values: {user_values}")
-
-
     # Add the WHERE clause to target the specific booking
     if is_pending == True:
         booking_query += ", ".join(booking_updates) + " WHERE tempbookingID = %s"
@@ -198,11 +193,6 @@ def modify_booking():
     booking_values.append(bookingIDnum)
     user_query += ", ".join(user_updates) + "WHERE userID = %s"
     user_values.append(userIDnum)
-
-    print(f"Modify query: {booking_query}")
-    print(f"Values for modify query: {booking_values}")
-    print(f"Modify query: {user_query}")
-    print(f"Values for modify query: {user_values}")
 
     # Execute the update query
     conn = None
@@ -214,6 +204,7 @@ def modify_booking():
         if user_updates:
             cursor.execute(user_query, user_values)
         conn.commit()
+        invalidate_cache("booking_numbers") #remove cache of number of bookings per date
         return jsonify({'message': 'Booking/User Info updated successfully'}), 200
     finally:
         if cursor is not None:
@@ -395,7 +386,8 @@ def submit_booking():
                 insert_into_booking_database(requestType, dataforbooking, cursor)
             except Exception as e:
                 return jsonify({'error': str(e)}), 500
-
+        
+        invalidate_cache("booking_numbers") #remove cache of number of bookings per date
         conn.commit()       
         
         generate_email_confirmation(entries, requestType, passengers, email, first_name, last_name, telephone, confirmation_code)
@@ -432,6 +424,7 @@ def approve_booking():
         conn, cursor = get_db_connection(dictionary=False)
         
         insert_into_booking_database(requestType, dataforbooking, cursor)
+        invalidate_cache("booking_numbers") #remove cache of number of bookings per date
         conn.commit()
 
         # generate_email_confirmation(entries, requestType, passengers, email, confirmationcode)
@@ -789,6 +782,7 @@ def post_blackout_dates():
         query = "INSERT INTO booking_database.blackout_dates (blackoutdate) VALUES (%s)"
         cursor.execute(query, (blackout_date,))
         conn.commit()
+        invalidate_cache("blackout_dates") #remove existing blackout date cache
         return jsonify({'message': 'Blackout date added successfully'}), 200
     except Exception as e:
         print(f"Error adding blackout date: {str(e)}")
@@ -810,6 +804,7 @@ def remove_blackout_dates():
         query = "DELETE FROM booking_database.blackout_dates WHERE blackoutdate = %s"
         cursor.execute(query, (blackout_date,))
         conn.commit()
+        invalidate_cache("blackout_dates") #remove existing blackout date cache
         return jsonify({'message': 'Blackout date removed successfully'}), 200
     except Exception as e:
         print(f"Error removing blackout date: {str(e)}")

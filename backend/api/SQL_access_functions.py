@@ -143,3 +143,51 @@ def fetch_end_city_from_start_city(cursor, startcity):
     query = "SELECT DISTINCT endcity FROM booking_database.route_information WHERE startcity = %s"
     cursor.execute(query, (startcity,))
     return cursor.fetchall()
+
+
+def fetch_standardrate_and_passengertype(cursor, routenumber):
+    if routenumber == '9999':
+        return int(99999)
+    else:
+        query = """
+            SELECT stdrate, addlpassengertype
+            FROM booking_database.route_information
+            WHERE routeID = %s
+        """        
+        cursor.execute(query, (routenumber,))
+        result = cursor.fetchone()
+        if not result:
+            return None
+        return result
+
+
+def fetch_pricing_rules(cursor):
+    query = "SELECT ruleID, datestart, dateend, percentadjustment, priceadjustment, override FROM booking_database.pricing_rules ORDER BY datestart ASC"
+    cursor.execute(query)
+    fields = ["ruleID", "datestart", "dateend", "percentadjustment", "priceadjustment", "override"]
+    return [dict(zip(fields, row)) for row in cursor.fetchall()]
+
+
+def create_blackout_date_list(cursor):
+    query = "SELECT blackoutdate FROM booking_database.blackout_dates"
+    cursor.execute(query)
+    blackoutdates = cursor.fetchall()
+    return [date_tuple[0] for date_tuple in blackoutdates]
+
+
+def fetch_booking_number_dict(cursor):
+    query = "SELECT booking_date, COUNT(*) AS number_of_bookings FROM booking_database.booking_information WHERE booking_date >= CURDATE() GROUP BY booking_date ORDER BY booking_date"
+    cursor.execute(query)
+    bookingsbydate = cursor.fetchall()
+    return {date.strftime('%Y-%m-%d'): value for date, value in bookingsbydate}
+
+
+def delete_pricing_rule(cursor, ruleID):
+    query = "DELETE FROM booking_database.pricing_rules WHERE ruleID = %s"
+    cursor.execute(query, (ruleID,))
+
+
+def create_pricing_rule(cursor, conn, datestart, dateend, percentinc, addinc):
+    query = "INSERT INTO booking_database.pricing_rules (datestart, dateend, percentadjustment, priceadjustment) VALUES (%s, %s, %s, %s);"
+    cursor.execute(query, (datestart, dateend, percentinc, addinc))
+    conn.commit()
