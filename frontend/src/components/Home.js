@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Modal from 'react-modal';
 import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-// import CalendarWithPrices from './Calendars';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 import axios from 'axios';
 import Navbar from './NavBar'; // Import the top navigation bar
 import RequiredFieldsModal from './RequiredFieldsModal';
@@ -167,6 +168,7 @@ function BookingForm() {
   const [isRouteInDB, setIsRouteInDB] = useState(false)
   const [TripType, setTripType] = useState('roundtrip')
   const [isValues, setIsValues] = useState(false)
+  const [isPhoneFocused, setIsPhoneFocused] = useState(false);
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -298,8 +300,9 @@ function BookingForm() {
     const calculateTotalPrice = () => {
       const total = watchEntries.reduce((sum, trip) => {
         const formattedDate = trip.date ? new Date(trip.date).toISOString().split('T')[0] : '';
-        const tripPrice = trip.prices?.[formattedDate] ? parseFloat(trip.prices[formattedDate]) : 0;
-        return sum + tripPrice;
+        const tripPrice = trip.prices?.prices?.[formattedDate]
+          ? parseFloat(trip.prices.prices[formattedDate])
+            : 0;        return sum + tripPrice;
       }, 0);
 
       setTotalPrice(total);
@@ -744,7 +747,9 @@ function BookingForm() {
                           {(passengers === '11+') || !isRouteInDB ? (
                             <></>
                           ) : (
-                            <p style={{ margin: '0px 20px' }}><b>${entry.prices[entry.date]}</b></p>
+                            <p style={{ margin: '0px 20px' }}>
+                              <b>${entry.prices?.prices?.[entry.date] ?? '—'}</b>
+                            </p>
                           )}
                         </td>
                       </tr>
@@ -812,19 +817,6 @@ function BookingForm() {
               </div>
 
               <div className="location-input-container" style={{ width: '100%', marginBottom: '10px' }}>
-                <label className={`floating-label ${otherPhone ? "label-active" : ""}`}>
-                Phone
-                </label>
-                <input
-                  type="text"
-                  value={otherPhone}
-                  onChange={(e) => setOtherPhone(e.target.value)}
-                  className="location-input"
-                  onFocus={(e) => e.target.select()}
-                />
-              </div>
-
-              <div className="location-input-container" style={{ width: '100%', marginBottom: '10px' }}>
                 <label className={`floating-label ${otherEmail ? "label-active" : ""}`}>
                 Email
                 </label>
@@ -837,13 +829,53 @@ function BookingForm() {
                 />
               </div>
 
+              <div className="location-input-container" style={{ width: '100%', marginBottom: '10px' }}>
+                <label 
+                  className={`floating-label ${
+                    (isPhoneFocused || (otherPhone && otherPhone !== '+1')) ? "label-active" : ''
+                  }`}
+                >
+                  Phone
+                </label>
+                <PhoneInput
+                  country="us"                    // Default country (change if needed)
+                  value={otherPhone}
+                  onChange={(value) => setOtherPhone('+' + value)} // ensures "+" is included
+                  onFocus={() => setIsPhoneFocused(true)}
+                  onBlur={() => setIsPhoneFocused(false)}
+                  autoFormat={true}
+                  enableAreaCodes={true}
+                  disableDropdown={false}
+                  inputProps={{ name: 'phone', required: true }}
+                  inputStyle={{
+                    fontSize: '1.0rem',
+                    padding: '12px',
+                    width: '100%',
+                    height: 'auto',
+                    backgroundColor: 'var(--bright-white)',
+                    color: 'var(--dark-text)',
+                    border: '1px solid var(--bright-white)',
+                    borderRadius: '8px',
+                    boxShadow: '0px 2px 5px var(--shadow-for-box)',
+                    textAlign: 'left',
+                    paddingLeft: '65px',
+                  }}
+                  buttonStyle={{
+                    backgroundColor: 'var(--bright-white)',
+                    borderRadius: '8px',
+                    border: '1px solid var(--text)',
+                    padding: '5px',
+                  }}
+                />
+              </div>
+
               <div className="flex-container-spacing">
                 <div className="location-input-container" style={{ width: '100%', marginBottom: '10px' }}>
                   <label className={`floating-label ${otherDetails ? "label-active" : ""}`}>
                     Requested Trip Details
                   </label>
                   <textarea 
-                    style={{ fontSize: '1.5rem', fontFamily: 'Helvetica, Arial, sans-serif', height:'100px', alignContent: 'center' }}
+                    style={{ fontSize: '1.0rem', fontFamily: 'var(--font-family-main)', height:'80px', alignContent: 'center', textAlign: 'left' }}
                     className='location-input'
                     onChange={(e) => setOtherDetails(e.target.value)}
                     />

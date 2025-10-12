@@ -24,7 +24,7 @@ def get_db_connection(dictionary=False):
     cursor = None
     try:
         conn = mysql.connector.connect(**DB_CONFIG)
-        cursor = conn.cursor(dictionary=dictionary)
+        cursor = conn.cursor(dictionary=dictionary, buffered=True)
         yield conn, cursor
     except mysql.connector.Error as err:
         print(f"MySQL Error: {err}")

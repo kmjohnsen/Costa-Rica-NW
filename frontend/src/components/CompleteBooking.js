@@ -418,8 +418,9 @@ function CompleteBooking() {
           <button className="close-booking-button"
             onClick={closeBookingConfirmationModal}
             aria-label="Close"
+            // style={{ width: '0px', padding: '10px 20px' }}
           >
-            <span style={{ transform: 'translateY(1px)' }}>&times;</span>
+            <b>&times;</b>
           </button>
         </div>
         {successfulBooking ? (

@@ -103,14 +103,12 @@ def verify_code():
 
         if verification_check.status == "approved":
             try:
-                conn, cursor = get_db_connection(dictionary=True)
-                bookings = insert_valid_phone_number(cursor)
-                return jsonify(serialize_records(bookings)), 200
+                with get_db_connection(dictionary=True) as (conn, cursor):
+                    insert_valid_phone_number(cursor, conn, phone_number)
+                return jsonify({'success': True, 'message': 'Phone verified and stored'}), 200
             except Exception as e:
-                return jsonify({'error': str(e)}), 500
-            finally:
-                cursor.close()
-                conn.close()
+                print(f"Database error during phone insert: {e}")
+                return jsonify({'error': f'Database insert failed: {str(e)}'}), 500
         else:
             return jsonify({'success': False, 'message': 'Invalid code or verification failed'}), 400
 

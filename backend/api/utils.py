@@ -42,3 +42,26 @@ def sanitize_personal_fields(booking_data):
         "passengers": booking_data.get("passengers"),
         "largeGroupPassengers": booking_data.get("largeGroupPassengers"),
     }
+
+def compile_dataforbooking(user_id, routeID, pickup, dropoff, prices, confirmationcode, date, time, airline, flight_number, bookingsite, passengers, questions, pickup_detailed, dropoff_detailed, manualbookinginfo):
+    # print(f"Calling compile_dataforbooking with: {user_id}, {routeID}, {pickup}, {dropoff}, {prices}, {confirmationcode}, {date}, {time}, {airline}, {flight_number}, {bookingsite}, {passengers}, {questions}, {pickup_detailed}, {dropoff_detailed}, {manualbookinginfo}")
+    
+    dataforbooking = {
+        "userID": user_id if user_id else None,
+        "routeID": routeID if routeID else None,
+        "startcity": bleach.clean(pickup) if pickup else None,
+        "endcity": bleach.clean(dropoff) if dropoff else None,
+        "confirmation_number": confirmationcode if confirmationcode else None,
+        "booking_date": date if date else None,
+        "pickup_time": time if time else None,
+        "flight_airline": bleach.clean(airline) if airline else None,
+        "flight_number": int(flight_number) if flight_number else None,  
+        "booking_site": bookingsite if bookingsite else None,
+        "passengers": int(passengers) if passengers else None, 
+        "questions": bleach.clean(questions) if questions else None,
+        "pickup_location": bleach.clean(pickup_detailed) if pickup_detailed else None,
+        "dropoff_location": bleach.clean(dropoff_detailed) if dropoff_detailed else None,
+        "manualbookinginfo":bleach.clean( manualbookinginfo) if manualbookinginfo else None,
+        "routecost": prices if prices is not None else None,
+    }
+    return dataforbooking
