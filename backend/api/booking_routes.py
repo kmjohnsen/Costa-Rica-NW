@@ -11,6 +11,8 @@ import os
 import bleach
 from api.db import get_db_connection
 from api.cache_utils import invalidate_cache
+from api.utils import format_trip_price
+
 
 from api.SQL_access_functions import (
   fetch_all_bookings, 
@@ -365,9 +367,10 @@ def submit_booking():
                 else:
                     passengers = passengers
                     print(f"routeID {routeID}, passengers {passengers}, date {date}")
-                    day_price = calculate_route_prices(routeID, passengers, date, date)
-                    print(f"day price: {day_price}")
-                    price_map = day_price.get("prices", {})
+                    unformatted_day_price = calculate_route_prices(routeID, passengers, date, date)
+                    print(f"day price: {unformatted_day_price}")
+
+                    price_map = unformatted_day_price.get("prices", {})
                     prices = next(iter(price_map.values()), None)
                 print(f"prices: {prices}")
                                                             
@@ -563,7 +566,8 @@ def generate_email_confirmation(entries, requestType, passengers, email, first_n
             emailbody.append(f" Flight information: {str(airline)}, flight number {str(flight_number)}.")
         if requestType == 'Auto' or requestType == 'Approve' or requestType == 'Upcoming':
             print("if auto")
-            emailbody.append(f" Trip {str(tripnum)} cost: ${prices}")
+            formatted_price = format_trip_price(prices)
+            emailbody.append(f" Trip {str(tripnum)} cost: ${formatted_price}")
         tripnum += 1
         print(f"email body 2: {emailbody}")
 

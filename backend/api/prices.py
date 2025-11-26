@@ -126,14 +126,18 @@ def post_pricing_rule():
     data = data['newPricingRule']
     datestart = data.get('datestart') 
     dateend = data.get('dateend') 
-    percentinc = data.get('percentinc') or None
-    addinc = data.get('addinc') or None
+    percentinc_raw = data.get('percentinc')
+    addinc_raw = data.get('addinc')
 
     if not datestart or not dateend:
         return jsonify({'error': 'dates are required'}), 400  # Handle the case where no date is provided
     
-    if not percentinc and not addinc:
-        return jsonify({'error': 'percent increase OR additive increase required'}), 400  # Handle the case where no date is provided
+    # Convert to numeric or None cleanly
+    try:
+        percentinc = float(percentinc_raw) if percentinc_raw not in [None, "", "null"] else None
+        addinc = float(addinc_raw) if addinc_raw not in [None, "", "null"] else None
+    except ValueError:
+        return jsonify({'error': 'Percent and additive increases must be numeric'}), 400
 
     try:
         with get_db_connection(dictionary=False) as (conn, cursor):        

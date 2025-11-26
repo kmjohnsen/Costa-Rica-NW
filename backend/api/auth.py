@@ -9,6 +9,7 @@ from flask_jwt_extended import (
     create_access_token, jwt_required, get_jwt_identity,
     get_jwt, verify_jwt_in_request
 )
+from api.db import get_db_connection
 from api.SQL_access_functions import get_user_by_email
 from google.oauth2 import id_token
 from google.auth.transport import requests
@@ -97,9 +98,10 @@ def google_auth():
     if not email:
         return error_response("Email not found in token", HTTP_400_BAD_REQUEST)
 
-    user = get_user_by_email(email)
-    if not user:
-        return error_response("User not found or unauthorized", HTTP_403_FORBIDDEN, "Forbidden")
+    with get_db_connection(dictionary=True) as (conn, cursor):        
+        user = get_user_by_email(cursor, email)
+        if not user:
+            return error_response("User not found or unauthorized", HTTP_403_FORBIDDEN, "Forbidden")
 
     access_token = generate_access_token(user["Email"], user["role"])
     logger.info(f"Google login success: {email}")

@@ -65,3 +65,10 @@ def compile_dataforbooking(user_id, routeID, pickup, dropoff, prices, confirmati
         "routecost": prices if prices is not None else None,
     }
     return dataforbooking
+
+def format_trip_price(prices):
+    """Formats a dict like {'2025-11-24': 229} into '2025-11-24: $229'."""
+    if isinstance(prices, dict):
+        date, price = next(iter(prices.items()))
+        return f"{date}: ${price}"
+    return f"${prices}"
