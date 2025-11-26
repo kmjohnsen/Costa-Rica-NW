@@ -17,7 +17,7 @@ def compute_date_based_prices(
               if rule["percentadjustment"] is not None:
                   percent_factor = ((100 + int(rule['percentadjustment'])) / 100)
                   price = round(price * percent_factor)
-                  adjustment_text += f"{rule["percentadjustment"]}% increase (rule {rule['ruleID']})."
+                  adjustment_text += f"{rule['percentadjustment']}% increase (rule {rule['ruleID']})."
               elif rule["priceadjustment"] is not None:
                   price += int(rule['priceadjustment'])
                   adjustment_text += f"${rule['percentadjustment']} increase (rule {rule['ruleID']})."
