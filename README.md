@@ -1,72 +1,136 @@
-# Getting Started with Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Costa Rica Northwest
 
-## Available Scripts
+A full-stack web application for **Costa Rica Northwest** — a travel and booking platform *formerly* hosted at [costaricanorthwest.com](https://costaricanorthwest.com/). The owner of the website is getting out of the transportation business, so sold the website to someone else. But was a great learning experience even if it wasn't used much!
 
-In the project directory, you can run:
+Special thanks to Chris Grass and Ed Dorrington for their help with code reviews!
 
-### `npm start`
+Built with a **React** frontend and a **Python/Flask** backend, deployed on  **AWS EC2** .
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🛠 Tech Stack
 
-### `npm test`
+| Layer      | Technology                       |
+| ---------- | -------------------------------- |
+| Frontend   | React (Create React App)         |
+| Backend    | Python, Flask                    |
+| Auth       | JWT (flask-jwt-extended), Bcrypt |
+| Database   | SQL (PostgreSQL or MySQL)        |
+| Deployment | AWS EC2                          |
+| Security   | CORS, CSP headers, HSTS          |
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## 📁 Project Structure
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```
+Costa-Rica-NW/
+├── backend/
+│   ├── api/                  # Flask blueprints (locations, prices, bookings, users, etc.)
+│   ├── resources/images/     # Uploaded/static images
+│   ├── templates/            # Email or HTML templates
+│   ├── requirements.txt      # Python dependencies
+│   └── server.py             # Flask app entry point
+├── frontend/
+│   ├── public/               # Static public assets
+│   ├── src/                  # React source code
+│   ├── package.json          # Node dependencies
+│   └── ...                   # Babel, ESLint, Jest config
+├── SQL/                      # Database schema and migration scripts
+├── .gitignore
+└── setup_commands            # Setup reference notes
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+---
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## ⚙️ Local Setup
 
-### `npm run eject`
+### Prerequisites
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+* Python 3.x
+* Node.js & npm
+* A running SQL database (PostgreSQL or MySQL)
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### 1. Clone the repo
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```bash
+git clone https://github.com/kmjohnsen/Costa-Rica-NW.git
+cd Costa-Rica-NW
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### 2. Set up the backend
 
-## Learn More
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate       # On Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Create a `.env` file in the `backend/` directory:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```env
+RUNNING_LOCAL=True
+JWT_SECRET_KEY=your_secret_key_here
+DB_HOST=localhost
+DB_NAME=your_database_name
+DB_USER=your_db_user
+DB_PASSWORD=your_db_password
+```
 
-### Code Splitting
+Start the backend:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+```bash
+python server.py
+```
 
-### Analyzing the Bundle Size
+The Flask server runs on [http://localhost:5000](http://localhost:5000/).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### 3. Set up the frontend
 
-### Making a Progressive Web App
+```bash
+cd ../frontend
+npm install
+npm start
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+The React app runs on [http://localhost:3000](http://localhost:3000/).
 
-### Advanced Configuration
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## 🚀 API Routes
 
-### Deployment
+The backend exposes the following API blueprint groups:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+| Blueprint             | Description                          |
+| --------------------- | ------------------------------------ |
+| `/api/locations`    | Location data                        |
+| `/api/prices`       | Pricing information                  |
+| `/api/authorize`    | User authentication (login/register) |
+| `/api/bookings`     | Trip/tour bookings                   |
+| `/api/users`        | User account management              |
+| `/api/verification` | Email or identity verification       |
 
-### `npm run build` fails to minify
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-# Costa-Rica-NW
-# Costa-Rica-NW
+## 🔐 Security
+
+* JWT Bearer token authentication
+* Bcrypt password hashing
+* CORS restricted to allowed origins
+* Security headers: `X-Frame-Options`, `HSTS`, `CSP`, `X-Content-Type-Options`
+
+---
+
+## 🗄 Database
+
+SQL schema and setup scripts are located in the `/SQL` directory.
+
+---
+
+## ☁️ Deployment (AWS EC2)
+
+In production, the Flask server serves the compiled React build from `/var/www/html`.
+
+Set `RUNNING_LOCAL=False` in your environment to switch to production mode.

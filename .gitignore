@@ -26,3 +26,9 @@ yarn-error.log*
 
 # sql folder with some commands
 /SQL
+
+frontend/bild/
+backend/.venv/
+backend/__pycache__/
+
+setup_commands
