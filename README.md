@@ -7,6 +7,24 @@ Special thanks to Chris Grass and Ed Dorrington for their help with code reviews
 
 Built with a **React** frontend and a **Python/Flask** backend, deployed on  **AWS EC2** .
 
+## Homepage:
+
+![1773238598383](image/README/1773238598383.png)
+
+## Booking Form
+
+The booking form connected with SQL database of prices, allowing for real-time pricing information to be shown:
+
+![1773238698547](image/README/1773238698547.png)
+
+Based on the customer requirement, a Twilio text message confirmation was added to enhance booking security:
+
+![1773238853727](image/README/1773238853727.png)
+
+Email confirmations were sent out with all required information:
+
+![1773239316741](image/README/1773239316741.png)
+
 ---
 
 ## 🛠 Tech Stack
