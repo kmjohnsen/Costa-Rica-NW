@@ -1,4 +1,3 @@
-
 # Costa Rica Northwest
 
 A full-stack web application for **Costa Rica Northwest** — a travel and booking platform *formerly* hosted at [costaricanorthwest.com](https://costaricanorthwest.com/). The owner of the website is getting out of the transportation business, so sold the website to someone else. But was a great learning experience even if it wasn't used much!
@@ -9,21 +8,21 @@ Built with a **React** frontend and a **Python/Flask** backend, deployed on  **A
 
 ## Homepage:
 
-![1773238598383](image/README/1773238598383.png)
+![1773238698547](https://file+.vscode-resource.vscode-cdn.net/c%3A/Users/kmjoh/Documents/VSCode/reacttest/image/README/homepage_example.png)
 
 ## Booking Form
 
 The booking form connected with SQL database of prices, allowing for real-time pricing information to be shown:
 
-![1773238698547](image/README/1773238698547.png)
+![1773238698547](image/README/Booking_Form_example.png)
 
 Based on the customer requirement, a Twilio text message confirmation was added to enhance booking security:
 
-![1773238853727](image/README/1773238853727.png)
+![1773238853727](image/README/Twilio_verification_example.png)
 
 Email confirmations were sent out with all required information:
 
-![1773239316741](image/README/1773239316741.png)
+![1773239316741](image/README/Booking_email_example.png)
 
 ---
 
