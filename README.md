@@ -8,7 +8,7 @@ Built with a **React** frontend and a **Python/Flask** backend, deployed on  **A
 
 ## Homepage:
 
-![1773238698547](https://file+.vscode-resource.vscode-cdn.net/c%3A/Users/kmjoh/Documents/VSCode/reacttest/image/README/homepage_example.png)
+![1773238698547](image/README/homepage_example.png)
 
 ## Booking Form
 
